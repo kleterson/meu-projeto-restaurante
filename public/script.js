@@ -60,7 +60,7 @@ async function finalizarCompra() {
         const trocoCalculado = valorDinheiro - totalCarrinho;
         informacaoPagamento = `Dinheiro (Vai pagar com R$ ${valorDinheiro.toFixed(2)} | Troco: R$ ${trocoCalculado.toFixed(2)})`;
     } 
-    // Se for Cartão (Faz o mesmo caminho do dinheiro, direto para a cozinha/motoboy)
+    // Se for Cartão (Vai direto para o motoboy sem gerar Pix)
     else if (formaPagamento === 'Cartão (Na Entrega)') {
         informacaoPagamento = `Cartão na Entrega (Maquininha Motoca)`;
     }
@@ -80,7 +80,7 @@ async function finalizarCompra() {
 
     const containerPagamento = document.getElementById('pagamento-container');
 
-    // SE FOR DINHEIRO OU CARTÃO (Vai direto para o sistema sem abrir QR Code Pix)
+    // SE FOR DINHEIRO OU CARTÃO (Vai direto para o sistema SEM abrir QR Code Pix)
     if (formaPagamento === 'Dinheiro' || formaPagamento === 'Cartão (Na Entrega)') {
         containerPagamento.innerHTML = `
             <h2>💳 Pedido Realizado com Sucesso!</h2>
