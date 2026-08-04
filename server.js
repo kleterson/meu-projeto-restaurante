@@ -1,6 +1,14 @@
+const express = require('express');
+const app = express();
+
+// Configurações iniciais do servidor
+app.use(express.json());
+app.use(express.static('public'));
+
+// Token do Mercado Pago fornecido[cite: 3]
 const MERCADO_PAGO_TOKEN = "APP_USR-517824253559090-073117-47dad5ef4352fb0abd9e5d717275dfa3-71867761";
 
-// Rota para criar o Pix no Mercado Pago
+// Rota para criar o Pix no Mercado Pago[cite: 3]
 app.post('/api/criar-pagamento', async (req, res) => {
     try {
         const dados = req.body;
@@ -38,7 +46,7 @@ app.post('/api/criar-pagamento', async (req, res) => {
     }
 });
 
-// Rota para checar se o pagamento foi aprovado
+// Rota para checar se o pagamento foi aprovado[cite: 3]
 app.get('/api/verificar-pagamento/:id', async (req, res) => {
     try {
         const idPagamento = req.params.id;
@@ -48,8 +56,31 @@ app.get('/api/verificar-pagamento/:id', async (req, res) => {
             }
         });
         const resultado = await respostaMP.json();
-        res.json({ status: resultado.status }); // Retorna 'approved', 'pending', etc.
+        res.json({ status: resultado.status }); 
     } catch (e) {
         res.status(500).json({ error: 'Erro ao verificar status' });
     }
+});
+
+// Armazenamento em memória para os pedidos do painel/motoboy
+let pedidos = [];
+
+app.get('/api/pedidos', (req, res) => {
+    res.json(pedidos);
+});
+
+app.post('/api/pedidos', (req, res) => {
+    const novoPedido = {
+        id: Date.now(),
+        ...req.body,
+        status: "⏳ Aguardando preparo na cozinha"
+    };
+    pedidos.push(novoPedido);
+    res.json({ success: true, pedido: novoPedido });
+});
+
+// Inicialização da porta do servidor
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+    console.log(`Servidor rodando na porta ${PORT}`);
 });
