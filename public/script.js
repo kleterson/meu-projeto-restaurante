@@ -25,8 +25,9 @@ function removerItem(index) {
 }
 
 let dadosPedidoGlobal = {};
+let intervaloVerificacao = null;
 
-function finalizarCompra() {
+async function finalizarCompra() {
     if (carrinho.length === 0) {
         alert('Seu carrinho está vazio!');
         return;
@@ -45,13 +46,52 @@ function finalizarCompra() {
         endereco,
         bairro,
         itens: [...carrinho],
-        total: carrinho.reduce((acc, item) => acc + item.preco, 0),
-        tokenMP: "APP_USR-517824253559090-073117-47dad5ef4352fb0abd9e5d717275dfa3-71867761"
+        total: carrinho.reduce((acc, item) => acc + item.preco, 0)
     };
 
-    // Ir para tela de pagamento Pix
+    // Mudar para a tela de pagamento
     document.getElementById('app-container').classList.add('hidden');
     document.getElementById('pagamento-container').classList.remove('hidden');
+
+    // Alterar o conteúdo da tela de pagamento para exibir o QR Code real
+    const containerPagamento = document.getElementById('pagamento-container');
+    containerPagamento.innerHTML = `
+        <h2>💳 Pagamento via Pix</h2>
+        <p>Gerando QR Code do Mercado Pago...</p>
+    `;
+
+    try {
+        // Pede ao servidor para criar o pagamento real no Mercado Pago
+        const resposta = await fetch('/api/criar-pagamento', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(dadosPedidoGlobal)
+        });
+        const resultado = await resposta.json();
+
+        if (resultado.qr_code_base64) {
+            containerPagamento.innerHTML = `
+                <h2>💳 Pagamento via Pix</h2>
+                <p>Escaneie o QR Code abaixo com o app do seu banco:</p>
+                <div style="margin: 15px;">
+                    <img src="data:image/jpeg;base64,${resultado.qr_code_base64}" alt="QR Code Pix" style="max-width: 200px; border-radius: 8px;">
+                </div>
+                <p style="font-size: 13px; word-break: break-all; background: rgba(0,0,0,0.3); padding: 8px; border-radius: 5px;">
+                    <b>Pix Copia e Cola:</b><br>${resultado.qr_code}
+                </p>
+                <p id="status-pagamento-pix" style="font-weight: bold; color: #f1c40f; margin-top: 15px;">
+                    ⏳ Aguardando a aprovação do pagamento...
+                </p>
+            `;
+
+            // Iniciar checagem automática do pagamento
+            iniciarVerificacaoPagamentoMP(resultado.id_pagamento);
+        } else {
+            containerPagamento.innerHTML = `<h2 style="color:red;">Erro ao gerar Pix. Tente novamente.</h2>`;
+        }
+    } catch (e) {
+        containerPagamento.innerHTML = `<h2 style="color:red;">Erro de conexão com o servidor.</h2>`;
+    }
 }
 
 // Função para tocar o som "tum tum" de confirmação de pagamento
@@ -63,7 +103,7 @@ function tocarSomSucesso() {
         const osc1 = audioCtx.createOscillator();
         const gain1 = audioCtx.createGain();
         osc1.type = 'sine';
-        osc1.frequency.setValueAtTime(440, audioCtx.currentTime); // Nota Lá
+        osc1.frequency.setValueAtTime(440, audioCtx.currentTime);
         gain1.gain.setValueAtTime(0.3, audioCtx.currentTime);
         gain1.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
         osc1.connect(gain1);
@@ -76,7 +116,7 @@ function tocarSomSucesso() {
             const osc2 = audioCtx.createOscillator();
             const gain2 = audioCtx.createGain();
             osc2.type = 'sine';
-            osc2.frequency.setValueAtTime(587.33, audioCtx.currentTime); // Nota Ré mais aguda
+            osc2.frequency.setValueAtTime(587.33, audioCtx.currentTime);
             gain2.gain.setValueAtTime(0.3, audioCtx.currentTime);
             gain2.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
             osc2.connect(gain2);
@@ -85,11 +125,37 @@ function tocarSomSucesso() {
             osc2.stop(audioCtx.currentTime + 0.2);
         }, 150);
     } catch (e) {
-        console.log("Áudio bloqueado pelo navegador até haver interação do usuário.");
+        console.log("Áudio bloqueado pelo navegador.");
     }
 }
 
-async function simularPagamentoEfetuado() {
+// Verifica periodicamente se o Pix foi pago no Mercado Pago
+function iniciarVerificacaoPagamentoMP(idPagamento) {
+    intervaloVerificacao = setInterval(async () => {
+        try {
+            const res = await fetch(`/api/verificar-pagamento/${idPagamento}`);
+            const dados = await res.json();
+
+            if (dados.status === "approved") {
+                clearInterval(intervaloVerificacao);
+
+                // Toca o som "tum tum" automaticamente
+                tocarSomSucesso();
+
+                // Salva o pedido definitivamente no painel do restaurante/motoboy
+                await registrarPedidoFinal();
+
+                // Muda para a tela de sucesso
+                document.getElementById('pagamento-container').classList.add('hidden');
+                document.getElementById('sucesso-container').classList.remove('hidden');
+            }
+        } catch (e) {
+            console.log("Aguardando confirmação...");
+        }
+    }, 4000); // Checa a cada 4 segundos
+}
+
+async function registrarPedidoFinal() {
     try {
         const response = await fetch('/api/pedidos', {
             method: 'POST',
@@ -97,20 +163,10 @@ async function simularPagamentoEfetuado() {
             body: JSON.stringify(dadosPedidoGlobal)
         });
         const resultado = await response.json();
-        
         if (resultado.success) {
-            // Toca o som "tum tum" automaticamente ao aprovar
-            tocarSomSucesso();
-
-            document.getElementById('pagamento-container').classList.add('hidden');
-            document.getElementById('sucesso-container').classList.remove('hidden');
-            
-            // Iniciar checagem de status em tempo real para o cliente
             verificarStatusPedido(resultado.pedido.id);
         }
-    } catch (e) {
-        alert('Erro ao registrar pedido no servidor.');
-    }
+    } catch (e) {}
 }
 
 async function verificarStatusPedido(idPedido) {

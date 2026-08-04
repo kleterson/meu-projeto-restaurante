@@ -1,47 +1,55 @@
-const express = require('express');
-const cors = require('cors');
-const path = require('path');
+const MERCADO_PAGO_TOKEN = "APP_USR-517824253559090-073117-47dad5ef4352fb0abd9e5d717275dfa3-71867761";
 
-const app = express();
-app.use(express.json());
-app.use(cors());
-app.use(express.static(path.join(__dirname, 'public')));
+// Rota para criar o Pix no Mercado Pago
+app.post('/api/criar-pagamento', async (req, res) => {
+    try {
+        const dados = req.body;
+        const respostaMP = await fetch('https://api.mercadopago.com/v1/payments', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${MERCADO_PAGO_TOKEN}`,
+                'Content-Type': 'application/json',
+                'X-Idempotency-Key': Date.now().toString()
+            },
+            body: JSON.stringify({
+                transaction_amount: Number(dados.total),
+                description: `Pedido de ${dados.nome} - Gonçalves Lanches`,
+                payment_method_id: 'pix',
+                payer: {
+                    email: 'cliente@goncalves.com',
+                    first_name: dados.nome
+                }
+            })
+        });
 
-// Banco de dados em memória para demonstração
-let pedidos = [];
+        const resultado = await respostaMP.json();
 
-// Rota para criar um pedido
-app.post('/api/pedidos', (req, res) => {
-    const novoPedido = {
-        id: Date.now(),
-        ...req.body,
-        status: '⏳ Aguardando o pedido ficar pronto....',
-        etapa: 1 // 1: Preparando, 2: A caminho, 3: Entregue
-    };
-    pedidos.push(novoPedido);
-    res.json({ success: true, pedido: novoPedido });
-});
-
-// Rota para listar pedidos (usada pelo motoboy)
-app.get('/api/pedidos', (req, res) => {
-    res.json(pedidos);
-});
-
-// Rota para atualizar o status do pedido (Ex: Motoboy marcou como coletado)
-app.put('/api/pedidos/:id', (req, res) => {
-    const { id } = req.params;
-    const { status, etapa } = req.body;
-    
-    const pedido = pedidos.find(p => p.id == id);
-    if (pedido) {
-        pedido.status = status;
-        pedido.etapa = etapa;
-        return res.json({ success: true, pedido });
+        if (resultado.status === 'pending' || resultado.id) {
+            res.json({
+                id_pagamento: resultado.id,
+                qr_code: resultado.point_of_interaction.transaction_data.qr_code,
+                qr_code_base64: resultado.point_of_interaction.transaction_data.qr_code_base64
+            });
+        } else {
+            res.status(400).json({ error: 'Erro ao gerar Pix no Mercado Pago', detalhes: resultado });
+        }
+    } catch (e) {
+        res.status(500).json({ error: 'Erro interno ao conectar com Mercado Pago' });
     }
-    res.status(404).json({ success: false, message: 'Pedido não encontrado' });
 });
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-    console.log(`Servidor rodando na porta ${PORT}`);
+// Rota para checar se o pagamento foi aprovado
+app.get('/api/verificar-pagamento/:id', async (req, res) => {
+    try {
+        const idPagamento = req.params.id;
+        const respostaMP = await fetch(`https://api.mercadopago.com/v1/payments/${idPagamento}`, {
+            headers: {
+                'Authorization': `Bearer ${MERCADO_PAGO_TOKEN}`
+            }
+        });
+        const resultado = await respostaMP.json();
+        res.json({ status: resultado.status }); // Retorna 'approved', 'pending', etc.
+    } catch (e) {
+        res.status(500).json({ error: 'Erro ao verificar status' });
+    }
 });
