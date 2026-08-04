@@ -5,7 +5,7 @@
     <title>Gonçalves Lanches & Refeições</title>
     <style>
         body {
-            background: linear-gradient(rgba(0, 0, 0, 0.75), rgba(0, 0, 0, 0.75)), url('fundo.jpg');
+            background: linear-gradient(rgba(0, 0, 0, 0.65), rgba(0, 0, 0, 0.65)), url('fundo.jpg');
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
@@ -15,15 +15,16 @@
             padding: 20px; 
             color: #fff;
         }
-        .container { max-width: 950px; margin: auto; background: rgba(30, 10, 10, 0.92); padding: 25px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.7); border: 2px solid #d4af37; }
+        /* Container principal com fundo mais transparente (0.75 em vez de 0.92) */
+        .container { max-width: 950px; margin: auto; background: rgba(20, 5, 5, 0.75); padding: 25px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.7); border: 2px solid #d4af37; backdrop-filter: blur(3px); }
         
         .header-title { text-align: center; margin-bottom: 25px; }
         .header-title h1 { color: #f1c40f; font-size: 32px; margin: 0; text-transform: uppercase; text-shadow: 2px 2px 4px rgba(0,0,0,0.8); }
-        .header-title p { color: #ddd; font-size: 16px; margin: 5px 0 0 0; }
+        .header-title p { color: #ddd; font-size: 16px; margin: 5px 0 0 0; text-shadow: 1px 1px 3px rgba(0,0,0,0.8); }
         
         /* Container para alinhar telefone e o botão de dashboard lado a lado */
         .header-actions { display: flex; justify-content: center; align-items: center; gap: 15px; margin-top: 10px; flex-wrap: wrap; }
-        .delivery-badge { background: #d4af37; color: #000; padding: 6px 15px; border-radius: 20px; font-weight: bold; display: inline-block; }
+        .delivery-badge { background: #d4af37; color: #000; padding: 6px 15px; border-radius: 20px; font-weight: bold; display: inline-block; box-shadow: 0 2px 5px rgba(0,0,0,0.5); }
 
         /* Botão Dashboard / Status */
         .btn-dashboard {
@@ -39,25 +40,29 @@
         }
         .btn-dashboard:hover { background: #d35400; }
 
-        h2 { color: #f1c40f; border-bottom: 2px solid #d4af37; padding-bottom: 5px; margin-top: 25px; font-size: 20px; }
+        h2 { color: #f1c40f; border-bottom: 2px solid #d4af37; padding-bottom: 5px; margin-top: 25px; font-size: 20px; text-shadow: 1px 1px 3px rgba(0,0,0,0.8); }
         
         .menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
         @media (max-width: 768px) { .menu-grid { grid-template-columns: 1fr; } }
 
-        .category { background: rgba(50, 15, 15, 0.85); padding: 15px; border-radius: 8px; border: 1px solid #a0522d; }
-        .item { display: flex; justify-content: space-between; margin-bottom: 10px; background: rgba(70, 20, 20, 0.9); padding: 10px; border-radius: 6px; border: 1px solid #b8860b; align-items: center;}
+        /* Categorias com fundo mais transparente (0.65) para ver bem a imagem */
+        .category { background: rgba(40, 10, 10, 0.65); padding: 15px; border-radius: 8px; border: 1px solid rgba(160, 82, 45, 0.8); backdrop-filter: blur(2px); }
         
-        button { background: #27ae60; color: white; border: none; padding: 8px 14px; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        /* Itens individuais mais transparentes (0.7) */
+        .item { display: flex; justify-content: space-between; margin-bottom: 10px; background: rgba(55, 15, 15, 0.7); padding: 10px; border-radius: 6px; border: 1px solid rgba(184, 134, 11, 0.7); align-items: center;}
+        
+        button { background: #27ae60; color: white; border: none; padding: 8px 14px; border-radius: 5px; cursor: pointer; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.4); }
         button:hover { background: #219653; }
         
-        .cart { background: rgba(40, 10, 10, 0.95); padding: 20px; border-radius: 8px; margin-top: 25px; border: 1px solid #f1c40f; }
+        /* Carrinho com transparência equilibrada */
+        .cart { background: rgba(30, 8, 8, 0.75); padding: 20px; border-radius: 8px; margin-top: 25px; border: 1px solid #f1c40f; backdrop-filter: blur(2px); }
         .cart ul { padding-left: 20px; color: #fdfdfd; }
         .hidden { display: none !important; }
         
-        input { width: 100%; padding: 10px; margin: 5px 0 15px 0; border: 1px solid #d4af37; background: #fff; border-radius: 5px; box-sizing: border-box; color: #000; font-size: 14px;}
-        label { color: #f1c40f; font-weight: bold; font-size: 14px; }
+        input { width: 100%; padding: 10px; margin: 5px 0 15px 0; border: 1px solid #d4af37; background: rgba(255, 255, 255, 0.9); border-radius: 5px; box-sizing: border-box; color: #000; font-size: 14px;}
+        label { color: #f1c40f; font-weight: bold; font-size: 14px; text-shadow: 1px 1px 2px rgba(0,0,0,0.8); }
         
-        .obs-acompanha { background: #f39c12; color: #000; padding: 10px; border-radius: 5px; font-size: 13px; font-weight: bold; text-align: center; margin-bottom: 15px; }
+        .obs-acompanha { background: rgba(243, 156, 18, 0.85); color: #000; padding: 10px; border-radius: 5px; font-size: 13px; font-weight: bold; text-align: center; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.4); }
 
         /* Animação dos pontinhos piscando */
         @keyframes piscar {
@@ -204,7 +209,7 @@
     " style="background: #3498db; color: white; border: none; margin-bottom: 20px; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold; font-size: 14px;">← Voltar para o Cardápio</button>
     
     <h2 style="color: #27ae60; font-size: 24px;">Obrigado pelas compras, volte sempre! 😊</h2>
-    <p id="status-pedido-texto" style="font-size: 20px; font-weight: bold; margin-top: 25px; color: #e74c3c;">
+    <p id="status-pedido-texto" style="font-size: 20px; font-weight: bold; margin-top: 25px; color: #ff6b6b; text-shadow: 1px 1px 3px rgba(0,0,0,0.9);">
         ⏳ Aguardando o pedido ficar pronto<span class="pontos-animados"><span>.</span><span>.</span><span>.</span></span>
     </p>
 </div>
