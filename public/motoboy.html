@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Painel do Motoboy - Entregas</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #333; color: white; padding: 20px; }
+        .container { max-width: 800px; margin: auto; }
+        .card { background: #444; padding: 15px; border-radius: 6px; margin-bottom: 15px; border-left: 5px solid #ffc107; }
+        button { background: #28a745; color: white; border: none; padding: 10px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        button:hover { background: #218838; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>Painel de Entregas - Motoboy</h1>
+    <div id="pedidos-lista">Carregando pedidos...</div>
+</div>
+
+<script>
+    async function carregarPedidos() {
+        try {
+            const res = await fetch('/api/pedidos');
+            const pedidos = await res.json();
+            const container = document.getElementById('pedidos-lista');
+            
+            if (pedidos.length === 0) {
+                container.innerHTML = '<p>Nenhum pedido no momento.</p>';
+                return;
+            }
+
+            container.innerHTML = '';
+            pedidos.forEach(p => {
+                let itensStr = p.itens.map(i => `${i.nome}`).join(', ');
+                container.innerHTML += `
+                    <div class="card">
+                        <h3>Cliente: ${p.nome}</h3>
+                        <p><strong>Endereço:</strong> ${p.endereco}, ${p.bairro}</p>
+                        <p><strong>Itens:</strong> ${itensStr}</p>
+                        <p><strong>Status Atual:</strong> <span style="color: #ffc107;">${p.status}</span></p>
+                        ${p.etapa === 1 ? `<button onclick="marcarColetado(${p.id})">Coletar Pedido (A Caminho)</button>` : '<p style="color: #28a745; font-weight: bold;">✔ Pedido Coletado / A Caminho</p>'}
+                    </div>
+                `;
+            });
+        } catch (e) {
+            console.error('Erro ao buscar pedidos');
+        }
+    }
+
+    async function marcarColetado(id) {
+        await fetch(`/api/pedidos/${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status: 'Motoboy está a caminho do endereço!', etapa: 2 })
+        });
+        carregarPedidos();
+    }
+
+    // Atualiza a cada 3 segundos automaticamente
+    setInterval(carregarPedidos, 3000);
+    carregarPedidos();
+</script>
+</body>
+</html>
