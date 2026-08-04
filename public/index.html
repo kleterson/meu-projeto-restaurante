@@ -59,10 +59,34 @@
         .cart ul { padding-left: 20px; color: #fdfdfd; }
         .hidden { display: none !important; }
         
-        input { width: 100%; padding: 10px; margin: 5px 0 15px 0; border: 1px solid #d4af37; background: rgba(255, 255, 255, 0.9); border-radius: 5px; box-sizing: border-box; color: #000; font-size: 14px;}
+        input, select { width: 100%; padding: 10px; margin: 5px 0 15px 0; border: 1px solid #d4af37; background: rgba(255, 255, 255, 0.9); border-radius: 5px; box-sizing: border-box; color: #000; font-size: 14px;}
         label { color: #f1c40f; font-weight: bold; font-size: 14px; text-shadow: 1px 1px 2px rgba(0,0,0,0.8); }
         
         .obs-acompanha { background: rgba(243, 156, 18, 0.85); color: #000; padding: 10px; border-radius: 5px; font-size: 13px; font-weight: bold; text-align: center; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.4); }
+
+        /* Estilo específico para o campo e botão Pix Copia e Cola */
+        .pix-copia-cola-box {
+            background: rgba(0, 0, 0, 0.5);
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            border: 1px solid #d4af37;
+        }
+        .btn-copiar-pix {
+            background-color: #27ae60;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            font-size: 14px;
+            font-weight: bold;
+            border-radius: 5px;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.4);
+            margin-top: 8px;
+        }
+        .btn-copiar-pix:hover {
+            background-color: #219653;
+        }
 
         /* Animação dos pontinhos piscando */
         @keyframes piscar {
@@ -185,19 +209,44 @@
         <label>Bairro:</label>
         <input type="text" id="cliente-bairro" placeholder="Seu bairro">
 
+        <!-- NOVA SEÇÃO DE FORMA DE PAGAMENTO -->
+        <h3>💳 Forma de Pagamento</h3>
+        <label>Escolha a forma de pagamento:</label>
+        <select id="forma-pagamento" onchange="verificarFormaPagamento()">
+            <option value="Pix">Pix</option>
+            <option value="Dinheiro">Dinheiro</option>
+            <option value="Cartão">Cartão (Na Entrega)</option>
+        </select>
+
+        <!-- Campo dinâmico para troco em dinheiro -->
+        <div id="campo-troco" class="hidden" style="margin-top: 10px; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 5px; border: 1px dashed #d4af37;">
+            <label>Troco para quanto? (Ex: 50.00)</label>
+            <input type="number" id="valor-troco" placeholder="Digite o valor em dinheiro que vai pagar">
+        </div>
+
         <br>
         <button onclick="finalizarCompra()" style="background: #e67e22; font-size: 16px; width: 100%; padding: 12px; margin-top: 10px;">Comprar Agora</button>
     </div>
 </div>
 
-<!-- Tela de Pagamento / Pix -->
+<!-- Tela de Pagamento / Pix (Aparece se escolher Pix) -->
 <div class="container hidden" id="pagamento-container" style="text-align: center;">
     <h2>💳 Pagamento via Pix</h2>
-    <p>Escaneie o QR Code abaixo para pagar:</p>
+    <p>Escaneie o QR Code abaixo com o app do seu banco:</p>
     <div style="margin: 20px;">
         <img src="https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=PixFicticioGoncalvesRefeicoes" alt="QR Code Pix">
     </div>
-    <button onclick="simularPagamentoEfetuado()" style="background: #f1c40f; color: black; font-weight: bold; width: 100%; padding: 14px; font-size: 16px;">Simular que o Pagamento foi Concluído</button>
+    
+    <!-- Bloco Pix Copia e Cola com o botão verde -->
+    <div class="pix-copia-cola-box">
+        <p style="margin: 0 0 8px 0; font-size: 14px; color: #f1c40f; font-weight: bold;">Pix Copia e Cola:</p>
+        <!-- Campo de texto contendo o código Pix -->
+        <input type="text" id="texto-pix-copia" value="00020126580014br.gov.bcb.pix0136f4d5233b-f182-4216-oed3-9c9344a7ec49520400005303986540516.005802BR5914KLETERSONALLAN6010So Vicente62250521mpqringer17117231841763046C5A" readonly style="font-size: 12px; text-align: center; margin-bottom: 5px;">
+        <!-- Botão verde pequeno para copiar -->
+        <button onclick="copiarCodigoPix()" class="btn-copiar-pix">📋 Copiar Código Pix</button>
+    </div>
+
+    <button onclick="simularPagamentoEfetuado()" style="background: #f1c40f; color: black; font-weight: bold; width: 100%; padding: 14px; font-size: 16px; margin-top: 10px;">Simular que o Pagamento foi Concluído</button>
 </div>
 
 <!-- Tela de Sucesso e Acompanhamento -->
@@ -213,6 +262,36 @@
         ⏳ Aguardando o pedido ficar pronto<span class="pontos-animados"><span>.</span><span>.</span><span>.</span></span>
     </p>
 </div>
+
+<!-- Funções JavaScript -->
+<script>
+    // Função para mostrar ou esconder o campo de troco conforme a escolha do select
+    function verificarFormaPagamento() {
+        const formaPagamento = document.getElementById('forma-pagamento').value;
+        const campoTroco = document.getElementById('campo-troco');
+        
+        if (formaPagamento === 'Dinheiro') {
+            campoTroco.classList.remove('hidden');
+        } else {
+            campoTroco.classList.add('hidden');
+            document.getElementById('valor-troco').value = ''; // Limpa o campo se mudar de ideia
+        }
+    }
+
+    // Função para copiar o código Pix
+    function copiarCodigoPix() {
+        const inputPix = document.getElementById('texto-pix-copia');
+        
+        inputPix.select();
+        inputPix.setSelectionRange(0, 99999); 
+        
+        navigator.clipboard.writeText(inputPix.value).then(() => {
+            alert('Código Pix copiado com sucesso!');
+        }).catch(err => {
+            console.error('Erro ao copiar o código Pix: ', err);
+        });
+    }
+</script>
 
 <script src="script.js"></script>
 </body>
