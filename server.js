@@ -79,6 +79,20 @@ app.post('/api/pedidos', (req, res) => {
     res.json({ success: true, pedido: novoPedido });
 });
 
+// Rota para atualizar o status do pedido pelo painel do motoboy
+app.put('/api/pedidos/:id', (req, res) => {
+    const idPedido = Number(req.params.id);
+    const novoStatus = req.body.status;
+    
+    const pedido = pedidos.find(p => p.id === idPedido);
+    if (pedido) {
+        pedido.status = novoStatus;
+        res.json({ success: true, pedido });
+    } else {
+        res.status(404).json({ error: 'Pedido não encontrado' });
+    }
+});
+
 // Inicialização da porta do servidor
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
