@@ -17,35 +17,32 @@
         }
         .container { max-width: 950px; margin: auto; background: rgba(30, 10, 10, 0.92); padding: 25px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.7); border: 2px solid #d4af37; }
         
-        .header-title { text-align: center; margin-bottom: 25px; position: relative; }
+        .header-title { text-align: center; margin-bottom: 25px; }
         .header-title h1 { color: #f1c40f; font-size: 32px; margin: 0; text-transform: uppercase; text-shadow: 2px 2px 4px rgba(0,0,0,0.8); }
         .header-title p { color: #ddd; font-size: 16px; margin: 5px 0 0 0; }
-        .delivery-badge { background: #d4af37; color: #000; display: inline-block; padding: 6px 15px; border-radius: 20px; font-weight: bold; margin-top: 10px; }
+        
+        /* Container para alinhar telefone e o botão de dashboard lado a lado */
+        .header-actions { display: flex; justify-content: center; align-items: center; gap: 15px; margin-top: 10px; flex-wrap: wrap; }
+        .delivery-badge { background: #d4af37; color: #000; padding: 6px 15px; border-radius: 20px; font-weight: bold; display: inline-block; }
 
-        /* Botão flutuante para voltar ao status do pedido */
-        .btn-acompanhar-topo {
-            position: absolute;
-            top: 0;
-            right: 0;
+        /* Botão Dashboard */
+        .btn-dashboard {
             background: #e67e22;
             color: white;
             border: none;
-            padding: 8px 12px;
-            border-radius: 6px;
+            padding: 6px 15px;
+            border-radius: 20px;
             cursor: pointer;
             font-weight: bold;
-            font-size: 13px;
+            font-size: 14px;
             box-shadow: 0 2px 5px rgba(0,0,0,0.5);
         }
-        .btn-acompanhar-topo:hover { background: #d35400; }
+        .btn-dashboard:hover { background: #d35400; }
 
         h2 { color: #f1c40f; border-bottom: 2px solid #d4af37; padding-bottom: 5px; margin-top: 25px; font-size: 20px; }
         
         .menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-        @media (max-width: 768px) { 
-            .menu-grid { grid-template-columns: 1fr; } 
-            .btn-acompanhar-topo { position: static; margin-bottom: 15px; display: block; width: 100%; }
-        }
+        @media (max-width: 768px) { .menu-grid { grid-template-columns: 1fr; } }
 
         .category { background: rgba(50, 15, 15, 0.85); padding: 15px; border-radius: 8px; border: 1px solid #a0522d; }
         .item { display: flex; justify-content: space-between; margin-bottom: 10px; background: rgba(70, 20, 20, 0.9); padding: 10px; border-radius: 6px; border: 1px solid #b8860b; align-items: center;}
@@ -82,10 +79,12 @@
 <body>
 <div class="container" id="app-container">
     <div class="header-title">
-        <button class="btn-acompanhar-topo hidden" id="btn-voltar-status" onclick="mostrarTelaSucesso()">🔄 Ver Meu Pedido</button>
         <h1>Gonçalves Lanches & Refeições</h1>
         <p>Mais sabor, mais qualidade, melhor preço!</p>
-        <div class="delivery-badge">📞 Delivery: (13) 98151-5612</div>
+        <div class="header-actions">
+            <div class="delivery-badge">📞 Delivery: (13) 98151-5612</div>
+            <button class="btn-dashboard hidden" id="btn-voltar-status" onclick="mostrarTelaSucesso()">📊 Dashboard</button>
+        </div>
     </div>
 
     <div class="obs-acompanha">
