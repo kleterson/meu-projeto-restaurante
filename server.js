@@ -76,7 +76,6 @@ function selecionarPagamento(tipo) {
         document.getElementById('bloco-pix').classList.remove('hidden');
     } else if (tipo === 'Dinheiro') {
         document.getElementById('pag-dinheiro').classList.add('selecionado');
-        document.getElementById('bloco-dinheiro').classList.remove('hidden'); // Corrigido abaixo
         document.getElementById('bloco-troco').classList.remove('hidden');
     } else if (tipo === 'Cartão') {
         document.getElementById('pag-cartao').classList.add('selecionado');
