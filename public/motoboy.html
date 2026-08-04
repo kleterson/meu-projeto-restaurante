@@ -32,11 +32,24 @@
             container.innerHTML = '';
             pedidos.forEach(p => {
                 let itensStr = p.itens.map(i => `${i.nome}`).join(', ');
+
+                // Lógica de cores e textos para a Forma de Pagamento
+                let htmlPagamento = '';
+                if (p.formaPagamento && p.formaPagamento.includes('Dinheiro')) {
+                    htmlPagamento = `<p><strong>Forma de Pagamento:</strong> <span style="color: #ff4d4d; font-weight: bold;">Pagamento em Dinheiro (${p.formaPagamento})</span></p>`;
+                } else if (p.formaPagamento && p.formaPagamento.includes('Cartão')) {
+                    htmlPagamento = `<p><strong>Forma de Pagamento:</strong> <span style="color: #ff4d4d; font-weight: bold;">Pagamento na Maquininha (Cartão)</span></p>`;
+                } else {
+                    htmlPagamento = `<p><strong>Forma de Pagamento:</strong> <span style="color: #28a745; font-weight: bold;">Pago pelo app (Pix)</span></p>`;
+                }
+
                 container.innerHTML += `
                     <div class="card">
                         <h3>Cliente: ${p.nome}</h3>
                         <p><strong>Endereço:</strong> ${p.endereco}, ${p.bairro}</p>
                         <p><strong>Itens:</strong> ${itensStr}</p>
+                        <p><strong>Total:</strong> R$ ${p.total.toFixed(2)}</p>
+                        ${htmlPagamento}
                         <p><strong>Status Atual:</strong> <span style="color: #ffc107;">${p.status}</span></p>
                         ${p.status !== "Motoboy a caminho do seu endereço 🛵" ? `<button onclick="marcarMotoboyACaminho(${p.id})">📦 Enviar Motoboy</button>` : '<p style="color: #28a745; font-weight: bold;">✔ Motoboy a caminho do endereço</p>'}
                     </div>
