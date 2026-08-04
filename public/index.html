@@ -2,10 +2,10 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>Cardápio Online - Restaurante</title>
+    <title>Gonçalves Lanches & Refeições</title>
     <style>
         body {
-            background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('fundo.jpg');
+            background: linear-gradient(rgba(0, 0, 0, 0.75), rgba(0, 0, 0, 0.75)), url('fundo.jpg');
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
@@ -13,84 +13,152 @@
             font-family: Arial, sans-serif; 
             margin: 0; 
             padding: 20px; 
+            color: #fff;
         }
-        .container { max-width: 900px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        h1, h2, h3 { color: #333; }
-        .menu-section { display: flex; gap: 20px; margin-bottom: 20px; }
-        .category { flex: 1; background: #fafafa; padding: 15px; border-radius: 6px; border: 1px solid #ddd; }
-        .item { display: flex; justify-content: space-between; margin-bottom: 10px; background: #fff; padding: 10px; border-radius: 4px; border: 1px solid #eee; align-items: center;}
-        button { background: #28a745; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; }
-        button:hover { background: #218838; }
-        .cart { background: #e9ecef; padding: 15px; border-radius: 6px; margin-top: 20px; }
+        .container { max-width: 950px; margin: auto; background: rgba(30, 10, 10, 0.92); padding: 25px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.7); border: 2px solid #d4af37; }
+        
+        .header-title { text-align: center; margin-bottom: 25px; }
+        .header-title h1 { color: #f1c40f; font-size: 32px; margin: 0; text-transform: uppercase; text-shadow: 2px 2px 4px rgba(0,0,0,0.8); }
+        .header-title p { color: #ddd; font-size: 16px; margin: 5px 0 0 0; }
+        .delivery-badge { background: #d4af37; color: #000; display: inline-block; padding: 6px 15px; border-radius: 20px; font-weight: bold; margin-top: 10px; }
+
+        h2 { color: #f1c40f; border-bottom: 2px solid #d4af37; padding-bottom: 5px; margin-top: 25px; font-size: 20px; }
+        
+        .menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        @media (max-width: 768px) { .menu-grid { grid-template-columns: 1fr; } }
+
+        .category { background: rgba(50, 15, 15, 0.85); padding: 15px; border-radius: 8px; border: 1px solid #a0522d; }
+        .item { display: flex; justify-content: space-between; margin-bottom: 10px; background: rgba(70, 20, 20, 0.9); padding: 10px; border-radius: 6px; border: 1px solid #b8860b; align-items: center;}
+        
+        button { background: #27ae60; color: white; border: none; padding: 8px 14px; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        button:hover { background: #219653; }
+        
+        .cart { background: rgba(40, 10, 10, 0.95); padding: 20px; border-radius: 8px; margin-top: 25px; border: 1px solid #f1c40f; }
+        .cart ul { padding-left: 20px; color: #fdfdfd; }
         .hidden { display: none !important; }
-        input { width: 100%; padding: 8px; margin: 5px 0 15px 0; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;}
+        
+        input { width: 100%; padding: 10px; margin: 5px 0 15px 0; border: 1px solid #d4af37; background: #fff; border-radius: 5px; box-sizing: border-box; color: #000; font-size: 14px;}
+        label { color: #f1c40f; font-weight: bold; font-size: 14px; }
+        
+        .obs-acompanha { background: #f39c12; color: #000; padding: 10px; border-radius: 5px; font-size: 13px; font-weight: bold; text-align: center; margin-bottom: 15px; }
     </style>
 </head>
 <body>
 <div class="container" id="app-container">
-    <h1>Restaurante Delícia - Cardápio</h1>
+    <div class="header-title">
+        <h1>Gonçalves Lanches & Refeições</h1>
+        <p>Mais sabor, mais qualidade, melhor preço!</p>
+        <div class="delivery-badge">📞 Delivery: (13) 98151-5612</div>
+    </div>
 
-    <div class="menu-section">
-        <!-- Pratos -->
+    <div class="obs-acompanha">
+        🍽️ TODOS OS PRATOS E MARMITAS ACOMPANHAM: Arroz, Feijão, Macarrão, Farofa, Batata Frita e Salada!
+    </div>
+
+    <div class="menu-grid">
+        <!-- PRATO DO DIA -->
         <div class="category">
-            <h2>Pratos</h2>
+            <h2>Prato do Dia</h2>
             <div class="item">
-                <span>Prato Executivo Frango - R$ 25,00</span>
-                <button onclick="adicionarAoCarrinho('Prato Executivo Frango', 25)">Adicionar</button>
+                <span>Frango Milanesa c/ Creme de Milho - <strong>R$ 16,00</strong></span>
+                <button onclick="adicionarAoCarrinho('Prato do Dia: Frango Milanesa c/ Creme de Milho', 16)">Adicionar</button>
+            </div>
+
+            <h2>Marmitas Econômicas</h2>
+            <div class="item">
+                <span>Calabresa Acebolada - <strong>R$ 10,00</strong></span>
+                <button onclick="adicionarAoCarrinho('Marmita Econômica: Calabresa Acebolada', 10)">Adicionar</button>
             </div>
             <div class="item">
-                <span>Strogonoff de Carne - R$ 32,00</span>
-                <button onclick="adicionarAoCarrinho('Strogonoff de Carne', 32)">Adicionar</button>
+                <span>Frango Milanesa - <strong>R$ 10,00</strong></span>
+                <button onclick="adicionarAoCarrinho('Marmita Econômica: Frango Milanesa', 10)">Adicionar</button>
+            </div>
+            <div class="item">
+                <span>Toscana - <strong>R$ 10,00</strong></span>
+                <button onclick="adicionarAoCarrinho('Marmita Econômica: Toscana', 10)">Adicionar</button>
+            </div>
+            <div class="item">
+                <span>Fígado Acebolado - <strong>R$ 10,00</strong></span>
+                <button onclick="adicionarAoCarrinho('Marmita Econômica: Fígado Acebolado', 10)">Adicionar</button>
+            </div>
+            <div class="item">
+                <span>Nuggets - <strong>R$ 10,00</strong></span>
+                <button onclick="adicionarAoCarrinho('Marmita Econômica: Nuggets', 10)">Adicionar</button>
+            </div>
+            <div class="item">
+                <span>Omelete Simples - <strong>R$ 10,00</strong></span>
+                <button onclick="adicionarAoCarrinho('Marmita Econômica: Omelete Simples', 10)">Adicionar</button>
             </div>
         </div>
 
-        <!-- Bebidas -->
+        <!-- MARMITAS COMPLETAS G & ADICIONAIS -->
         <div class="category">
-            <h2>Bebidas</h2>
-            <div class="item">
-                <span>Coca-Cola Lata - R$ 6,00</span>
-                <button onclick="adicionarAoCarrinho('Coca-Cola Lata', 6)">Adicionar</button>
-            </div>
-            <div class="item">
-                <span>Suco Natural de Laranja - R$ 8,00</span>
-                <button onclick="adicionarAoCarrinho('Suco Natural de Laranja', 8)">Adicionar</button>
-            </div>
+            <h2>Marmitas Completas G</h2>
+            <div class="item"><span>Filé Grelhado - <strong>R$ 14,00</strong></span><button onclick="adicionarAoCarrinho('Marmita G: Filé Grelhado', 14)">Adicionar</button></div>
+            <div class="item"><span>Frango a Milanesa - <strong>R$ 16,00</strong></span><button onclick="adicionarAoCarrinho('Marmita G: Frango a Milanesa', 16)">Adicionar</button></div>
+            <div class="item"><span>Calabresa Acebolada - <strong>R$ 15,00</strong></span><button onclick="adicionarAoCarrinho('Marmita G: Calabresa Acebolada', 15)">Adicionar</button></div>
+            <div class="item"><span>Toscana Acebolada - <strong>R$ 15,00</strong></span><button onclick="adicionarAoCarrinho('Marmita G: Toscana Acebolada', 15)">Adicionar</button></div>
+            <div class="item"><span>Bisteca com Ovo - <strong>R$ 15,00</strong></span><button onclick="adicionarAoCarrinho('Marmita G: Bisteca com Ovo', 15)">Adicionar</button></div>
+            <div class="item"><span>Fígado Acebolado - <strong>R$ 15,00</strong></span><button onclick="adicionarAoCarrinho('Marmita G: Fígado Acebolado', 15)">Adicionar</button></div>
+            <div class="item"><span>Omelete Recheado - <strong>R$ 16,00</strong></span><button onclick="adicionarAoCarrinho('Marmita G: Omelete Recheado', 16)">Adicionar</button></div>
+            <div class="item"><span>Frango Parmegiana - <strong>R$ 20,00</strong></span><button onclick="adicionarAoCarrinho('Marmita G: Frango Parmegiana', 20)">Adicionar</button></div>
+            <div class="item"><span>Contra Filé Acebolado - <strong>R$ 23,00</strong></span><button onclick="adicionarAoCarrinho('Marmita G: Contra Filé Acebolado', 23)">Adicionar</button></div>
+            <div class="item"><span>Contra Filé Parmegiana - <strong>R$ 25,00</strong></span><button onclick="adicionarAoCarrinho('Marmita G: Contra Filé Parmegiana', 25)">Adicionar</button></div>
+            <div class="item"><span>Contra Filé com Ovo - <strong>R$ 25,00</strong></span><button onclick="adicionarAoCarrinho('Marmita G: Contra Filé com Ovo', 25)">Adicionar</button></div>
+        </div>
+    </div>
+
+    <!-- BEBIDAS E ADICIONAIS -->
+    <div style="margin-top: 20px;" class="menu-grid">
+        <div class="category">
+            <h2>Adicionais</h2>
+            <div class="item"><span>Porção Batata Frita - <strong>R$ 4,00</strong></span><button onclick="adicionarAoCarrinho('Adicional: Batata Frita', 4)">Adicionar</button></div>
+            <div class="item"><span>Ovo Extra - <strong>R$ 4,00</strong></span><button onclick="adicionarAoCarrinho('Adicional: Ovo', 4)">Adicionar</button></div>
+            <div class="item"><span>Mistura Extra - <strong>R$ 9,00</strong></span><button onclick="adicionarAoCarrinho('Adicional: Mistura', 9)">Adicionar</button></div>
+        </div>
+
+        <div class="category">
+            <h2>Bebidas (Sucos e Refrigerantes)</h2>
+            <div class="item"><span>Coca-Cola Lata - <strong>R$ 6,00</strong></span><button onclick="adicionarAoCarrinho('Coca-Cola Lata', 6)">Adicionar</button></div>
+            <div class="item"><span>Guaraná Lata - <strong>R$ 6,00</strong></span><button onclick="adicionarAoCarrinho('Guaraná Lata', 6)">Adicionar</button></div>
+            <div class="item"><span>Fanta Lata - <strong>R$ 6,00</strong></span><button onclick="adicionarAoCarrinho('Fanta Lata', 6)">Adicionar</button></div>
+            <div class="item"><span>Suco Natural (Laranja/Outros) - <strong>R$ 8,00</strong></span><button onclick="adicionarAoCarrinho('Suco Natural', 8)">Adicionar</button></div>
         </div>
     </div>
 
     <!-- Carrinho de Compras -->
     <div class="cart">
-        <h2>Seu Carrinho</h2>
+        <h2>🛒 Seu Carrinho</h2>
         <ul id="lista-carrinho"></ul>
-        <p><strong>Total: R$ <span id="total-carrinho">0.00</span></strong></p>
+        <p style="font-size: 18px;"><strong>Total: R$ <span id="total-carrinho">0.00</span></strong></p>
         
-        <h3>Dados para Entrega</h3>
+        <h3>📍 Dados para Entrega</h3>
         <label>Nome:</label>
         <input type="text" id="cliente-nome" placeholder="Seu nome completo">
         <label>Endereço:</label>
-        <input type="text" id="cliente-endereco" placeholder="Rua, Número">
+        <input type="text" id="cliente-endereco" placeholder="Rua e Número">
         <label>Bairro:</label>
         <input type="text" id="cliente-bairro" placeholder="Seu bairro">
 
         <br>
-        <button onclick="finalizarCompra()" style="background: #007bff; font-size: 16px; padding: 10px 20px;">Comprar</button>
+        <button onclick="finalizarCompra()" style="background: #e67e22; font-size: 16px; width: 100%; padding: 12px; margin-top: 10px;">Comprar Agora</button>
     </div>
 </div>
 
 <!-- Tela de Pagamento / Pix -->
-<div class="container hidden" id="pagamento-container">
-    <h2>Pagamento via Pix</h2>
+<div class="container hidden" id="pagamento-container" style="text-align: center;">
+    <h2>💳 Pagamento via Pix</h2>
     <p>Escaneie o QR Code abaixo para pagar:</p>
-    <div style="text-align: center; margin: 20px;">
-        <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=PixFicticioRestaurante" alt="QR Code Pix">
+    <div style="margin: 20px;">
+        <img src="https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=PixFicticioGoncalvesRefeicoes" alt="QR Code Pix">
     </div>
-    <button onclick="simularPagamentoEfetuado()" style="background: #ffc107; color: black; font-weight: bold; width: 100%; padding: 12px;">Simular que o Pagamento foi Concluído</button>
+    <button onclick="simularPagamentoEfetuado()" style="background: #f1c40f; color: black; font-weight: bold; width: 100%; padding: 14px; font-size: 16px;">Simular que o Pagamento foi Concluído</button>
 </div>
 
 <!-- Tela de Sucesso e Acompanhamento -->
 <div class="container hidden" id="sucesso-container" style="text-align: center;">
-    <h2 style="color: #28a745;">Obrigado pelas compras, volte sempre! 😊</h2>
-    <p id="status-pedido-texto" style="font-size: 18px; font-weight: bold; margin-top: 20px; color: #d9534f;">Pedido sendo empacotado...</p>
+    <h2 style="color: #27ae60; font-size: 24px;">Obrigado pelas compras, volte sempre! 😊</h2>
+    <p id="status-pedido-texto" style="font-size: 20px; font-weight: bold; margin-top: 25px; color: #e74c3c;">Pedido sendo empacotado...</p>
 </div>
 
 <script src="script.js"></script>
