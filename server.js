@@ -15,7 +15,7 @@ app.post('/api/pedidos', (req, res) => {
     const novoPedido = {
         id: Date.now(),
         ...req.body,
-        status: 'Aguardando Pagamento / Empacotando',
+        status: 'Seu pedido esta sendo embalado, aguarde.....',
         etapa: 1 // 1: Preparando, 2: A caminho, 3: Entregue
     };
     pedidos.push(novoPedido);
