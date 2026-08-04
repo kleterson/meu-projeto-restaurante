@@ -36,7 +36,7 @@ async function finalizarCompra() {
     const endereco = document.getElementById('cliente-endereco').value;
     const bairro = document.getElementById('cliente-bairro').value;
     const formaPagamento = document.getElementById('forma-pagamento').value;
-    let informacaoTroco = "Não precisa";
+    let informacaoPagamento = "";
 
     if (!nome || !endereco || !bairro) {
         alert('Por favor, preencha nome, endereço e bairro!');
@@ -45,7 +45,7 @@ async function finalizarCompra() {
 
     const totalCarrinho = carrinho.reduce((acc, item) => acc + item.preco, 0);
 
-    // Validação e cálculo do troco se for dinheiro
+    // Validação se for Dinheiro
     if (formaPagamento === 'Dinheiro') {
         const valorDinheiroInput = document.getElementById('valor-troco').value;
         if (!valorDinheiroInput) {
@@ -58,14 +58,18 @@ async function finalizarCompra() {
             return;
         }
         const trocoCalculado = valorDinheiro - totalCarrinho;
-        informacaoTroco = `Dinheiro (Vai pagar com R$ ${valorDinheiro.toFixed(2)} | Troco: R$ ${trocoCalculado.toFixed(2)})`;
+        informacaoPagamento = `Dinheiro (Vai pagar com R$ ${valorDinheiro.toFixed(2)} | Troco: R$ ${trocoCalculado.toFixed(2)})`;
+    } 
+    // Se for Cartão (Faz o mesmo caminho do dinheiro, direto para a cozinha/motoboy)
+    else if (formaPagamento === 'Cartão (Na Entrega)') {
+        informacaoPagamento = `Cartão na Entrega (Maquininha Motoca)`;
     }
 
     dadosPedidoGlobal = {
         nome,
         endereco,
         bairro,
-        formaPagamento: informacaoTroco,
+        formaPagamento: informacaoPagamento || formaPagamento,
         itens: [...carrinho],
         total: totalCarrinho
     };
@@ -76,11 +80,11 @@ async function finalizarCompra() {
 
     const containerPagamento = document.getElementById('pagamento-container');
 
-    // SE A FORMA DE PAGAMENTO FOR DINHEIRO OU CARTÃO (Não usa Pix do Mercado Pago)
+    // SE FOR DINHEIRO OU CARTÃO (Vai direto para o sistema sem abrir QR Code Pix)
     if (formaPagamento === 'Dinheiro' || formaPagamento === 'Cartão (Na Entrega)') {
         containerPagamento.innerHTML = `
             <h2>💳 Pedido Realizado com Sucesso!</h2>
-            <p style="font-size: 18px; color: #f1c40f; margin: 20px 0;">Forma de Pagamento: <b>${formaPagamento === 'Dinheiro' ? informacaoTroco : 'Cartão na Entrega'}</b></p>
+            <p style="font-size: 18px; color: #f1c40f; margin: 20px 0;">Forma de Pagamento: <b>${informacaoPagamento}</b></p>
             <p>Registrando seu pedido na cozinha...</p>
         `;
         
@@ -94,7 +98,7 @@ async function finalizarCompra() {
         return;
     }
 
-    // SE FOR PIX (Integração com Mercado Pago e botão Copia e Cola)
+    // SE FOR PIX (Gera QR Code do Mercado Pago)
     containerPagamento.innerHTML = `
         <h2>💳 Pagamento via Pix</h2>
         <p>Gerando QR Code do Mercado Pago...</p>
@@ -116,7 +120,6 @@ async function finalizarCompra() {
                     <img src="data:image/jpeg;base64,${resultado.qr_code_base64}" alt="QR Code Pix" style="max-width: 200px; border-radius: 8px;">
                 </div>
                 
-                <!-- Bloco Pix Copia e Cola com o botão verde pequeno -->
                 <div class="pix-copia-cola-box" style="background: rgba(0, 0, 0, 0.5); padding: 12px; border-radius: 6px; margin-bottom: 15px; border: 1px solid #d4af37;">
                     <p style="margin: 0 0 8px 0; font-size: 14px; color: #f1c40f; font-weight: bold;">Pix Copia e Cola:</p>
                     <input type="text" id="texto-pix-copia" value="${resultado.qr_code}" readonly style="font-size: 12px; text-align: center; margin-bottom: 5px; width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #ccc;">
@@ -137,7 +140,6 @@ async function finalizarCompra() {
     }
 }
 
-// Função para copiar o código Pix pelo botão verde
 function copiarCodigoPix() {
     const inputPix = document.getElementById('texto-pix-copia');
     inputPix.select();
@@ -150,7 +152,6 @@ function copiarCodigoPix() {
     });
 }
 
-// Função para tocar o som "tum tum" de confirmação de pagamento
 function tocarSomSucesso() {
     try {
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -183,7 +184,6 @@ function tocarSomSucesso() {
     }
 }
 
-// Verifica periodicamente se o Pix foi pago no Mercado Pago
 function iniciarVerificacaoPagamentoMP(idPagamento) {
     intervaloVerificacao = setInterval(async () => {
         try {
@@ -192,7 +192,6 @@ function iniciarVerificacaoPagamentoMP(idPagamento) {
 
             if (dados.status === "approved") {
                 clearInterval(intervaloVerificacao);
-
                 tocarSomSucesso();
                 await registrarPedidoFinal();
 
