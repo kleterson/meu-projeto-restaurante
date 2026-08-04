@@ -59,9 +59,8 @@ async function finalizarCompra() {
         }
         const trocoCalculado = valorDinheiro - totalCarrinho;
         informacaoPagamento = `Dinheiro (Vai pagar com R$ ${valorDinheiro.toFixed(2)} | Troco: R$ ${trocoCalculado.toFixed(2)})`;
-    } 
-    // Se for Cartão (Vai direto para o motoboy sem gerar Pix)
-    else if (formaPagamento === 'Cartão (Na Entrega)') {
+    // Se for Cartão (Qualquer opção que contenha "Cartão")
+    else if (formaPagamento.includes('Cartão') || formaPagamento.includes('Cartao')) {
         informacaoPagamento = `Cartão na Entrega (Maquininha Motoca)`;
     }
 
