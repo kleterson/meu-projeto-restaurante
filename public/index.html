@@ -193,7 +193,7 @@
 
 <!-- Tela de Sucesso e Acompanhamento -->
 <div class="container hidden" id="sucesso-container" style="text-align: center;">
-    <button onclick="voltarParaCardapio()" style="background: #3498db; margin-bottom: 20px; padding: 10px 20px; font-size: 14px;">← Voltar para o Cardápio</button>
+    <button onclick="document.getElementById('sucesso-container').classList.add('hidden'); document.getElementById('app-container').classList.remove('hidden');" style="background: #3498db; color: white; border: none; margin-bottom: 20px; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold; font-size: 14px;">← Voltar para o Cardápio</button>
     <h2 style="color: #27ae60; font-size: 24px;">Obrigado pelas compras, volte sempre! 😊</h2>
     <p id="status-pedido-texto" style="font-size: 20px; font-weight: bold; margin-top: 25px; color: #e74c3c;">
         ⏳ Aguardando o pedido ficar pronto<span class="pontos-animados"><span>.</span><span>.</span><span>.</span></span>
