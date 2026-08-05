@@ -2,137 +2,264 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gonçalves Lanches & Refeições</title>
     <style>
-        body { font-family: Arial, sans-serif; background: #222; color: white; margin: 0; padding: 20px; }
-        .container { max-width: 900px; margin: auto; }
-        h1, h2, h3 { color: #f1c40f; text-align: center; }
-        .categoria-box { background: #333; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #d4af37; }
-        .item-card { display: flex; justify-content: space-between; align-items: center; background: #444; padding: 10px 15px; border-radius: 6px; margin-bottom: 10px; }
-        button { background: #27ae60; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        body {
+            background: linear-gradient(rgba(0, 0, 0, 0.65), rgba(0, 0, 0, 0.65)), url('fundo.jpg');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            font-family: Arial, sans-serif; 
+            margin: 0; 
+            padding: 20px; 
+            color: #fff;
+        }
+        .container { max-width: 950px; margin: auto; background: rgba(20, 5, 5, 0.75); padding: 25px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.7); border: 2px solid #d4af37; backdrop-filter: blur(3px); }
+        
+        .header-title { text-align: center; margin-bottom: 25px; }
+        .header-title h1 { color: #f1c40f; font-size: 32px; margin: 0; text-transform: uppercase; text-shadow: 2px 2px 4px rgba(0,0,0,0.8); }
+        .header-title p { color: #ddd; font-size: 16px; margin: 5px 0 0 0; text-shadow: 1px 1px 3px rgba(0,0,0,0.8); }
+        
+        .header-actions { display: flex; justify-content: center; align-items: center; gap: 15px; margin-top: 10px; flex-wrap: wrap; }
+        .delivery-badge { background: #d4af37; color: #000; padding: 6px 15px; border-radius: 20px; font-weight: bold; display: inline-block; box-shadow: 0 2px 5px rgba(0,0,0,0.5); }
+
+        .btn-dashboard {
+            background: #e67e22;
+            color: white;
+            border: none;
+            padding: 6px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 14px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+        }
+        .btn-dashboard:hover { background: #d35400; }
+
+        h2 { color: #f1c40f; border-bottom: 2px solid #d4af37; padding-bottom: 5px; margin-top: 25px; font-size: 20px; text-shadow: 1px 1px 3px rgba(0,0,0,0.8); }
+        
+        .menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        @media (max-width: 768px) { .menu-grid { grid-template-columns: 1fr; } }
+
+        .category { background: rgba(40, 10, 10, 0.65); padding: 15px; border-radius: 8px; border: 1px solid rgba(160, 82, 45, 0.8); backdrop-filter: blur(2px); margin-bottom: 20px; }
+        
+        .item { display: flex; justify-content: space-between; margin-bottom: 10px; background: rgba(55, 15, 15, 0.7); padding: 10px; border-radius: 6px; border: 1px solid rgba(184, 134, 11, 0.7); align-items: center;}
+        
+        button { background: #27ae60; color: white; border: none; padding: 8px 14px; border-radius: 5px; cursor: pointer; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.4); }
         button:hover { background: #219653; }
-        button:disabled { background: #777; cursor: not-allowed; }
-        .carrinho-box { background: #111; padding: 15px; border-radius: 8px; margin-top: 30px; border: 2px solid #27ae60; }
-        input, select { width: 100%; padding: 8px; margin-top: 5px; margin-bottom: 15px; border-radius: 4px; border: 1px solid #ccc; background: #222; color: white; box-sizing: border-box; }
-        .esgotado-label { color: #ff4d4d; font-weight: bold; }
+        button:disabled { background: #555 !important; cursor: not-allowed; opacity: 0.6; }
+        
+        .cart { background: rgba(30, 8, 8, 0.75); padding: 20px; border-radius: 8px; margin-top: 25px; border: 1px solid #f1c40f; backdrop-filter: blur(2px); }
+        .cart ul { padding-left: 20px; color: #fdfdfd; }
+        .hidden { display: none !important; }
+        
+        input, select { width: 100%; padding: 10px; margin: 5px 0 15px 0; border: 1px solid #d4af37; background: rgba(255, 255, 255, 0.9); border-radius: 5px; box-sizing: border-box; color: #000; font-size: 14px;}
+        label { color: #f1c40f; font-weight: bold; font-size: 14px; text-shadow: 1px 1px 2px rgba(0,0,0,0.8); }
+        
+        .obs-acompanha { background: rgba(243, 156, 18, 0.85); color: #000; padding: 10px; border-radius: 5px; font-size: 13px; font-weight: bold; text-align: center; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.4); }
+
+        .pix-copia-cola-box {
+            background: rgba(0, 0, 0, 0.5);
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            border: 1px solid #d4af37;
+        }
+        .btn-copiar-pix {
+            background-color: #27ae60;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            font-size: 14px;
+            font-weight: bold;
+            border-radius: 5px;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.4);
+            margin-top: 8px;
+        }
+        .btn-copiar-pix:hover { background-color: #219653; }
+
+        @keyframes piscar {
+            0% { opacity: 0.2; }
+            50% { opacity: 1; }
+            100% { opacity: 0.2; }
+        }
+        .pontos-animados span { animation: piscar 1.4s infinite; }
+        .pontos-animados span:nth-child(2) { animation-delay: 0.2s; }
+        .pontos-animados span:nth-child(3) { animation-delay: 0.4s; }
     </style>
 </head>
 <body>
+<div class="container" id="app-container">
+    <div class="header-title">
+        <h1>Gonçalves Lanches & Refeições</h1>
+        <p>Mais sabor, mais qualidade, melhor preço!</p>
+        <div class="header-actions">
+            <div class="delivery-badge">📞 Delivery: (13) 98151-5612</div>
+            <button class="btn-dashboard hidden" id="btn-voltar-status" onclick="
+                document.getElementById('app-container').classList.add('hidden');
+                document.getElementById('sucesso-container').classList.remove('hidden');
+            ">📊 Ver Status do Pedido</button>
+        </div>
+    </div>
 
-<div class="container">
-    <h1>Gonçalves Lanches & Refeições</h1>
-    <p style="text-align: center;">Faça seu pedido online de forma rápida e segura!</p>
+    <div class="obs-acompanha">
+        🍽️ TODOS OS PRATOS E MARMITAS ACOMPANHAM: Arroz, Feijão, Macarrão, Farofa, Batata Frita e Salada!
+    </div>
 
-    <!-- O Cardápio será injetado aqui via JavaScript -->
-    <div id="cardapio-container">Carregando cardápio...</div>
+    <!-- O cardápio será montado dinamicamente aqui preservando o visual original -->
+    <div id="cardapio-dinamico" class="menu-grid">
+        <p style="text-align: center; grid-column: span 2;">Carregando cardápio...</p>
+    </div>
 
-    <!-- Carrinho e Finalização -->
-    <div class="carrinho-box">
-        <h2>Seu Carrinho</h2>
-        <div id="carrinho-itens">Nenhum item adicionado.</div>
-        <h3>Total Geral: R$ <span id="carrinho-total">0.00</span></h3>
-
-        <hr style="border-color: #444; margin: 20px 0;">
-
-        <h3>Dados para Entrega</h3>
+    <!-- Carrinho de Compras -->
+    <div class="cart">
+        <h2>🛒 Seu Carrinho</h2>
+        <ul id="lista-carrinho"></ul>
+        <p style="font-size: 16px; margin: 5px 0;">Subtotal: R$ <span id="subtotal-carrinho">0.00</span></p>
+        <p style="font-size: 16px; margin: 5px 0;">Taxa de Entrega: R$ <span id="taxa-entrega">0.00</span></p>
+        <p style="font-size: 18px; color: #f1c40f; margin-top: 5px;"><strong>Total Geral: R$ <span id="total-carrinho">0.00</span></strong></p>
+        
+        <h3>📍 Dados para Entrega</h3>
         <label>Nome Completo:</label>
-        <input type="text" id="cliente-nome" placeholder="Digite seu nome">
-
-        <label>WhatsApp:</label>
-        <input type="text" id="cliente-whatsapp" placeholder="(XX) 9XXXX-XXXX">
-
-        <label>Bairro (Define a Taxa de Entrega):</label>
-        <select id="cliente-bairro" onchange="atualizarTotal()">
-            <option value="Centro" data-taxa="5.00">Centro - R$ 5,00</option>
-            <option value="Bela Vista" data-taxa="7.00">Bela Vista - R$ 7,00</option>
-            <option value="Santa Rita" data-taxa="10.00">Santa Rita - R$ 10,00</option>
-            <option value="Outros" data-taxa="12.00">Outros Bairros - R$ 12,00</option>
-        </select>
+        <input type="text" id="cliente-nome" placeholder="Seu nome completo" required>
+        
+        <label>WhatsApp (com DDD):</label>
+        <input type="text" id="cliente-whatsapp" placeholder="Ex: 13988887777" required>
 
         <label>Endereço (Rua e Número):</label>
-        <input type="text" id="cliente-endereco" placeholder="Ex: Rua das Flores, 123">
+        <input type="text" id="cliente-endereco" placeholder="Ex: Rua Principal, 123" required>
 
         <label>Ponto de Referência:</label>
-        <input type="text" id="cliente-referencia" placeholder="Ex: Próximo ao mercado">
+        <input type="text" id="cliente-referencia" placeholder="Ex: Próximo à praça / Portão marrom" required>
 
-        <label>Forma de Pagamento:</label>
-        <select id="forma-pagamento" onchange="verificarFormaPagamento()">
-            <option value="Pix">Pix (Aprovação Automática)</option>
-            <option value="Dinheiro">Dinheiro</option>
-            <option value="Cartao">Cartão (Na Entrega)</option>
+        <label>Selecione o Bairro:</label>
+        <select id="cliente-bairro" onchange="atualizarCarrinho()" required>
+            <option value="" data-taxa="0" disabled selected>Escolha o seu bairro</option>
+            <option value="Vila Margarida" data-taxa="4.00">Vila Margarida (Taxa: R$ 4,00)</option>
+            <option value="Mexico" data-taxa="4.00">México (Taxa: R$ 4,00)</option>
+            <option value="Vila Mateo Bei" data-taxa="4.00">Vila Mateo Bei (Taxa: R$ 4,00)</option>
+            <option value="Planalto" data-taxa="4.00">Planalto (Taxa: R$ 4,00)</option>
+            <option value="Parque Bitaru" data-taxa="5.00">Parque Bitaru (Taxa: R$ 5,00)</option>
+            <option value="Centro" data-taxa="6.00">Centro (Taxa: R$ 6,00)</option>
+            <option value="Jockey Clube" data-taxa="7.00">Jockey Clube (Taxa: R$ 7,00)</option>
         </select>
 
-        <div id="campo-troco" style="display: none;">
-            <label>Troco para quanto?</label>
-            <input type="text" id="cliente-troco" placeholder="Ex: R$ 50,00">
+        <!-- FORMA DE PAGAMENTO -->
+        <h3>💳 Forma de Pagamento</h3>
+        <label>Escolha a forma de pagamento:</label>
+        <select id="forma-pagamento" onchange="verificarFormaPagamento()">
+            <option value="Pix">Pix</option>
+            <option value="Dinheiro">Dinheiro</option>
+            <option value="Cartão">Cartão (Na Entrega)</option>
+        </select>
+
+        <div id="campo-troco" class="hidden" style="margin-top: 10px; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 5px; border: 1px dashed #d4af37;">
+            <label>Troco para quanto? (Ex: 50.00)</label>
+            <input type="number" id="valor-troco" placeholder="Digite o valor em dinheiro que vai pagar">
         </div>
 
-        <button onclick="finalizarPedido()" style="width: 100%; padding: 12px; font-size: 16px; background: #e67e22; margin-top: 10px;">Finalizar e Enviar Pedido 🚀</button>
+        <br>
+        <button onclick="finalizarCompra()" style="background: #e67e22; font-size: 16px; width: 100%; padding: 12px; margin-top: 10px;">Comprar Agora</button>
     </div>
 </div>
 
-<!-- Modal / Área de Pagamento Pix -->
-<div id="modal-pix" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); justify-content:center; align-items:center;">
-    <div style="background:#333; padding:20px; border-radius:8px; text-align:center; max-width:400px; width:90%;">
-        <h3>Pague via Pix para Concluir</h3>
-        <p>Escaneie o QR Code abaixo com o aplicativo do seu banco:</p>
-        <div id="pix-qrcode-img"></div>
-        <p style="font-size: 12px; word-break: break-all; background: #222; padding: 8px;" id="pix-copia-cola"></p>
-        <button onclick="copiarPix()" style="background: #3498db; margin-bottom: 10px;">Copiar Código Pix</button>
-        <p id="status-pagamento" style="color: #f1c40f; font-weight: bold;">Aguardando pagamento...</p>
-        <button onclick="fecharModalPix()" style="background: #e74c3c;">Cancelar / Fechar</button>
+<!-- Tela de Pagamento / Pix -->
+<div class="container hidden" id="pagamento-container" style="text-align: center;">
+    <h2>💳 Pagamento via Pix</h2>
+    <p>Escaneie o QR Code abaixo com o app do seu banco:</p>
+    <div style="margin: 20px;" id="qr-code-box">
+        <img src="https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=PixFicticioGoncalvesRefeicoes" alt="QR Code Pix" id="img-qrcode">
     </div>
+    
+    <div class="pix-copia-cola-box">
+        <p style="margin: 0 0 8px 0; font-size: 14px; color: #f1c40f; font-weight: bold;">Pix Copia e Cola:</p>
+        <input type="text" id="texto-pix-copia" value="00020126580014br.gov.bcb.pix0136f4d5233b-f182-4216-oed3-9c9344a7ec49520400005303986540516.005802BR5914KLETERSONALLAN6010So Vicente62250521mpqringer17117231841763046C5A" readonly style="font-size: 12px; text-align: center; margin-bottom: 5px;">
+        <button onclick="copiarCodigoPix()" class="btn-copiar-pix">📋 Copiar Código Pix</button>
+    </div>
+
+    <p id="status-pagamento-pix" style="font-weight: bold; color: #f1c40f; margin-top: 15px;">⏳ Aguardando a aprovação do pagamento...</p>
+</div>
+
+<!-- Tela de Sucesso e Acompanhamento -->
+<div class="container hidden" id="sucesso-container" style="text-align: center;">
+    <button onclick="
+        document.getElementById('sucesso-container').classList.add('hidden'); 
+        document.getElementById('app-container').classList.remove('hidden');
+        document.getElementById('btn-voltar-status').classList.remove('hidden');
+    " style="background: #3498db; color: white; border: none; margin-bottom: 20px; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold; font-size: 14px;">← Voltar para o Cardápio</button>
+    
+    <h2 style="color: #27ae60; font-size: 24px;">Obrigado pelas compras, volte sempre! 😊</h2>
+    <p id="status-pedido-texto" style="font-size: 20px; font-weight: bold; margin-top: 25px; color: #ff6b6b; text-shadow: 1px 1px 3px rgba(0,0,0,0.9);">
+        ⏳ Aguardando o pedido ficar pronto<span class="pontos-animados"><span>.</span><span>.</span><span>.</span></span>
+    </p>
+    <p id="codigo-pedido-exibido" style="font-size: 16px; color: #f1c40f; margin-top: 10px;"></p>
 </div>
 
 <script>
-    let carrinho = [];
-    let cardapioGlobal = [];
-    let idPagamentoAtual = null;
-    let intervaloChecagem = null;
-
-    // Buscar o cardápio do servidor ao carregar a página
-    async function carregarCardapioCliente() {
-        try {
-            const res = await fetch('/api/cardapio');
-            cardapioGlobal = await res.json();
-            renderizarCardapio();
-        } catch (e) {
-            console.error('Erro ao carregar cardápio', e);
-            document.getElementById('cardapio-container').innerHTML = '<p style="color:red; text-align:center;">Erro ao carregar o cardápio. Tente atualizar a página.</p>';
+    function verificarFormaPagamento() {
+        const formaPagamento = document.getElementById('forma-pagamento').value;
+        const campoTroco = document.getElementById('campo-troco');
+        if (formaPagamento === 'Dinheiro') {
+            campoTroco.classList.remove('hidden');
+        } else {
+            campoTroco.classList.add('hidden');
+            document.getElementById('valor-troco').value = '';
         }
     }
 
-    function renderizarCardapio() {
-        const container = document.getElementById('cardapio-container');
-        container.innerHTML = '';
+    function copiarCodigoPix() {
+        const inputPix = document.getElementById('texto-pix-copia');
+        inputPix.select();
+        inputPix.setSelectionRange(0, 99999); 
+        navigator.clipboard.writeText(inputPix.value).then(() => {
+            alert('Código Pix copiado com sucesso!');
+        }).catch(err => {
+            console.error('Erro ao copiar o código Pix: ', err);
+        });
+    }
 
-        // Agrupar por categoria
+    // Carregar o cardápio do servidor mantendo o design original e bloqueando esgotados
+    let cardapioGlobal = [];
+    let carrinho = [];
+
+    async function carregarCardapio() {
+        try {
+            const res = await fetch('/api/cardapio');
+            cardapioGlobal = await res.json();
+            renderizarCardapioNaTela();
+        } catch (e) {
+            console.error("Erro ao carregar cardápio:", e);
+        }
+    }
+
+    function renderizarCardapioNaTela() {
+        const container = document.getElementById('cardapio-dinamico');
+        if (!container) return;
+
+        // Agrupar itens por categoria
         const categorias = {};
         cardapioGlobal.forEach(item => {
             if (!categorias[item.categoria]) categorias[item.categoria] = [];
             categorias[item.categoria].push(item);
         });
 
+        container.innerHTML = '';
         for (let cat in categorias) {
-            let htmlItems = '';
+            let itensHtml = '';
             categorias[cat].forEach(item => {
                 if (item.esgotado) {
-                    htmlItems += `
-                        <div class="item-card" style="opacity: 0.6;">
-                            <div>
-                                <strong>${item.nome}</strong> - R$ ${item.preco.toFixed(2)}
-                                <br><span class="esgotado-label">ESGOTADO</span>
-                            </div>
-                            <button disabled>Indisponível</button>
+                    itensHtml += `
+                        <div class="item" style="opacity: 0.5; background: rgba(80, 20, 20, 0.7);">
+                            <span style="flex: 1;">${item.nome} - <strong>R$ ${item.preco.toFixed(2)}</strong> <span style="color: #ff4d4d; font-size: 11px; margin-left: 5px;">(ESGOTADO)</span></span>
+                            <button disabled style="background: #555; cursor: not-allowed;">Esgotado</button>
                         </div>
                     `;
                 } else {
-                    htmlItems += `
-                        <div class="item-card">
-                            <div>
-                                <strong>${item.nome}</strong> - R$ ${item.preco.toFixed(2)}
-                            </div>
+                    itensHtml += `
+                        <div class="item">
+                            <span style="flex: 1;">${item.nome} - <strong>R$ ${item.preco.toFixed(2)}</strong></span>
                             <button onclick="adicionarAoCarrinho('${item.id}')">Adicionar</button>
                         </div>
                     `;
@@ -140,9 +267,9 @@
             });
 
             container.innerHTML += `
-                <div class="categoria-box">
+                <div class="category">
                     <h2>${cat}</h2>
-                    ${htmlItems}
+                    ${itensHtml}
                 </div>
             `;
         }
@@ -151,171 +278,219 @@
     function adicionarAoCarrinho(id) {
         const item = cardapioGlobal.find(i => i.id === id);
         if (item && !item.esgotado) {
-            carrinho.push(item);
+            carrinho.push({ id: item.id, nome: item.nome, preco: item.preco });
             atualizarCarrinho();
         }
     }
 
-    function removerDoCarrinho(index) {
+    function atualizarCarrinho() {
+        const lista = document.getElementById('lista-carrinho');
+        const subtotalEl = document.getElementById('subtotal-carrinho');
+        const taxaEl = document.getElementById('taxa-entrega');
+        const totalEl = document.getElementById('total-carrinho');
+        
+        if (!lista || !totalEl) return;
+        
+        lista.innerHTML = '';
+        let subtotal = 0;
+
+        carrinho.forEach((item, index) => {
+            subtotal += item.preco;
+            lista.innerHTML += `<li>${item.nome} - R$ ${item.preco.toFixed(2)} <button onclick="removerItem(${index})" style="background:#dc3545; padding:2px 6px; font-size:10px;">X</button></li>`;
+        });
+
+        if (subtotalEl) subtotalEl.innerText = subtotal.toFixed(2);
+        
+        const selectBairro = document.getElementById('cliente-bairro');
+        let taxa = 0;
+        if (selectBairro && selectBairro.selectedIndex > 0) {
+            taxa = parseFloat(selectBairro.options[selectBairro.selectedIndex].getAttribute('data-taxa')) || 0;
+        }
+        if (taxaEl) taxaEl.innerText = taxa.toFixed(2);
+
+        let totalGeral = subtotal + taxa;
+        totalEl.innerText = totalGeral.toFixed(2);
+    }
+
+    function removerItem(index) {
         carrinho.splice(index, 1);
         atualizarCarrinho();
     }
 
-    function atualizarCarrinho() {
-        const container = document.getElementById('carrinho-itens');
-        if (carrinho.length === 0) {
-            container.innerHTML = 'Nenhum item adicionado.';
-            atualizarTotal();
-            return;
-        }
+    let dadosPedidoGlobal = {};
+    let intervaloVerificacao = null;
+    let idPagamentoAtual = null;
 
-        container.innerHTML = '';
-        carrinho.forEach((item, index) => {
-            container.innerHTML += `
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
-                    <span>${item.nome} - R$ ${item.preco.toFixed(2)}</span>
-                    <button onclick="removerDoCarrinho(${index})" style="background:#c0392b; padding: 2px 6px; font-size:12px;">Remover</button>
-                </div>
-            `;
-        });
-        atualizarTotal();
-    }
-
-    function atualizarTotal() {
-        let subtotal = carrinho.reduce((sum, item) => sum + item.preco, 0);
-        let selectBairro = document.getElementById('cliente-bairro');
-        let taxaEntrega = 0;
-        
-        if (selectBairro && selectBairro.options[selectBairro.selectedIndex]) {
-            taxaEntrega = parseFloat(selectBairro.options[selectBairro.selectedIndex].getAttribute('data-taxa')) || 0;
-        }
-
-        let totalGeral = subtotal + taxaEntrega;
-        document.getElementById('carrinho-total').innerText = totalGeral.toFixed(2);
-    }
-
-    function verificarFormaPagamento() {
-        const forma = document.getElementById('forma-pagamento').value;
-        const campoTroco = document.getElementById('campo-troco');
-        campoTroco.style.display = forma === 'Dinheiro' ? 'block' : 'none';
-    }
-
-    async function finalizarPedido() {
+    async function finalizarCompra() {
         if (carrinho.length === 0) {
             alert('Seu carrinho está vazio!');
             return;
         }
-
         const nome = document.getElementById('cliente-nome').value.trim();
         const whatsapp = document.getElementById('cliente-whatsapp').value.trim();
         const endereco = document.getElementById('cliente-endereco').value.trim();
+        const referencia = document.getElementById('cliente-referencia').value.trim();
         const bairroSelect = document.getElementById('cliente-bairro');
         const bairro = bairroSelect.value;
-        const taxa = parseFloat(bairroSelect.options[bairroSelect.selectedIndex].getAttribute('data-taxa')) || 0;
-        const referencia = document.getElementById('cliente-referencia').value.trim();
+        const taxa = parseFloat(bairroSelect.options[bairroSelect.selectedIndex]?.getAttribute('data-taxa')) || 0;
         const formaPagamento = document.getElementById('forma-pagamento').value;
-        const troco = document.getElementById('cliente-troco').value.trim();
+        let informacaoPagamento = "";
 
-        if (!nome || !whatsapp || !endereco) {
-            alert('Por favor, preencha Nome, WhatsApp e Endereço.');
+        if (!nome || !whatsapp || !endereco || !referencia || !bairro) {
+            alert('Por favor, preencha todos os dados de entrega (Nome, WhatsApp, Endereço, Referência e Bairro)!');
             return;
         }
 
-        let subtotal = carrinho.reduce((sum, item) => sum + item.preco, 0);
-        let totalGeral = subtotal + taxa;
-        let codigoPedido = Math.floor(1000 + Math.random() * 9000); // Gerar código de 4 dígitos
+        const subtotalCarrinho = carrinho.reduce((acc, item) => acc + item.preco, 0);
+        const totalCarrinho = subtotalCarrinho + taxa;
+        const codigoPedido = Math.floor(1000 + Math.random() * 9000);
 
-        const dadosPedido = {
+        if (formaPagamento === 'Dinheiro') {
+            const valorDinheiroInput = document.getElementById('valor-troco').value;
+            if (!valorDinheiroInput) {
+                alert('Por favor, informe o valor em dinheiro para o troco!');
+                return;
+            }
+            const valorDinheiro = parseFloat(valorDinheiroInput);
+            if (valorDinheiro < totalCarrinho) {
+                alert('O valor em dinheiro não pode ser menor que o total do pedido!');
+                return;
+            }
+            const trocoCalculado = valorDinheiro - totalCarrinho;
+            informacaoPagamento = `Dinheiro (Vai pagar com R$ ${valorDinheiro.toFixed(2)} | Troco: R$ ${trocoCalculado.toFixed(2)})`;
+        } else if (formaPagamento.includes('Cartão') || formaPagamento.includes('Cartao')) {
+            informacaoPagamento = `Cartão na Entrega (Maquininha Motoca)`;
+        } else {
+            informacaoPagamento = `Pix`;
+        }
+
+        dadosPedidoGlobal = {
             codigo: codigoPedido,
             nome,
             whatsapp,
             endereco,
+            referencia,
             bairro,
             taxa,
-            referencia,
-            itens: carrinho,
-            total: totalGeral,
-            formaPagamento: formaPagamento === 'Dinheiro' ? `Dinheiro (Troco: ${troco || 'Não precisa'})` : formaPagamento
+            formaPagamento: informacaoPagamento,
+            itens: [...carrinho],
+            total: totalCarrinho,
+            status: '⏳ Aguardando o pedido ficar pronto'
         };
 
-        if (formaPagamento === 'Pix') {
-            // Gerar Pix no Mercado Pago
-            try {
-                const res = await fetch('/api/criar-pagamento', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ total: totalGeral, nome })
-                });
-                const respMP = await res.json();
+        document.getElementById('app-container').classList.add('hidden');
+        document.getElementById('pagamento-container').classList.remove('hidden');
+        const containerPagamento = document.getElementById('pagamento-container');
 
-                if (respMP.id_pagamento) {
-                    idPagamentoAtual = respMP.id_pagamento;
-                    document.getElementById('pix-qrcode-img').innerHTML = `<img src="data:image/jpeg;base64,${respMP.qr_code_base64}" style="max-width:200px;"/>`;
-                    document.getElementById('pix-copia-cola').innerText = respMP.qr_code;
-                    document.getElementById('modal-pix').style.display = 'flex';
-
-                    // Salvar pedido no painel do motoboy como Aguardando Pagamento Pix
-                    dadosPedido.status = "⏳ Aguardando Pagamento Pix";
-                    await salvarPedidoNoServidor(dadosPedido);
-
-                    // Iniciar verificação de status do pagamento
-                    intervaloChecagem = setInterval(verificarStatusPix, 4000);
-                } else {
-                    alert('Erro ao gerar Pix. Tente novamente.');
-                }
-            } catch (e) {
-                console.error(e);
-                alert('Erro de conexão com o sistema de pagamento.');
-            }
-        } else {
-            // Pagamento Dinheiro ou Cartão direto
-            dadosPedido.status = "⏳ Aguardando preparo na cozinha";
-            await salvarPedidoNoServidor(dadosPedido);
-            alert(`Pedido #${codigoPedido} realizado com sucesso! Acompanhe a entrega.`);
-            window.location.reload();
+        if (formaPagamento === 'Dinheiro' || formaPagamento.includes('Cartão') || formaPagamento.includes('Cartao')) {
+            containerPagamento.innerHTML = `
+                <h2>💳 Pedido Realizado com Sucesso!</h2>
+                <p style="font-size: 18px; color: #f1c40f; margin: 20px 0;">Código do Pedido: <b>#${codigoPedido}</b></p>
+                <p style="font-size: 16px; color: #fff; margin: 10px 0;">Forma de Pagamento: <b>${informacaoPagamento}</b></p>
+                <p>Registrando seu pedido na cozinha...</p>
+            `;
+            
+            await registrarPedidoFinal();
+            setTimeout(() => {
+                document.getElementById('pagamento-container').classList.add('hidden');
+                document.getElementById('sucesso-container').classList.remove('hidden');
+                document.getElementById('codigo-pedido-exibido').innerText = `Seu Código de Pedido: #${codigoPedido}`;
+            }, 1500);
+            return;
         }
-    }
 
-    async function salvarPedidoNoServidor(dadosPedido) {
-        await fetch('/api/pedidos', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(dadosPedido)
-        });
-    }
+        // Se for Pix
+        containerPagamento.innerHTML = `
+            <h2>💳 Pagamento via Pix</h2>
+            <p>Gerando QR Code do Mercado Pago...</p>
+        `;
 
-    function copiarPix() {
-        const codigoPix = document.getElementById('pix-copia-cola').innerText;
-        navigator.clipboard.writeText(codigoPix).then(() => {
-            alert('Código Pix copiado com sucesso!');
-        });
-    }
-
-    async function verificarStatusPix() {
-        if (!idPagamentoAtual) return;
         try {
-            const res = await fetch(`/api/verificar-pagamento/${idPagamentoAtual}`);
-            const data = await res.json();
-            if (data.status === 'approved') {
-                clearInterval(intervaloChecagem);
-                document.getElementById('status-pagamento').innerText = "Pagamento Aprovado com Sucesso! 🎉";
-                setTimeout(() => {
-                    alert('Pagamento confirmado! Seu pedido foi enviado para a cozinha.');
-                    window.location.reload();
-                }, 1500);
+            const resposta = await fetch('/api/criar-pagamento', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ total: totalCarrinho, nome })
+            });
+            const resultado = await resposta.json();
+
+            if (resultado.qr_code_base64) {
+                idPagamentoAtual = resultado.id_pagamento;
+                containerPagamento.innerHTML = `
+                    <h2>💳 Pagamento via Pix</h2>
+                    <p>Escaneie o QR Code abaixo com o app do seu banco:</p>
+                    <div style="margin: 15px;">
+                        <img src="data:image/jpeg;base64,${resultado.qr_code_base64}" alt="QR Code Pix" style="max-width: 200px; border-radius: 8px;">
+                    </div>
+                    
+                    <div class="pix-copia-cola-box" style="background: rgba(0, 0, 0, 0.5); padding: 12px; border-radius: 6px; margin-bottom: 15px; border: 1px solid #d4af37;">
+                        <p style="margin: 0 0 8px 0; font-size: 14px; color: #f1c40f; font-weight: bold;">Pix Copia e Cola:</p>
+                        <input type="text" id="texto-pix-copia" value="${resultado.qr_code}" readonly style="font-size: 12px; text-align: center; margin-bottom: 5px; width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #ccc;">
+                        <button onclick="copiarCodigoPix()" class="btn-copiar-pix" style="background-color: #27ae60; color: white; border: none; padding: 6px 14px; font-size: 13px; font-weight: bold; border-radius: 4px; cursor: pointer; margin-top: 5px;">📋 Copiar Código Pix</button>
+                    </div>
+
+                    <p style="font-size: 16px; color: #f1c40f;">Código do Pedido: <b>#${codigoPedido}</b></p>
+                    <p id="status-pagamento-pix" style="font-weight: bold; color: #f1c40f; margin-top: 15px;">
+                        ⏳ Aguardando a aprovação do pagamento...
+                    </p>
+                `;
+
+                iniciarVerificacaoPagamentoMP(resultado.id_pagamento, codigoPedido);
+            } else {
+                containerPagamento.innerHTML = `<h2 style="color:red;">Erro ao gerar Pix. Tente novamente.</h2>`;
             }
         } catch (e) {
-            console.error('Erro ao checar pagamento', e);
+            containerPagamento.innerHTML = `<h2 style="color:red;">Erro de conexão com o servidor.</h2>`;
         }
     }
 
-    function fecharModalPix() {
-        if (intervaloChecagem) clearInterval(intervaloChecagem);
-        document.getElementById('modal-pix').style.display = 'none';
+    function iniciarVerificacaoPagamentoMP(idPagamento, codigoPedido) {
+        intervaloVerificacao = setInterval(async () => {
+            try {
+                const res = await fetch(`/api/verificar-pagamento/${idPagamento}`);
+                const dados = await res.json();
+
+                if (dados.status === "approved") {
+                    clearInterval(intervaloVerificacao);
+                    await registrarPedidoFinal();
+
+                    document.getElementById('pagamento-container').classList.add('hidden');
+                    document.getElementById('sucesso-container').classList.remove('hidden');
+                    document.getElementById('codigo-pedido-exibido').innerText = `Seu Código de Pedido: #${codigoPedido}`;
+                }
+            } catch (e) {
+                console.log("Aguardando confirmação...");
+            }
+        }, 4000);
     }
 
-    // Carregar cardápio ao iniciar a página
-    carregarCardapioCliente();
+    async function registrarPedidoFinal() {
+        try {
+            await fetch('/api/pedidos', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(dadosPedidoGlobal)
+            });
+            verificarStatusPedido();
+        } catch (e) {}
+    }
+
+    function verificarStatusPedido() {
+        setInterval(async () => {
+            try {
+                const res = await fetch('/api/pedidos');
+                const pedidos = await res.json();
+                const meuPedido = pedidos.find(p => p.codigo === dadosPedidoGlobal.codigo);
+                if (meuPedido) {
+                    const textoStatus = document.getElementById('status-pedido-texto');
+                    if (textoStatus) textoStatus.innerText = meuPedido.status;
+                }
+            } catch(e) {}
+        }, 3000);
+    }
+
+    // Atualizar cardápio periodicamente para refletir itens esgotados em tempo real
+    carregarCardapio();
+    setInterval(carregarCardapio, 5000);
 </script>
 
 </body>
