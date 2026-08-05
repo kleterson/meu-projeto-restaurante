@@ -15,18 +15,15 @@
             padding: 20px; 
             color: #fff;
         }
-        /* Container principal com fundo mais transparente (0.75 em vez de 0.92) */
         .container { max-width: 950px; margin: auto; background: rgba(20, 5, 5, 0.75); padding: 25px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.7); border: 2px solid #d4af37; backdrop-filter: blur(3px); }
         
         .header-title { text-align: center; margin-bottom: 25px; }
         .header-title h1 { color: #f1c40f; font-size: 32px; margin: 0; text-transform: uppercase; text-shadow: 2px 2px 4px rgba(0,0,0,0.8); }
         .header-title p { color: #ddd; font-size: 16px; margin: 5px 0 0 0; text-shadow: 1px 1px 3px rgba(0,0,0,0.8); }
         
-        /* Container para alinhar telefone e o botão de dashboard lado a lado */
         .header-actions { display: flex; justify-content: center; align-items: center; gap: 15px; margin-top: 10px; flex-wrap: wrap; }
         .delivery-badge { background: #d4af37; color: #000; padding: 6px 15px; border-radius: 20px; font-weight: bold; display: inline-block; box-shadow: 0 2px 5px rgba(0,0,0,0.5); }
 
-        /* Botão Dashboard / Status */
         .btn-dashboard {
             background: #e67e22;
             color: white;
@@ -45,16 +42,14 @@
         .menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
         @media (max-width: 768px) { .menu-grid { grid-template-columns: 1fr; } }
 
-        /* Categorias com fundo mais transparente (0.65) para ver bem a imagem */
         .category { background: rgba(40, 10, 10, 0.65); padding: 15px; border-radius: 8px; border: 1px solid rgba(160, 82, 45, 0.8); backdrop-filter: blur(2px); }
         
-        /* Itens individuais mais transparentes (0.7) */
         .item { display: flex; justify-content: space-between; margin-bottom: 10px; background: rgba(55, 15, 15, 0.7); padding: 10px; border-radius: 6px; border: 1px solid rgba(184, 134, 11, 0.7); align-items: center;}
+        .item.esgotado { background: rgba(100, 20, 20, 0.85); border-color: #ff4d4d; opacity: 0.8; }
         
         button { background: #27ae60; color: white; border: none; padding: 8px 14px; border-radius: 5px; cursor: pointer; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.4); }
         button:hover { background: #219653; }
         
-        /* Carrinho com transparência equilibrada */
         .cart { background: rgba(30, 8, 8, 0.75); padding: 20px; border-radius: 8px; margin-top: 25px; border: 1px solid #f1c40f; backdrop-filter: blur(2px); }
         .cart ul { padding-left: 20px; color: #fdfdfd; }
         .hidden { display: none !important; }
@@ -64,7 +59,6 @@
         
         .obs-acompanha { background: rgba(243, 156, 18, 0.85); color: #000; padding: 10px; border-radius: 5px; font-size: 13px; font-weight: bold; text-align: center; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.4); }
 
-        /* Estilo específico para o campo e botão Pix Copia e Cola */
         .pix-copia-cola-box {
             background: rgba(0, 0, 0, 0.5);
             padding: 12px;
@@ -84,25 +78,16 @@
             box-shadow: 0 2px 4px rgba(0,0,0,0.4);
             margin-top: 8px;
         }
-        .btn-copiar-pix:hover {
-            background-color: #219653;
-        }
+        .btn-copiar-pix:hover { background-color: #219653; }
 
-        /* Animação dos pontinhos piscando */
         @keyframes piscar {
             0% { opacity: 0.2; }
             50% { opacity: 1; }
             100% { opacity: 0.2; }
         }
-        .pontos-animados span {
-            animation: piscar 1.4s infinite;
-        }
-        .pontos-animados span:nth-child(2) {
-            animation-delay: 0.2s;
-        }
-        .pontos-animados span:nth-child(3) {
-            animation-delay: 0.4s;
-        }
+        .pontos-animados span { animation: piscar 1.4s infinite; }
+        .pontos-animados span:nth-child(2) { animation-delay: 0.2s; }
+        .pontos-animados span:nth-child(3) { animation-delay: 0.4s; }
     </style>
 </head>
 <body>
@@ -112,7 +97,6 @@
         <p>Mais sabor, mais qualidade, melhor preço!</p>
         <div class="header-actions">
             <div class="delivery-badge">📞 Delivery: (13) 98151-5612</div>
-            <!-- Botão que fica no topo ao lado do telefone para voltar à tela de status/aguarde -->
             <button class="btn-dashboard hidden" id="btn-voltar-status" onclick="
                 document.getElementById('app-container').classList.add('hidden');
                 document.getElementById('sucesso-container').classList.remove('hidden');
@@ -128,52 +112,52 @@
         <!-- PRATO DO DIA -->
         <div class="category">
             <h2>Prato do Dia</h2>
-            <div class="item">
+            <div class="item" id="item-frango-creme-milho">
                 <span>Frango Milanesa c/ Creme de Milho - <strong>R$ 16,00</strong></span>
-                <button onclick="adicionarAoCarrinho('Prato do Dia: Frango Milanesa c/ Creme de Milho', 16)">Adicionar</button>
+                <button onclick="adicionarAoCarrinho('Prato do Dia: Frango Milanesa c/ Creme de Milho', 16, 'item-frango-creme-milho')">Adicionar</button>
             </div>
 
             <h2>Marmitas Econômicas</h2>
-            <div class="item">
+            <div class="item" id="item-calabresa-eco">
                 <span>Calabresa Acebolada - <strong>R$ 10,00</strong></span>
-                <button onclick="adicionarAoCarrinho('Marmita Econômica: Calabresa Acebolada', 10)">Adicionar</button>
+                <button onclick="adicionarAoCarrinho('Marmita Econômica: Calabresa Acebolada', 10, 'item-calabresa-eco')">Adicionar</button>
             </div>
-            <div class="item">
+            <div class="item" id="item-frango-milanesa-eco">
                 <span>Frango Milanesa - <strong>R$ 10,00</strong></span>
-                <button onclick="adicionarAoCarrinho('Marmita Econômica: Frango Milanesa', 10)">Adicionar</button>
+                <button onclick="adicionarAoCarrinho('Marmita Econômica: Frango Milanesa', 10, 'item-frango-milanesa-eco')">Adicionar</button>
             </div>
-            <div class="item">
+            <div class="item" id="item-toscana-eco">
                 <span>Toscana - <strong>R$ 10,00</strong></span>
-                <button onclick="adicionarAoCarrinho('Marmita Econômica: Toscana', 10)">Adicionar</button>
+                <button onclick="adicionarAoCarrinho('Marmita Econômica: Toscana', 10, 'item-toscana-eco')">Adicionar</button>
             </div>
-            <div class="item">
+            <div class="item" id="item-figado-eco">
                 <span>Fígado Acebolado - <strong>R$ 10,00</strong></span>
-                <button onclick="adicionarAoCarrinho('Marmita Econômica: Fígado Acebolado', 10)">Adicionar</button>
+                <button onclick="adicionarAoCarrinho('Marmita Econômica: Fígado Acebolado', 10, 'item-figado-eco')">Adicionar</button>
             </div>
-            <div class="item">
+            <div class="item" id="item-nuggets-eco">
                 <span>Nuggets - <strong>R$ 10,00</strong></span>
-                <button onclick="adicionarAoCarrinho('Marmita Econômica: Nuggets', 10)">Adicionar</button>
+                <button onclick="adicionarAoCarrinho('Marmita Econômica: Nuggets', 10, 'item-nuggets-eco')">Adicionar</button>
             </div>
-            <div class="item">
+            <div class="item" id="item-omelete-eco">
                 <span>Omelete Simples - <strong>R$ 10,00</strong></span>
-                <button onclick="adicionarAoCarrinho('Marmita Econômica: Omelete Simples', 10)">Adicionar</button>
+                <button onclick="adicionarAoCarrinho('Marmita Econômica: Omelete Simples', 10, 'item-omelete-eco')">Adicionar</button>
             </div>
         </div>
 
         <!-- MARMITAS COMPLETAS G & ADICIONAIS -->
         <div class="category">
             <h2>Marmitas Completas G</h2>
-            <div class="item"><span>Filé Grelhado - <strong>R$ 14,00</strong></span><button onclick="adicionarAoCarrinho('Marmita G: Filé Grelhado', 14)">Adicionar</button></div>
-            <div class="item"><span>Frango a Milanesa - <strong>R$ 16,00</strong></span><button onclick="adicionarAoCarrinho('Marmita G: Frango a Milanesa', 16)">Adicionar</button></div>
-            <div class="item"><span>Calabresa Acebolada - <strong>R$ 15,00</strong></span><button onclick="adicionarAoCarrinho('Marmita G: Calabresa Acebolada', 15)">Adicionar</button></div>
-            <div class="item"><span>Toscana Acebolada - <strong>R$ 15,00</strong></span><button onclick="adicionarAoCarrinho('Marmita G: Toscana Acebolada', 15)">Adicionar</button></div>
-            <div class="item"><span>Bisteca com Ovo - <strong>R$ 15,00</strong></span><button onclick="adicionarAoCarrinho('Marmita G: Bisteca com Ovo', 15)">Adicionar</button></div>
-            <div class="item"><span>Fígado Acebolado - <strong>R$ 15,00</strong></span><button onclick="adicionarAoCarrinho('Marmita G: Fígado Acebolado', 15)">Adicionar</button></div>
-            <div class="item"><span>Omelete Recheado - <strong>R$ 16,00</strong></span><button onclick="adicionarAoCarrinho('Marmita G: Omelete Recheado', 16)">Adicionar</button></div>
-            <div class="item"><span>Frango Parmegiana - <strong>R$ 20,00</strong></span><button onclick="adicionarAoCarrinho('Marmita G: Frango Parmegiana', 20)">Adicionar</button></div>
-            <div class="item"><span>Contra Filé Acebolado - <strong>R$ 23,00</strong></span><button onclick="adicionarAoCarrinho('Marmita G: Contra Filé Acebolado', 23)">Adicionar</button></div>
-            <div class="item"><span>Contra Filé Parmegiana - <strong>R$ 25,00</strong></span><button onclick="adicionarAoCarrinho('Marmita G: Contra Filé Parmegiana', 25)">Adicionar</button></div>
-            <div class="item"><span>Contra Filé com Ovo - <strong>R$ 25,00</strong></span><button onclick="adicionarAoCarrinho('Marmita G: Contra Filé com Ovo', 25)">Adicionar</button></div>
+            <div class="item" id="item-g-file"><span style="flex: 1;">Filé Grelhado - <strong>R$ 14,00</strong></span><button onclick="adicionarAoCarrinho('Marmita G: Filé Grelhado', 14, 'item-g-file')">Adicionar</button></div>
+            <div class="item" id="item-g-frango-mil"><span style="flex: 1;">Frango a Milanesa - <strong>R$ 16,00</strong></span><button onclick="adicionarAoCarrinho('Marmita G: Frango a Milanesa', 16, 'item-g-frango-mil')">Adicionar</button></div>
+            <div class="item" id="item-g-calabresa"><span style="flex: 1;">Calabresa Acebolada - <strong>R$ 15,00</strong></span><button onclick="adicionarAoCarrinho('Marmita G: Calabresa Acebolada', 15, 'item-g-calabresa')">Adicionar</button></div>
+            <div class="item" id="item-g-toscana"><span style="flex: 1;">Toscana Acebolada - <strong>R$ 15,00</strong></span><button onclick="adicionarAoCarrinho('Marmita G: Toscana Acebolada', 15, 'item-g-toscana')">Adicionar</button></div>
+            <div class="item" id="item-g-bisteca"><span style="flex: 1;">Bisteca com Ovo - <strong>R$ 15,00</strong></span><button onclick="adicionarAoCarrinho('Marmita G: Bisteca com Ovo', 15, 'item-g-bisteca')">Adicionar</button></div>
+            <div class="item" id="item-g-figado"><span style="flex: 1;">Fígado Acebolado - <strong>R$ 15,00</strong></span><button onclick="adicionarAoCarrinho('Marmita G: Fígado Acebolado', 15, 'item-g-figado')">Adicionar</button></div>
+            <div class="item" id="item-g-omelete-recheado"><span style="flex: 1;">Omelete Recheado - <strong>R$ 16,00</strong></span><button onclick="adicionarAoCarrinho('Marmita G: Omelete Recheado', 16, 'item-g-omelete-recheado')">Adicionar</button></div>
+            <div class="item" id="item-g-parmegiana"><span style="flex: 1;">Frango Parmegiana - <strong>R$ 20,00</strong></span><button onclick="adicionarAoCarrinho('Marmita G: Frango Parmegiana', 20, 'item-g-parmegiana')">Adicionar</button></div>
+            <div class="item" id="item-g-contra-file"><span style="flex: 1;">Contra Filé Acebolado - <strong>R$ 23,00</strong></span><button onclick="adicionarAoCarrinho('Marmita G: Contra Filé Acebolado', 23, 'item-g-contra-file')">Adicionar</button></div>
+            <div class="item" id="item-g-contra-parmegiana"><span style="flex: 1;">Contra Filé Parmegiana - <strong>R$ 25,00</strong></span><button onclick="adicionarAoCarrinho('Marmita G: Contra Filé Parmegiana', 25, 'item-g-contra-parmegiana')">Adicionar</button></div>
+            <div class="item" id="item-g-contra-ovo"><span style="flex: 1;">Contra Filé com Ovo - <strong>R$ 25,00</strong></span><button onclick="adicionarAoCarrinho('Marmita G: Contra Filé com Ovo', 25, 'item-g-contra-ovo')">Adicionar</button></div>
         </div>
     </div>
 
@@ -181,17 +165,17 @@
     <div style="margin-top: 20px;" class="menu-grid">
         <div class="category">
             <h2>Adicionais</h2>
-            <div class="item"><span>Porção Batata Frita - <strong>R$ 4,00</strong></span><button onclick="adicionarAoCarrinho('Adicional: Batata Frita', 4)">Adicionar</button></div>
-            <div class="item"><span>Ovo Extra - <strong>R$ 4,00</strong></span><button onclick="adicionarAoCarrinho('Adicional: Ovo', 4)">Adicionar</button></div>
-            <div class="item"><span>Mistura Extra - <strong>R$ 9,00</strong></span><button onclick="adicionarAoCarrinho('Adicional: Mistura', 9)">Adicionar</button></div>
+            <div class="item" id="item-ad-batata"><span style="flex: 1;">Porção Batata Frita - <strong>R$ 4,00</strong></span><button onclick="adicionarAoCarrinho('Adicional: Batata Frita', 4, 'item-ad-batata')">Adicionar</button></div>
+            <div class="item" id="item-ad-ovo"><span style="flex: 1;">Ovo Extra - <strong>R$ 4,00</strong></span><button onclick="adicionarAoCarrinho('Adicional: Ovo', 4, 'item-ad-ovo')">Adicionar</button></div>
+            <div class="item" id="item-ad-mistura"><span style="flex: 1;">Mistura Extra - <strong>R$ 9,00</strong></span><button onclick="adicionarAoCarrinho('Adicional: Mistura', 9, 'item-ad-mistura')">Adicionar</button></div>
         </div>
 
         <div class="category">
             <h2>Bebidas (Sucos e Refrigerantes)</h2>
-            <div class="item"><span>Coca-Cola Lata - <strong>R$ 6,00</strong></span><button onclick="adicionarAoCarrinho('Coca-Cola Lata', 6)">Adicionar</button></div>
-            <div class="item"><span>Guaraná Lata - <strong>R$ 6,00</strong></span><button onclick="adicionarAoCarrinho('Guaraná Lata', 6)">Adicionar</button></div>
-            <div class="item"><span>Fanta Lata - <strong>R$ 6,00</strong></span><button onclick="adicionarAoCarrinho('Fanta Lata', 6)">Adicionar</button></div>
-            <div class="item"><span>Suco Natural (Laranja/Outros) - <strong>R$ 8,00</strong></span><button onclick="adicionarAoCarrinho('Suco Natural', 8)">Adicionar</button></div>
+            <div class="item" id="item-bebida-coca"><span style="flex: 1;">Coca-Cola Lata - <strong>R$ 6,00</strong></span><button onclick="adicionarAoCarrinho('Coca-Cola Lata', 6, 'item-bebida-coca')">Adicionar</button></div>
+            <div class="item" id="item-bebida-guarana"><span style="flex: 1;">Guaraná Lata - <strong>R$ 6,00</strong></span><button onclick="adicionarAoCarrinho('Guaraná Lata', 6, 'item-bebida-guarana')">Adicionar</button></div>
+            <div class="item" id="item-bebida-fanta"><span style="flex: 1;">Fanta Lata - <strong>R$ 6,00</strong></span><button onclick="adicionarAoCarrinho('Fanta Lata', 6, 'item-bebida-fanta')">Adicionar</button></div>
+            <div class="item" id="item-bebida-suco"><span style="flex: 1;">Suco Natural (Laranja/Outros) - <strong>R$ 8,00</strong></span><button onclick="adicionarAoCarrinho('Suco Natural', 8, 'item-bebida-suco')">Adicionar</button></div>
         </div>
     </div>
 
@@ -199,17 +183,36 @@
     <div class="cart">
         <h2>🛒 Seu Carrinho</h2>
         <ul id="lista-carrinho"></ul>
-        <p style="font-size: 18px;"><strong>Total: R$ <span id="total-carrinho">0.00</span></strong></p>
+        <p style="font-size: 16px; margin: 5px 0;">Subtotal: R$ <span id="subtotal-carrinho">0.00</span></p>
+        <p style="font-size: 16px; margin: 5px 0;">Taxa de Entrega: R$ <span id="taxa-entrega">0.00</span></p>
+        <p style="font-size: 18px; color: #f1c40f; margin-top: 5px;"><strong>Total Geral: R$ <span id="total-carrinho">0.00</span></strong></p>
         
         <h3>📍 Dados para Entrega</h3>
-        <label>Nome:</label>
-        <input type="text" id="cliente-nome" placeholder="Seu nome completo">
-        <label>Endereço:</label>
-        <input type="text" id="cliente-endereco" placeholder="Rua e Número">
-        <label>Bairro:</label>
-        <input type="text" id="cliente-bairro" placeholder="Seu bairro">
+        <label>Nome Completo:</label>
+        <input type="text" id="cliente-nome" placeholder="Seu nome completo" required>
+        
+        <label>WhatsApp (com DDD):</label>
+        <input type="text" id="cliente-whatsapp" placeholder="Ex: 13988887777" required>
 
-        <!-- NOVA SEÇÃO DE FORMA DE PAGAMENTO -->
+        <label>Endereço (Rua e Número):</label>
+        <input type="text" id="cliente-endereco" placeholder="Ex: Rua Principal, 123" required>
+
+        <label>Ponto de Referência:</label>
+        <input type="text" id="cliente-referencia" placeholder="Ex: Próximo à praça / Portão marrom" required>
+
+        <label>Selecione o Bairro:</label>
+        <select id="cliente-bairro" onchange="atualizarTaxaEntrega()" required>
+            <option value="" data-taxa="0" disabled selected>Escolha o seu bairro</option>
+            <option value="Vila Margarida" data-taxa="4.00">Vila Margarida (Taxa: R$ 4,00)</option>
+            <option value="Mexico" data-taxa="4.00">México (Taxa: R$ 4,00)</option>
+            <option value="Vila Mateo Bei" data-taxa="4.00">Vila Mateo Bei (Taxa: R$ 4,00)</option>
+            <option value="Planalto" data-taxa="4.00">Planalto (Taxa: R$ 4,00)</option>
+            <option value="Parque Bitaru" data-taxa="5.00">Parque Bitaru (Taxa: R$ 5,00)</option>
+            <option value="Centro" data-taxa="6.00">Centro (Taxa: R$ 6,00)</option>
+            <option value="Jockey Clube" data-taxa="7.00">Jockey Clube (Taxa: R$ 7,00)</option>
+        </select>
+
+        <!-- FORMA DE PAGAMENTO -->
         <h3>💳 Forma de Pagamento</h3>
         <label>Escolha a forma de pagamento:</label>
         <select id="forma-pagamento" onchange="verificarFormaPagamento()">
@@ -218,7 +221,6 @@
             <option value="Cartão">Cartão (Na Entrega)</option>
         </select>
 
-        <!-- Campo dinâmico para troco em dinheiro -->
         <div id="campo-troco" class="hidden" style="margin-top: 10px; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 5px; border: 1px dashed #d4af37;">
             <label>Troco para quanto? (Ex: 50.00)</label>
             <input type="number" id="valor-troco" placeholder="Digite o valor em dinheiro que vai pagar">
@@ -229,7 +231,7 @@
     </div>
 </div>
 
-<!-- Tela de Pagamento / Pix (Aparece se escolher Pix) -->
+<!-- Tela de Pagamento / Pix -->
 <div class="container hidden" id="pagamento-container" style="text-align: center;">
     <h2>💳 Pagamento via Pix</h2>
     <p>Escaneie o QR Code abaixo com o app do seu banco:</p>
@@ -237,12 +239,9 @@
         <img src="https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=PixFicticioGoncalvesRefeicoes" alt="QR Code Pix">
     </div>
     
-    <!-- Bloco Pix Copia e Cola com o botão verde -->
     <div class="pix-copia-cola-box">
         <p style="margin: 0 0 8px 0; font-size: 14px; color: #f1c40f; font-weight: bold;">Pix Copia e Cola:</p>
-        <!-- Campo de texto contendo o código Pix -->
         <input type="text" id="texto-pix-copia" value="00020126580014br.gov.bcb.pix0136f4d5233b-f182-4216-oed3-9c9344a7ec49520400005303986540516.005802BR5914KLETERSONALLAN6010So Vicente62250521mpqringer17117231841763046C5A" readonly style="font-size: 12px; text-align: center; margin-bottom: 5px;">
-        <!-- Botão verde pequeno para copiar -->
         <button onclick="copiarCodigoPix()" class="btn-copiar-pix">📋 Copiar Código Pix</button>
     </div>
 
@@ -261,30 +260,25 @@
     <p id="status-pedido-texto" style="font-size: 20px; font-weight: bold; margin-top: 25px; color: #ff6b6b; text-shadow: 1px 1px 3px rgba(0,0,0,0.9);">
         ⏳ Aguardando o pedido ficar pronto<span class="pontos-animados"><span>.</span><span>.</span><span>.</span></span>
     </p>
+    <p id="codigo-pedido-exibido" style="font-size: 16px; color: #f1c40f; margin-top: 10px;"></p>
 </div>
 
-<!-- Funções JavaScript -->
 <script>
-    // Função para mostrar ou esconder o campo de troco conforme a escolha do select
     function verificarFormaPagamento() {
         const formaPagamento = document.getElementById('forma-pagamento').value;
         const campoTroco = document.getElementById('campo-troco');
-        
         if (formaPagamento === 'Dinheiro') {
             campoTroco.classList.remove('hidden');
         } else {
             campoTroco.classList.add('hidden');
-            document.getElementById('valor-troco').value = ''; // Limpa o campo se mudar de ideia
+            document.getElementById('valor-troco').value = '';
         }
     }
 
-    // Função para copiar o código Pix
     function copiarCodigoPix() {
         const inputPix = document.getElementById('texto-pix-copia');
-        
         inputPix.select();
         inputPix.setSelectionRange(0, 99999); 
-        
         navigator.clipboard.writeText(inputPix.value).then(() => {
             alert('Código Pix copiado com sucesso!');
         }).catch(err => {

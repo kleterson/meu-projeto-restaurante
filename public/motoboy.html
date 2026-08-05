@@ -7,17 +7,81 @@
         body { font-family: Arial, sans-serif; background: #333; color: white; padding: 20px; }
         .container { max-width: 800px; margin: auto; }
         .card { background: #444; padding: 15px; border-radius: 6px; margin-bottom: 15px; border-left: 5px solid #ffc107; }
-        button { background: #007bff; color: white; border: none; padding: 10px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        button { background: #007bff; color: white; border: none; padding: 10px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; margin-right: 5px; margin-top: 5px; }
         button:hover { background: #0056b3; }
+        .btn-gerenciar { background: #e67e22; margin-bottom: 20px; }
+        .btn-gerenciar:hover { background: #d35400; }
+        .btn-copiar { background: #27ae60; }
+        .btn-copiar:hover { background: #219653; }
+        .btn-imprimir { background: #8e44ad; }
+        .btn-imprimir:hover { background: #732d91; }
+        .painel-adm { background: #222; padding: 15px; border-radius: 6px; margin-bottom: 20px; border: 1px solid #d4af37; }
+        .item-adm { display: flex; justify-content: space-between; align-items: center; background: #444; padding: 8px; margin-bottom: 5px; border-radius: 4px; }
+        .esgotado-tag { color: #ff4d4d; font-weight: bold; }
+        .disponivel-tag { color: #2ecc71; font-weight: bold; }
     </style>
 </head>
 <body>
 <div class="container">
     <h1>Painel de Entregas - Motoboy</h1>
+    
+    <!-- Botão para abrir o painel de gerenciamento do cardápio -->
+    <button class="btn-gerenciar" onclick="toggleCardapioAdm()">🍔 Ver/Atualizar Cardápio (Esgotados)</button>
+
+    <!-- Painel de Gerenciamento do Cardápio (Oculto por padrão) -->
+    <div id="painel-adm" class="painel-adm" style="display: none;">
+        <h3>Gerenciar Status dos Pratos</h3>
+        <div id="lista-cardapio-adm">Carregando cardápio...</div>
+    </div>
+
+    <h2>Pedidos Recebidos</h2>
     <div id="pedidos-lista">Carregando pedidos...</div>
 </div>
 
 <script>
+    // Função para alternar a exibição do painel de cardápio do motoboy
+    function toggleCardapioAdm() {
+        const painel = document.getElementById('painel-adm');
+        if (painel.style.display === 'none') {
+            painel.style.display = 'block';
+            carregarCardapioAdm();
+        } else {
+            painel.style.display = 'none';
+        }
+    }
+
+    // Carregar itens do cardápio para o painel do motoboy
+    async function carregarCardapioAdm() {
+        try {
+            const res = await fetch('/api/cardapio');
+            const itens = await res.json();
+            const container = document.getElementById('lista-cardapio-adm');
+            
+            container.innerHTML = '';
+            itens.forEach(item => {
+                container.innerHTML += `
+                    <div class="item-adm">
+                        <span>${item.nome} - R$ ${item.preco.toFixed(2)} (${item.esgotado ? '<span class="esgotado-tag">ESGOTADO</span>' : '<span class="disponivel-tag">DISPONÍVEL</span>'})</span>
+                        <button onclick="alternarEsgotado('${item.id}')">${item.esgotado ? 'Marcar Disponível' : 'Marcar Esgotado'}</button>
+                    </div>
+                `;
+            });
+        } catch (e) {
+            console.error('Erro ao carregar cardápio adm', e);
+        }
+    }
+
+    // Alterar o status de esgotado/disponível de um item
+    async function alternarEsgotado(id) {
+        try {
+            await fetch(`/api/cardapio/${id}/toggle`, { method: 'POST' });
+            carregarCardapioAdm();
+        } catch (e) {
+            console.error('Erro ao atualizar item', e);
+        }
+    }
+
+    // Carregar pedidos no painel do motoboy
     async function carregarPedidos() {
         try {
             const res = await fetch('/api/pedidos');
@@ -31,32 +95,40 @@
 
             container.innerHTML = '';
             pedidos.forEach(p => {
-                let itensStr = p.itens.map(i => `${i.nome}`).join(', ');
+                let itensStr = p.itens.map(i => `${i.nome} (R$ ${i.preco.toFixed(2)})`).join(', ');
 
-                // Lógica de cores e textos exata para o Motoboy
                 let htmlPagamento = '';
                 if (p.formaPagamento && p.formaPagamento.includes('Dinheiro')) {
-                    htmlPagamento = `<p><strong>Forma de Pagamento:</strong> <span style="color: #ff4d4d; font-weight: bold;">Pagamento em Dinheiro (${p.formaPagamento})</span></p>`;
+                    let trocoTexto = p.troco ? ` (Troco para R$ ${p.troco})` : '';
+                    htmlPagamento = `<p><strong>Forma de Pagamento:</strong> <span style="color: #ff4d4d; font-weight: bold;">Dinheiro${trocoTexto}</span></p>`;
                 } else if (p.formaPagamento && p.formaPagamento.includes('Cartão')) {
-                    htmlPagamento = `<p><strong>Forma de Pagamento:</strong> <span style="color: #3498db; font-weight: bold;">📱💳 Levando a maquininha Motoca</span></p>`;
+                    htmlPagamento = `<p><strong>Forma de Pagamento:</strong> <span style="color: #3498db; font-weight: bold;">Cartão (Na Entrega)</span></p>`;
                 } else {
-                    htmlPagamento = `<p><strong>Forma de Pagamento:</strong> <span style="color: #28a745; font-weight: bold;">Pago pelo app (Pix)</span></p>`;
+                    htmlPagamento = `<p><strong>Forma de Pagamento:</strong> <span style="color: #28a745; font-weight: bold;">Pix (Pago)</span></p>`;
                 }
 
                 container.innerHTML += `
                     <div class="card">
-                        <h3>Cliente: ${p.nome}</h3>
-                        <p><strong>Endereço:</strong> ${p.endereco}, ${p.bairro}</p>
+                        <h3>Código do Pedido: #${p.codigo || '----'}</h3>
+                        <p><strong>Cliente:</strong> ${p.nome} (${p.whatsapp || 'Não informado'})</p>
+                        <p><strong>Endereço:</strong> ${p.endereco}</p>
+                        <p><strong>Bairro:</strong> ${p.bairro} (Taxa: R$ ${(p.taxa || 0).toFixed(2)})</p>
+                        <p><strong>Ponto de Referência:</strong> ${p.referencia || 'Não informado'}</p>
                         <p><strong>Itens:</strong> ${itensStr}</p>
-                        <p><strong>Total:</strong> R$ ${p.total.toFixed(2)}</p>
+                        <p><strong>Total Geral:</strong> R$ ${p.total.toFixed(2)}</p>
                         ${htmlPagamento}
                         <p><strong>Status Atual:</strong> <span style="color: #ffc107;">${p.status}</span></p>
-                        ${p.status !== "Motoboy a caminho do seu endereço 🛵" ? `<button onclick="marcarMotoboyACaminho(${p.id})">📦 Enviar Motoboy</button>` : '<p style="color: #28a745; font-weight: bold;">✔ Motoboy a caminho do endereço</p>'}
+                        
+                        <div style="margin-top: 10px;">
+                            ${p.status !== "Motoboy a caminho do seu endereço 🛵" ? `<button onclick="marcarMotoboyACaminho(${p.id})">📦 Enviar Motoboy</button>` : '<p style="color: #28a745; font-weight: bold; display:inline-block; margin-right: 10px;">✔ Motoboy a caminho</p>'}
+                            <button class="btn-copiar" onclick='copiarPedido(${JSON.stringify(p)})'>📋 Copiar Pedido</button>
+                            <button class="btn-imprimir" onclick='imprimirPedido(${JSON.stringify(p)})'>🖨️ Imprimir Pedido</button>
+                        </div>
                     </div>
                 `;
             });
         } catch (e) {
-            console.error('Erro ao buscar pedidos');
+            console.error('Erro ao buscar pedidos', e);
         }
     }
 
@@ -67,6 +139,64 @@
             body: JSON.stringify({ status: 'Motoboy a caminho do seu endereço 🛵' })
         });
         carregarPedidos();
+    }
+
+    // Função para copiar o pedido completo
+    function copiarPedido(p) {
+        const itensTexto = p.itens.map(i => `- ${i.nome} (R$ ${i.preco.toFixed(2)})`).join('\n');
+        const texto = `📦 *PEDIDO #${p.codigo}*\n\n` +
+                      `👤 *Cliente:* ${p.nome}\n` +
+                      `📱 *WhatsApp:* ${p.whatsapp}\n` +
+                      `🏠 *Endereço:* ${p.endereco}\n` +
+                      `📍 *Bairro:* ${p.bairro} (Taxa: R$ ${(p.taxa || 0).toFixed(2)})\n` +
+                      `🔍 *Referência:* ${p.referencia}\n\n` +
+                      `🛒 *Itens:*\n${itensTexto}\n\n` +
+                      `💰 *Total Geral:* R$ ${p.total.toFixed(2)}`;
+
+        navigator.clipboard.writeText(texto).then(() => {
+            alert("Pedido copiado com sucesso!");
+        }).catch(err => {
+            console.error("Erro ao copiar:", err);
+        });
+    }
+
+    // Função para imprimir o pedido completo
+    function imprimirPedido(p) {
+        const itensTexto = p.itens.map(i => `<li>${i.nome} - R$ ${i.preco.toFixed(2)}</li>`).join('');
+        
+        const janelaImpressao = window.open('', '', 'width=600,height=600');
+        janelaImpressao.document.write(`
+            <html>
+            <head>
+                <title>Imprimir Pedido #${p.codigo}</title>
+                <style>
+                    body { font-family: monospace; padding: 20px; }
+                    h2 { text-align: center; }
+                </style>
+            </head>
+            <body>
+                <h2>COMPROVANTE DE ENTREGA</h2>
+                <p><strong>Código do Pedido:</strong> #${p.codigo}</p>
+                <hr>
+                <p><strong>Cliente:</strong> ${p.nome}</p>
+                <p><strong>WhatsApp:</strong> ${p.whatsapp}</p>
+                <p><strong>Endereço:</strong> ${p.endereco}</p>
+                <p><strong>Bairro:</strong> ${p.bairro} (Taxa: R$ ${(p.taxa || 0).toFixed(2)})</p>
+                <p><strong>Referência:</strong> ${p.referencia}</p>
+                <hr>
+                <p><strong>Itens:</strong></p>
+                <ul>${itensTexto}</ul>
+                <hr>
+                <h3>Total Geral: R$ ${p.total.toFixed(2)}</h3>
+            </body>
+            </html>
+        `);
+        janelaImpressao.document.close();
+        janelaImpressao.focus();
+        setTimeout(() => {
+            janelaImpressao.print();
+            janelaImpressao.close();
+        }, 500);
     }
 
     setInterval(carregarPedidos, 3000);

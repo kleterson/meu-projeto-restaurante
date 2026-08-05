@@ -1,24 +1,42 @@
 let carrinho = [];
 
-function adicionarAoCarrinho(nome, preco) {
-    carrinho.push({ nome, preco });
+function adicionarAoCarrinho(nome, preco, itemId) {
+    carrinho.push({ nome, preco, itemId });
     atualizarCarrinho();
 }
 
 function atualizarCarrinho() {
     const lista = document.getElementById('lista-carrinho');
+    const subtotalEl = document.getElementById('subtotal-carrinho');
+    const taxaEl = document.getElementById('taxa-entrega');
     const totalEl = document.getElementById('total-carrinho');
+    
     if (!lista || !totalEl) return;
     
     lista.innerHTML = '';
-    let total = 0;
+    let subtotal = 0;
 
     carrinho.forEach((item, index) => {
-        total += item.preco;
+        subtotal += item.preco;
         lista.innerHTML += `<li>${item.nome} - R$ ${item.preco.toFixed(2)} <button onclick="removerItem(${index})" style="background:#dc3545; padding:2px 6px; font-size:10px;">X</button></li>`;
     });
 
-    totalEl.innerText = total.toFixed(2);
+    if (subtotalEl) subtotalEl.innerText = subtotal.toFixed(2);
+    
+    // Pega a taxa com base no bairro selecionado
+    const selectBairro = document.getElementById('cliente-bairro');
+    let taxa = 0;
+    if (selectBairro && selectBairro.selectedIndex > 0) {
+        taxa = parseFloat(selectBairro.options[selectBairro.selectedIndex].getAttribute('data-taxa')) || 0;
+    }
+    if (taxaEl) taxaEl.innerText = taxa.toFixed(2);
+
+    let totalGeral = subtotal + taxa;
+    totalEl.innerText = totalGeral.toFixed(2);
+}
+
+function atualizarTaxaEntrega() {
+    atualizarCarrinho();
 }
 
 function removerItem(index) {
@@ -35,17 +53,25 @@ async function finalizarCompra() {
         return;
     }
     const nome = document.getElementById('cliente-nome').value;
+    const whatsapp = document.getElementById('cliente-whatsapp').value;
     const endereco = document.getElementById('cliente-endereco').value;
-    const bairro = document.getElementById('cliente-bairro').value;
+    const referencia = document.getElementById('cliente-referencia').value;
+    const bairroSelect = document.getElementById('cliente-bairro');
+    const bairro = bairroSelect.value;
+    const taxa = parseFloat(bairroSelect.options[bairroSelect.selectedIndex]?.getAttribute('data-taxa')) || 0;
     const formaPagamento = document.getElementById('forma-pagamento').value;
     let informacaoPagamento = "";
 
-    if (!nome || !endereco || !bairro) {
-        alert('Por favor, preencha nome, endereço e bairro!');
+    if (!nome || !whatsapp || !endereco || !referencia || !bairro) {
+        alert('Por favor, preencha todos os dados de entrega (Nome, WhatsApp, Endereço, Referência e Bairro)!');
         return;
     }
 
-    const totalCarrinho = carrinho.reduce((acc, item) => acc + item.preco, 0);
+    const subtotalCarrinho = carrinho.reduce((acc, item) => acc + item.preco, 0);
+    const totalCarrinho = subtotalCarrinho + taxa;
+
+    // Gera o código aleatório de 4 dígitos para o pedido
+    const codigoPedido = Math.floor(1000 + Math.random() * 9000);
 
     // Validação se for Dinheiro
     if (formaPagamento === 'Dinheiro') {
@@ -68,12 +94,17 @@ async function finalizarCompra() {
     }
 
     dadosPedidoGlobal = {
+        codigo: codigoPedido,
         nome,
+        whatsapp,
         endereco,
+        referencia,
         bairro,
+        taxa,
         formaPagamento: informacaoPagamento || formaPagamento,
         itens: [...carrinho],
-        total: totalCarrinho
+        total: totalCarrinho,
+        status: 'Aguardando o pedido ficar pronto ⏳'
     };
 
     // Mudar para a tela de pagamento
@@ -86,7 +117,8 @@ async function finalizarCompra() {
     if (formaPagamento === 'Dinheiro' || formaPagamento.includes('Cartão') || formaPagamento.includes('Cartao')) {
         containerPagamento.innerHTML = `
             <h2>💳 Pedido Realizado com Sucesso!</h2>
-            <p style="font-size: 18px; color: #f1c40f; margin: 20px 0;">Forma de Pagamento: <b>${informacaoPagamento}</b></p>
+            <p style="font-size: 18px; color: #f1c40f; margin: 20px 0;">Código do Pedido: <b>#${codigoPedido}</b></p>
+            <p style="font-size: 16px; color: #fff; margin: 10px 0;">Forma de Pagamento: <b>${informacaoPagamento}</b></p>
             <p>Registrando seu pedido na cozinha...</p>
         `;
         
@@ -96,6 +128,7 @@ async function finalizarCompra() {
         setTimeout(() => {
             document.getElementById('pagamento-container').classList.add('hidden');
             document.getElementById('sucesso-container').classList.remove('hidden');
+            document.getElementById('codigo-pedido-exibido').innerText = `Seu Código de Pedido: #${codigoPedido}`;
         }, 1500);
         return;
     }
@@ -128,12 +161,13 @@ async function finalizarCompra() {
                     <button onclick="copiarCodigoPix()" class="btn-copiar-pix" style="background-color: #27ae60; color: white; border: none; padding: 6px 14px; font-size: 13px; font-weight: bold; border-radius: 4px; cursor: pointer; margin-top: 5px;">📋 Copiar Código Pix</button>
                 </div>
 
+                <p style="font-size: 16px; color: #f1c40f;">Código do Pedido: <b>#${codigoPedido}</b></p>
                 <p id="status-pagamento-pix" style="font-weight: bold; color: #f1c40f; margin-top: 15px;">
                     ⏳ Aguardando a aprovação do pagamento...
                 </p>
             `;
 
-            iniciarVerificacaoPagamentoMP(resultado.id_pagamento);
+            iniciarVerificacaoPagamentoMP(resultado.id_pagamento, codigoPedido);
         } else {
             containerPagamento.innerHTML = `<h2 style="color:red;">Erro ao gerar Pix. Tente novamente.</h2>`;
         }
@@ -186,7 +220,7 @@ function tocarSomSucesso() {
     }
 }
 
-function iniciarVerificacaoPagamentoMP(idPagamento) {
+function iniciarVerificacaoPagamentoMP(idPagamento, codigoPedido) {
     intervaloVerificacao = setInterval(async () => {
         try {
             const res = await fetch(`/api/verificar-pagamento/${idPagamento}`);
@@ -199,6 +233,7 @@ function iniciarVerificacaoPagamentoMP(idPagamento) {
 
                 document.getElementById('pagamento-container').classList.add('hidden');
                 document.getElementById('sucesso-container').classList.remove('hidden');
+                document.getElementById('codigo-pedido-exibido').innerText = `Seu Código de Pedido: #${codigoPedido}`;
             }
         } catch (e) {
             console.log("Aguardando confirmação...");
@@ -225,11 +260,40 @@ async function verificarStatusPedido(idPedido) {
         try {
             const res = await fetch('/api/pedidos');
             const pedidos = await res.json();
-            const meuPedido = pedidos.find(p => p.id === idPedido);
+            const meuPedido = pedidos.find(p => p.id === idPedido || p.codigo === dadosPedidoGlobal.codigo);
             if (meuPedido) {
                 const textoStatus = document.getElementById('status-pedido-texto');
-                textoStatus.innerText = meuPedido.status;
+                if (textoStatus) textoStatus.innerText = meuPedido.status;
             }
         } catch(e) {}
     }, 3000);
 }
+
+// Sincronizar esgotados do cardápio visualmente na página principal ao carregar
+async function verificarCardapioEsgotado() {
+    try {
+        const res = await fetch('/api/cardapio');
+        const itens = await res.json();
+        
+        itens.forEach(item => {
+            // Se você tiver elementos mapeados por ID na página
+            const elementoItem = document.getElementById(item.id);
+            if (elementoItem && item.esgotado) {
+                elementoItem.classList.add('esgotado');
+                const btn = elementoItem.querySelector('button');
+                if (btn) {
+                    btn.disabled = true;
+                    btn.innerText = 'ESGOTADO';
+                    btn.style.background = '#555';
+                }
+            }
+        });
+    } catch (e) {
+        console.error("Erro ao verificar itens esgotados", e);
+    }
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+    verificarCardapioEsgotado();
+    setInterval(verificarCardapioEsgotado, 5000);
+});
