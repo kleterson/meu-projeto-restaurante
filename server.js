@@ -93,7 +93,7 @@ app.put('/api/pedidos/:id', (req, res) => {
     }
 });
 
-// Armazenamento em memória para o Cardápio (Permite gerenciar itens esgotados)
+// Armazenamento em memória para o Cardápio
 let cardapio = [
     { id: 'item1', nome: 'X-Burger Especial', preco: 25.00, esgotado: false },
     { id: 'item2', nome: 'X-Salada Duplo', preco: 30.00, esgotado: false },
@@ -106,13 +106,28 @@ app.get('/api/cardapio', (req, res) => {
     res.json(cardapio);
 });
 
-// Rota para alternar o status de esgotado/disponível de um item pelo painel do motoboy/adm
+// Rota para alternar o status de esgotado/disponível
 app.post('/api/cardapio/:id/toggle', (req, res) => {
     const idItem = req.params.id;
     const item = cardapio.find(i => i.id === idItem);
     
     if (item) {
         item.esgotado = !item.esgotado;
+        res.json({ success: true, item });
+    } else {
+        res.status(404).json({ error: 'Item do cardápio não encontrado' });
+    }
+});
+
+// Rota para editar o nome e o preço de um item do cardápio
+app.put('/api/cardapio/:id', (req, res) => {
+    const idItem = req.params.id;
+    const { nome, preco } = req.body;
+    const item = cardapio.find(i => i.id === idItem);
+
+    if (item) {
+        if (nome) item.nome = nome;
+        if (preco !== undefined) item.preco = Number(preco);
         res.json({ success: true, item });
     } else {
         res.status(404).json({ error: 'Item do cardápio não encontrado' });
