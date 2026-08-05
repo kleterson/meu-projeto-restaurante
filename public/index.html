@@ -2,291 +2,321 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gonçalves Lanches & Refeições</title>
     <style>
-        body {
-            background: linear-gradient(rgba(0, 0, 0, 0.65), rgba(0, 0, 0, 0.65)), url('fundo.jpg');
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
-            background-attachment: fixed;
-            font-family: Arial, sans-serif; 
-            margin: 0; 
-            padding: 20px; 
-            color: #fff;
-        }
-        .container { max-width: 950px; margin: auto; background: rgba(20, 5, 5, 0.75); padding: 25px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.7); border: 2px solid #d4af37; backdrop-filter: blur(3px); }
-        
-        .header-title { text-align: center; margin-bottom: 25px; }
-        .header-title h1 { color: #f1c40f; font-size: 32px; margin: 0; text-transform: uppercase; text-shadow: 2px 2px 4px rgba(0,0,0,0.8); }
-        .header-title p { color: #ddd; font-size: 16px; margin: 5px 0 0 0; text-shadow: 1px 1px 3px rgba(0,0,0,0.8); }
-        
-        .header-actions { display: flex; justify-content: center; align-items: center; gap: 15px; margin-top: 10px; flex-wrap: wrap; }
-        .delivery-badge { background: #d4af37; color: #000; padding: 6px 15px; border-radius: 20px; font-weight: bold; display: inline-block; box-shadow: 0 2px 5px rgba(0,0,0,0.5); }
-
-        .btn-dashboard {
-            background: #e67e22;
-            color: white;
-            border: none;
-            padding: 6px 15px;
-            border-radius: 20px;
-            cursor: pointer;
-            font-weight: bold;
-            font-size: 14px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.5);
-        }
-        .btn-dashboard:hover { background: #d35400; }
-
-        h2 { color: #f1c40f; border-bottom: 2px solid #d4af37; padding-bottom: 5px; margin-top: 25px; font-size: 20px; text-shadow: 1px 1px 3px rgba(0,0,0,0.8); }
-        
-        .menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-        @media (max-width: 768px) { .menu-grid { grid-template-columns: 1fr; } }
-
-        .category { background: rgba(40, 10, 10, 0.65); padding: 15px; border-radius: 8px; border: 1px solid rgba(160, 82, 45, 0.8); backdrop-filter: blur(2px); }
-        
-        .item { display: flex; justify-content: space-between; margin-bottom: 10px; background: rgba(55, 15, 15, 0.7); padding: 10px; border-radius: 6px; border: 1px solid rgba(184, 134, 11, 0.7); align-items: center;}
-        .item.esgotado { background: rgba(100, 20, 20, 0.85); border-color: #ff4d4d; opacity: 0.8; }
-        
-        button { background: #27ae60; color: white; border: none; padding: 8px 14px; border-radius: 5px; cursor: pointer; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.4); }
+        body { font-family: Arial, sans-serif; background: #222; color: white; margin: 0; padding: 20px; }
+        .container { max-width: 900px; margin: auto; }
+        h1, h2, h3 { color: #f1c40f; text-align: center; }
+        .categoria-box { background: #333; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #d4af37; }
+        .item-card { display: flex; justify-content: space-between; align-items: center; background: #444; padding: 10px 15px; border-radius: 6px; margin-bottom: 10px; }
+        button { background: #27ae60; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; font-weight: bold; }
         button:hover { background: #219653; }
-        
-        .cart { background: rgba(30, 8, 8, 0.75); padding: 20px; border-radius: 8px; margin-top: 25px; border: 1px solid #f1c40f; backdrop-filter: blur(2px); }
-        .cart ul { padding-left: 20px; color: #fdfdfd; }
-        .hidden { display: none !important; }
-        
-        input, select { width: 100%; padding: 10px; margin: 5px 0 15px 0; border: 1px solid #d4af37; background: rgba(255, 255, 255, 0.9); border-radius: 5px; box-sizing: border-box; color: #000; font-size: 14px;}
-        label { color: #f1c40f; font-weight: bold; font-size: 14px; text-shadow: 1px 1px 2px rgba(0,0,0,0.8); }
-        
-        .obs-acompanha { background: rgba(243, 156, 18, 0.85); color: #000; padding: 10px; border-radius: 5px; font-size: 13px; font-weight: bold; text-align: center; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.4); }
-
-        .pix-copia-cola-box {
-            background: rgba(0, 0, 0, 0.5);
-            padding: 12px;
-            border-radius: 6px;
-            margin-bottom: 15px;
-            border: 1px solid #d4af37;
-        }
-        .btn-copiar-pix {
-            background-color: #27ae60;
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            font-size: 14px;
-            font-weight: bold;
-            border-radius: 5px;
-            cursor: pointer;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.4);
-            margin-top: 8px;
-        }
-        .btn-copiar-pix:hover { background-color: #219653; }
-
-        @keyframes piscar {
-            0% { opacity: 0.2; }
-            50% { opacity: 1; }
-            100% { opacity: 0.2; }
-        }
-        .pontos-animados span { animation: piscar 1.4s infinite; }
-        .pontos-animados span:nth-child(2) { animation-delay: 0.2s; }
-        .pontos-animados span:nth-child(3) { animation-delay: 0.4s; }
+        button:disabled { background: #777; cursor: not-allowed; }
+        .carrinho-box { background: #111; padding: 15px; border-radius: 8px; margin-top: 30px; border: 2px solid #27ae60; }
+        input, select { width: 100%; padding: 8px; margin-top: 5px; margin-bottom: 15px; border-radius: 4px; border: 1px solid #ccc; background: #222; color: white; box-sizing: border-box; }
+        .esgotado-label { color: #ff4d4d; font-weight: bold; }
     </style>
 </head>
 <body>
-<div class="container" id="app-container">
-    <div class="header-title">
-        <h1>Gonçalves Lanches & Refeições</h1>
-        <p>Mais sabor, mais qualidade, melhor preço!</p>
-        <div class="header-actions">
-            <div class="delivery-badge">📞 Delivery: (13) 98151-5612</div>
-            <button class="btn-dashboard hidden" id="btn-voltar-status" onclick="
-                document.getElementById('app-container').classList.add('hidden');
-                document.getElementById('sucesso-container').classList.remove('hidden');
-            ">📊 Ver Status do Pedido</button>
-        </div>
-    </div>
 
-    <div class="obs-acompanha">
-        🍽️ TODOS OS PRATOS E MARMITAS ACOMPANHAM: Arroz, Feijão, Macarrão, Farofa, Batata Frita e Salada!
-    </div>
+<div class="container">
+    <h1>Gonçalves Lanches & Refeições</h1>
+    <p style="text-align: center;">Faça seu pedido online de forma rápida e segura!</p>
 
-    <div class="menu-grid">
-        <!-- PRATO DO DIA -->
-        <div class="category">
-            <h2>Prato do Dia</h2>
-            <div class="item" id="item-frango-creme-milho">
-                <span>Frango Milanesa c/ Creme de Milho - <strong>R$ 16,00</strong></span>
-                <button onclick="adicionarAoCarrinho('Prato do Dia: Frango Milanesa c/ Creme de Milho', 16, 'item-frango-creme-milho')">Adicionar</button>
-            </div>
+    <!-- O Cardápio será injetado aqui via JavaScript -->
+    <div id="cardapio-container">Carregando cardápio...</div>
 
-            <h2>Marmitas Econômicas</h2>
-            <div class="item" id="item-calabresa-eco">
-                <span>Calabresa Acebolada - <strong>R$ 10,00</strong></span>
-                <button onclick="adicionarAoCarrinho('Marmita Econômica: Calabresa Acebolada', 10, 'item-calabresa-eco')">Adicionar</button>
-            </div>
-            <div class="item" id="item-frango-milanesa-eco">
-                <span>Frango Milanesa - <strong>R$ 10,00</strong></span>
-                <button onclick="adicionarAoCarrinho('Marmita Econômica: Frango Milanesa', 10, 'item-frango-milanesa-eco')">Adicionar</button>
-            </div>
-            <div class="item" id="item-toscana-eco">
-                <span>Toscana - <strong>R$ 10,00</strong></span>
-                <button onclick="adicionarAoCarrinho('Marmita Econômica: Toscana', 10, 'item-toscana-eco')">Adicionar</button>
-            </div>
-            <div class="item" id="item-figado-eco">
-                <span>Fígado Acebolado - <strong>R$ 10,00</strong></span>
-                <button onclick="adicionarAoCarrinho('Marmita Econômica: Fígado Acebolado', 10, 'item-figado-eco')">Adicionar</button>
-            </div>
-            <div class="item" id="item-nuggets-eco">
-                <span>Nuggets - <strong>R$ 10,00</strong></span>
-                <button onclick="adicionarAoCarrinho('Marmita Econômica: Nuggets', 10, 'item-nuggets-eco')">Adicionar</button>
-            </div>
-            <div class="item" id="item-omelete-eco">
-                <span>Omelete Simples - <strong>R$ 10,00</strong></span>
-                <button onclick="adicionarAoCarrinho('Marmita Econômica: Omelete Simples', 10, 'item-omelete-eco')">Adicionar</button>
-            </div>
-        </div>
+    <!-- Carrinho e Finalização -->
+    <div class="carrinho-box">
+        <h2>Seu Carrinho</h2>
+        <div id="carrinho-itens">Nenhum item adicionado.</div>
+        <h3>Total Geral: R$ <span id="carrinho-total">0.00</span></h3>
 
-        <!-- MARMITAS COMPLETAS G & ADICIONAIS -->
-        <div class="category">
-            <h2>Marmitas Completas G</h2>
-            <div class="item" id="item-g-file"><span style="flex: 1;">Filé Grelhado - <strong>R$ 14,00</strong></span><button onclick="adicionarAoCarrinho('Marmita G: Filé Grelhado', 14, 'item-g-file')">Adicionar</button></div>
-            <div class="item" id="item-g-frango-mil"><span style="flex: 1;">Frango a Milanesa - <strong>R$ 16,00</strong></span><button onclick="adicionarAoCarrinho('Marmita G: Frango a Milanesa', 16, 'item-g-frango-mil')">Adicionar</button></div>
-            <div class="item" id="item-g-calabresa"><span style="flex: 1;">Calabresa Acebolada - <strong>R$ 15,00</strong></span><button onclick="adicionarAoCarrinho('Marmita G: Calabresa Acebolada', 15, 'item-g-calabresa')">Adicionar</button></div>
-            <div class="item" id="item-g-toscana"><span style="flex: 1;">Toscana Acebolada - <strong>R$ 15,00</strong></span><button onclick="adicionarAoCarrinho('Marmita G: Toscana Acebolada', 15, 'item-g-toscana')">Adicionar</button></div>
-            <div class="item" id="item-g-bisteca"><span style="flex: 1;">Bisteca com Ovo - <strong>R$ 15,00</strong></span><button onclick="adicionarAoCarrinho('Marmita G: Bisteca com Ovo', 15, 'item-g-bisteca')">Adicionar</button></div>
-            <div class="item" id="item-g-figado"><span style="flex: 1;">Fígado Acebolado - <strong>R$ 15,00</strong></span><button onclick="adicionarAoCarrinho('Marmita G: Fígado Acebolado', 15, 'item-g-figado')">Adicionar</button></div>
-            <div class="item" id="item-g-omelete-recheado"><span style="flex: 1;">Omelete Recheado - <strong>R$ 16,00</strong></span><button onclick="adicionarAoCarrinho('Marmita G: Omelete Recheado', 16, 'item-g-omelete-recheado')">Adicionar</button></div>
-            <div class="item" id="item-g-parmegiana"><span style="flex: 1;">Frango Parmegiana - <strong>R$ 20,00</strong></span><button onclick="adicionarAoCarrinho('Marmita G: Frango Parmegiana', 20, 'item-g-parmegiana')">Adicionar</button></div>
-            <div class="item" id="item-g-contra-file"><span style="flex: 1;">Contra Filé Acebolado - <strong>R$ 23,00</strong></span><button onclick="adicionarAoCarrinho('Marmita G: Contra Filé Acebolado', 23, 'item-g-contra-file')">Adicionar</button></div>
-            <div class="item" id="item-g-contra-parmegiana"><span style="flex: 1;">Contra Filé Parmegiana - <strong>R$ 25,00</strong></span><button onclick="adicionarAoCarrinho('Marmita G: Contra Filé Parmegiana', 25, 'item-g-contra-parmegiana')">Adicionar</button></div>
-            <div class="item" id="item-g-contra-ovo"><span style="flex: 1;">Contra Filé com Ovo - <strong>R$ 25,00</strong></span><button onclick="adicionarAoCarrinho('Marmita G: Contra Filé com Ovo', 25, 'item-g-contra-ovo')">Adicionar</button></div>
-        </div>
-    </div>
+        <hr style="border-color: #444; margin: 20px 0;">
 
-    <!-- BEBIDAS E ADICIONAIS -->
-    <div style="margin-top: 20px;" class="menu-grid">
-        <div class="category">
-            <h2>Adicionais</h2>
-            <div class="item" id="item-ad-batata"><span style="flex: 1;">Porção Batata Frita - <strong>R$ 4,00</strong></span><button onclick="adicionarAoCarrinho('Adicional: Batata Frita', 4, 'item-ad-batata')">Adicionar</button></div>
-            <div class="item" id="item-ad-ovo"><span style="flex: 1;">Ovo Extra - <strong>R$ 4,00</strong></span><button onclick="adicionarAoCarrinho('Adicional: Ovo', 4, 'item-ad-ovo')">Adicionar</button></div>
-            <div class="item" id="item-ad-mistura"><span style="flex: 1;">Mistura Extra - <strong>R$ 9,00</strong></span><button onclick="adicionarAoCarrinho('Adicional: Mistura', 9, 'item-ad-mistura')">Adicionar</button></div>
-        </div>
-
-        <div class="category">
-            <h2>Bebidas (Sucos e Refrigerantes)</h2>
-            <div class="item" id="item-bebida-coca"><span style="flex: 1;">Coca-Cola Lata - <strong>R$ 6,00</strong></span><button onclick="adicionarAoCarrinho('Coca-Cola Lata', 6, 'item-bebida-coca')">Adicionar</button></div>
-            <div class="item" id="item-bebida-guarana"><span style="flex: 1;">Guaraná Lata - <strong>R$ 6,00</strong></span><button onclick="adicionarAoCarrinho('Guaraná Lata', 6, 'item-bebida-guarana')">Adicionar</button></div>
-            <div class="item" id="item-bebida-fanta"><span style="flex: 1;">Fanta Lata - <strong>R$ 6,00</strong></span><button onclick="adicionarAoCarrinho('Fanta Lata', 6, 'item-bebida-fanta')">Adicionar</button></div>
-            <div class="item" id="item-bebida-suco"><span style="flex: 1;">Suco Natural (Laranja/Outros) - <strong>R$ 8,00</strong></span><button onclick="adicionarAoCarrinho('Suco Natural', 8, 'item-bebida-suco')">Adicionar</button></div>
-        </div>
-    </div>
-
-    <!-- Carrinho de Compras -->
-    <div class="cart">
-        <h2>🛒 Seu Carrinho</h2>
-        <ul id="lista-carrinho"></ul>
-        <p style="font-size: 16px; margin: 5px 0;">Subtotal: R$ <span id="subtotal-carrinho">0.00</span></p>
-        <p style="font-size: 16px; margin: 5px 0;">Taxa de Entrega: R$ <span id="taxa-entrega">0.00</span></p>
-        <p style="font-size: 18px; color: #f1c40f; margin-top: 5px;"><strong>Total Geral: R$ <span id="total-carrinho">0.00</span></strong></p>
-        
-        <h3>📍 Dados para Entrega</h3>
+        <h3>Dados para Entrega</h3>
         <label>Nome Completo:</label>
-        <input type="text" id="cliente-nome" placeholder="Seu nome completo" required>
-        
-        <label>WhatsApp (com DDD):</label>
-        <input type="text" id="cliente-whatsapp" placeholder="Ex: 13988887777" required>
+        <input type="text" id="cliente-nome" placeholder="Digite seu nome">
+
+        <label>WhatsApp:</label>
+        <input type="text" id="cliente-whatsapp" placeholder="(XX) 9XXXX-XXXX">
+
+        <label>Bairro (Define a Taxa de Entrega):</label>
+        <select id="cliente-bairro" onchange="atualizarTotal()">
+            <option value="Centro" data-taxa="5.00">Centro - R$ 5,00</option>
+            <option value="Bela Vista" data-taxa="7.00">Bela Vista - R$ 7,00</option>
+            <option value="Santa Rita" data-taxa="10.00">Santa Rita - R$ 10,00</option>
+            <option value="Outros" data-taxa="12.00">Outros Bairros - R$ 12,00</option>
+        </select>
 
         <label>Endereço (Rua e Número):</label>
-        <input type="text" id="cliente-endereco" placeholder="Ex: Rua Principal, 123" required>
+        <input type="text" id="cliente-endereco" placeholder="Ex: Rua das Flores, 123">
 
         <label>Ponto de Referência:</label>
-        <input type="text" id="cliente-referencia" placeholder="Ex: Próximo à praça / Portão marrom" required>
+        <input type="text" id="cliente-referencia" placeholder="Ex: Próximo ao mercado">
 
-        <label>Selecione o Bairro:</label>
-        <select id="cliente-bairro" onchange="atualizarTaxaEntrega()" required>
-            <option value="" data-taxa="0" disabled selected>Escolha o seu bairro</option>
-            <option value="Vila Margarida" data-taxa="4.00">Vila Margarida (Taxa: R$ 4,00)</option>
-            <option value="Mexico" data-taxa="4.00">México (Taxa: R$ 4,00)</option>
-            <option value="Vila Mateo Bei" data-taxa="4.00">Vila Mateo Bei (Taxa: R$ 4,00)</option>
-            <option value="Planalto" data-taxa="4.00">Planalto (Taxa: R$ 4,00)</option>
-            <option value="Parque Bitaru" data-taxa="5.00">Parque Bitaru (Taxa: R$ 5,00)</option>
-            <option value="Centro" data-taxa="6.00">Centro (Taxa: R$ 6,00)</option>
-            <option value="Jockey Clube" data-taxa="7.00">Jockey Clube (Taxa: R$ 7,00)</option>
-        </select>
-
-        <!-- FORMA DE PAGAMENTO -->
-        <h3>💳 Forma de Pagamento</h3>
-        <label>Escolha a forma de pagamento:</label>
+        <label>Forma de Pagamento:</label>
         <select id="forma-pagamento" onchange="verificarFormaPagamento()">
-            <option value="Pix">Pix</option>
+            <option value="Pix">Pix (Aprovação Automática)</option>
             <option value="Dinheiro">Dinheiro</option>
-            <option value="Cartão">Cartão (Na Entrega)</option>
+            <option value="Cartao">Cartão (Na Entrega)</option>
         </select>
 
-        <div id="campo-troco" class="hidden" style="margin-top: 10px; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 5px; border: 1px dashed #d4af37;">
-            <label>Troco para quanto? (Ex: 50.00)</label>
-            <input type="number" id="valor-troco" placeholder="Digite o valor em dinheiro que vai pagar">
+        <div id="campo-troco" style="display: none;">
+            <label>Troco para quanto?</label>
+            <input type="text" id="cliente-troco" placeholder="Ex: R$ 50,00">
         </div>
 
-        <br>
-        <button onclick="finalizarCompra()" style="background: #e67e22; font-size: 16px; width: 100%; padding: 12px; margin-top: 10px;">Comprar Agora</button>
+        <button onclick="finalizarPedido()" style="width: 100%; padding: 12px; font-size: 16px; background: #e67e22; margin-top: 10px;">Finalizar e Enviar Pedido 🚀</button>
     </div>
 </div>
 
-<!-- Tela de Pagamento / Pix -->
-<div class="container hidden" id="pagamento-container" style="text-align: center;">
-    <h2>💳 Pagamento via Pix</h2>
-    <p>Escaneie o QR Code abaixo com o app do seu banco:</p>
-    <div style="margin: 20px;">
-        <img src="https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=PixFicticioGoncalvesRefeicoes" alt="QR Code Pix">
+<!-- Modal / Área de Pagamento Pix -->
+<div id="modal-pix" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); justify-content:center; align-items:center;">
+    <div style="background:#333; padding:20px; border-radius:8px; text-align:center; max-width:400px; width:90%;">
+        <h3>Pague via Pix para Concluir</h3>
+        <p>Escaneie o QR Code abaixo com o aplicativo do seu banco:</p>
+        <div id="pix-qrcode-img"></div>
+        <p style="font-size: 12px; word-break: break-all; background: #222; padding: 8px;" id="pix-copia-cola"></p>
+        <button onclick="copiarPix()" style="background: #3498db; margin-bottom: 10px;">Copiar Código Pix</button>
+        <p id="status-pagamento" style="color: #f1c40f; font-weight: bold;">Aguardando pagamento...</p>
+        <button onclick="fecharModalPix()" style="background: #e74c3c;">Cancelar / Fechar</button>
     </div>
-    
-    <div class="pix-copia-cola-box">
-        <p style="margin: 0 0 8px 0; font-size: 14px; color: #f1c40f; font-weight: bold;">Pix Copia e Cola:</p>
-        <input type="text" id="texto-pix-copia" value="00020126580014br.gov.bcb.pix0136f4d5233b-f182-4216-oed3-9c9344a7ec49520400005303986540516.005802BR5914KLETERSONALLAN6010So Vicente62250521mpqringer17117231841763046C5A" readonly style="font-size: 12px; text-align: center; margin-bottom: 5px;">
-        <button onclick="copiarCodigoPix()" class="btn-copiar-pix">📋 Copiar Código Pix</button>
-    </div>
-
-    <button onclick="simularPagamentoEfetuado()" style="background: #f1c40f; color: black; font-weight: bold; width: 100%; padding: 14px; font-size: 16px; margin-top: 10px;">Simular que o Pagamento foi Concluído</button>
-</div>
-
-<!-- Tela de Sucesso e Acompanhamento -->
-<div class="container hidden" id="sucesso-container" style="text-align: center;">
-    <button onclick="
-        document.getElementById('sucesso-container').classList.add('hidden'); 
-        document.getElementById('app-container').classList.remove('hidden');
-        document.getElementById('btn-voltar-status').classList.remove('hidden');
-    " style="background: #3498db; color: white; border: none; margin-bottom: 20px; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold; font-size: 14px;">← Voltar para o Cardápio</button>
-    
-    <h2 style="color: #27ae60; font-size: 24px;">Obrigado pelas compras, volte sempre! 😊</h2>
-    <p id="status-pedido-texto" style="font-size: 20px; font-weight: bold; margin-top: 25px; color: #ff6b6b; text-shadow: 1px 1px 3px rgba(0,0,0,0.9);">
-        ⏳ Aguardando o pedido ficar pronto<span class="pontos-animados"><span>.</span><span>.</span><span>.</span></span>
-    </p>
-    <p id="codigo-pedido-exibido" style="font-size: 16px; color: #f1c40f; margin-top: 10px;"></p>
 </div>
 
 <script>
-    function verificarFormaPagamento() {
-        const formaPagamento = document.getElementById('forma-pagamento').value;
-        const campoTroco = document.getElementById('campo-troco');
-        if (formaPagamento === 'Dinheiro') {
-            campoTroco.classList.remove('hidden');
-        } else {
-            campoTroco.classList.add('hidden');
-            document.getElementById('valor-troco').value = '';
+    let carrinho = [];
+    let cardapioGlobal = [];
+    let idPagamentoAtual = null;
+    let intervaloChecagem = null;
+
+    // Buscar o cardápio do servidor ao carregar a página
+    async function carregarCardapioCliente() {
+        try {
+            const res = await fetch('/api/cardapio');
+            cardapioGlobal = await res.json();
+            renderizarCardapio();
+        } catch (e) {
+            console.error('Erro ao carregar cardápio', e);
+            document.getElementById('cardapio-container').innerHTML = '<p style="color:red; text-align:center;">Erro ao carregar o cardápio. Tente atualizar a página.</p>';
         }
     }
 
-    function copiarCodigoPix() {
-        const inputPix = document.getElementById('texto-pix-copia');
-        inputPix.select();
-        inputPix.setSelectionRange(0, 99999); 
-        navigator.clipboard.writeText(inputPix.value).then(() => {
-            alert('Código Pix copiado com sucesso!');
-        }).catch(err => {
-            console.error('Erro ao copiar o código Pix: ', err);
+    function renderizarCardapio() {
+        const container = document.getElementById('cardapio-container');
+        container.innerHTML = '';
+
+        // Agrupar por categoria
+        const categorias = {};
+        cardapioGlobal.forEach(item => {
+            if (!categorias[item.categoria]) categorias[item.categoria] = [];
+            categorias[item.categoria].push(item);
+        });
+
+        for (let cat in categorias) {
+            let htmlItems = '';
+            categorias[cat].forEach(item => {
+                if (item.esgotado) {
+                    htmlItems += `
+                        <div class="item-card" style="opacity: 0.6;">
+                            <div>
+                                <strong>${item.nome}</strong> - R$ ${item.preco.toFixed(2)}
+                                <br><span class="esgotado-label">ESGOTADO</span>
+                            </div>
+                            <button disabled>Indisponível</button>
+                        </div>
+                    `;
+                } else {
+                    htmlItems += `
+                        <div class="item-card">
+                            <div>
+                                <strong>${item.nome}</strong> - R$ ${item.preco.toFixed(2)}
+                            </div>
+                            <button onclick="adicionarAoCarrinho('${item.id}')">Adicionar</button>
+                        </div>
+                    `;
+                }
+            });
+
+            container.innerHTML += `
+                <div class="categoria-box">
+                    <h2>${cat}</h2>
+                    ${htmlItems}
+                </div>
+            `;
+        }
+    }
+
+    function adicionarAoCarrinho(id) {
+        const item = cardapioGlobal.find(i => i.id === id);
+        if (item && !item.esgotado) {
+            carrinho.push(item);
+            atualizarCarrinho();
+        }
+    }
+
+    function removerDoCarrinho(index) {
+        carrinho.splice(index, 1);
+        atualizarCarrinho();
+    }
+
+    function atualizarCarrinho() {
+        const container = document.getElementById('carrinho-itens');
+        if (carrinho.length === 0) {
+            container.innerHTML = 'Nenhum item adicionado.';
+            atualizarTotal();
+            return;
+        }
+
+        container.innerHTML = '';
+        carrinho.forEach((item, index) => {
+            container.innerHTML += `
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
+                    <span>${item.nome} - R$ ${item.preco.toFixed(2)}</span>
+                    <button onclick="removerDoCarrinho(${index})" style="background:#c0392b; padding: 2px 6px; font-size:12px;">Remover</button>
+                </div>
+            `;
+        });
+        atualizarTotal();
+    }
+
+    function atualizarTotal() {
+        let subtotal = carrinho.reduce((sum, item) => sum + item.preco, 0);
+        let selectBairro = document.getElementById('cliente-bairro');
+        let taxaEntrega = 0;
+        
+        if (selectBairro && selectBairro.options[selectBairro.selectedIndex]) {
+            taxaEntrega = parseFloat(selectBairro.options[selectBairro.selectedIndex].getAttribute('data-taxa')) || 0;
+        }
+
+        let totalGeral = subtotal + taxaEntrega;
+        document.getElementById('carrinho-total').innerText = totalGeral.toFixed(2);
+    }
+
+    function verificarFormaPagamento() {
+        const forma = document.getElementById('forma-pagamento').value;
+        const campoTroco = document.getElementById('campo-troco');
+        campoTroco.style.display = forma === 'Dinheiro' ? 'block' : 'none';
+    }
+
+    async function finalizarPedido() {
+        if (carrinho.length === 0) {
+            alert('Seu carrinho está vazio!');
+            return;
+        }
+
+        const nome = document.getElementById('cliente-nome').value.trim();
+        const whatsapp = document.getElementById('cliente-whatsapp').value.trim();
+        const endereco = document.getElementById('cliente-endereco').value.trim();
+        const bairroSelect = document.getElementById('cliente-bairro');
+        const bairro = bairroSelect.value;
+        const taxa = parseFloat(bairroSelect.options[bairroSelect.selectedIndex].getAttribute('data-taxa')) || 0;
+        const referencia = document.getElementById('cliente-referencia').value.trim();
+        const formaPagamento = document.getElementById('forma-pagamento').value;
+        const troco = document.getElementById('cliente-troco').value.trim();
+
+        if (!nome || !whatsapp || !endereco) {
+            alert('Por favor, preencha Nome, WhatsApp e Endereço.');
+            return;
+        }
+
+        let subtotal = carrinho.reduce((sum, item) => sum + item.preco, 0);
+        let totalGeral = subtotal + taxa;
+        let codigoPedido = Math.floor(1000 + Math.random() * 9000); // Gerar código de 4 dígitos
+
+        const dadosPedido = {
+            codigo: codigoPedido,
+            nome,
+            whatsapp,
+            endereco,
+            bairro,
+            taxa,
+            referencia,
+            itens: carrinho,
+            total: totalGeral,
+            formaPagamento: formaPagamento === 'Dinheiro' ? `Dinheiro (Troco: ${troco || 'Não precisa'})` : formaPagamento
+        };
+
+        if (formaPagamento === 'Pix') {
+            // Gerar Pix no Mercado Pago
+            try {
+                const res = await fetch('/api/criar-pagamento', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ total: totalGeral, nome })
+                });
+                const respMP = await res.json();
+
+                if (respMP.id_pagamento) {
+                    idPagamentoAtual = respMP.id_pagamento;
+                    document.getElementById('pix-qrcode-img').innerHTML = `<img src="data:image/jpeg;base64,${respMP.qr_code_base64}" style="max-width:200px;"/>`;
+                    document.getElementById('pix-copia-cola').innerText = respMP.qr_code;
+                    document.getElementById('modal-pix').style.display = 'flex';
+
+                    // Salvar pedido no painel do motoboy como Aguardando Pagamento Pix
+                    dadosPedido.status = "⏳ Aguardando Pagamento Pix";
+                    await salvarPedidoNoServidor(dadosPedido);
+
+                    // Iniciar verificação de status do pagamento
+                    intervaloChecagem = setInterval(verificarStatusPix, 4000);
+                } else {
+                    alert('Erro ao gerar Pix. Tente novamente.');
+                }
+            } catch (e) {
+                console.error(e);
+                alert('Erro de conexão com o sistema de pagamento.');
+            }
+        } else {
+            // Pagamento Dinheiro ou Cartão direto
+            dadosPedido.status = "⏳ Aguardando preparo na cozinha";
+            await salvarPedidoNoServidor(dadosPedido);
+            alert(`Pedido #${codigoPedido} realizado com sucesso! Acompanhe a entrega.`);
+            window.location.reload();
+        }
+    }
+
+    async function salvarPedidoNoServidor(dadosPedido) {
+        await fetch('/api/pedidos', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(dadosPedido)
         });
     }
+
+    function copiarPix() {
+        const codigoPix = document.getElementById('pix-copia-cola').innerText;
+        navigator.clipboard.writeText(codigoPix).then(() => {
+            alert('Código Pix copiado com sucesso!');
+        });
+    }
+
+    async function verificarStatusPix() {
+        if (!idPagamentoAtual) return;
+        try {
+            const res = await fetch(`/api/verificar-pagamento/${idPagamentoAtual}`);
+            const data = await res.json();
+            if (data.status === 'approved') {
+                clearInterval(intervaloChecagem);
+                document.getElementById('status-pagamento').innerText = "Pagamento Aprovado com Sucesso! 🎉";
+                setTimeout(() => {
+                    alert('Pagamento confirmado! Seu pedido foi enviado para a cozinha.');
+                    window.location.reload();
+                }, 1500);
+            }
+        } catch (e) {
+            console.error('Erro ao checar pagamento', e);
+        }
+    }
+
+    function fecharModalPix() {
+        if (intervaloChecagem) clearInterval(intervaloChecagem);
+        document.getElementById('modal-pix').style.display = 'none';
+    }
+
+    // Carregar cardápio ao iniciar a página
+    carregarCardapioCliente();
 </script>
 
-<script src="script.js"></script>
 </body>
 </html>
