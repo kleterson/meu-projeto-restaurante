@@ -37,6 +37,11 @@
         .btn-imprimir { background: #8e44ad; }
         .btn-imprimir:hover { background: #732d91; }
         .btn-salvar { background: #27ae60; padding: 8px 12px; font-size: 12px; min-height: auto; }
+        
+        .btn-aceitar { background: #27ae60; font-size: 14px; }
+        .btn-aceitar:hover { background: #219653; }
+        .btn-recusar { background: #c0392b; font-size: 14px; }
+        .btn-recusar:hover { background: #a93226; }
 
         .painel-adm { background: #2a2a2a; padding: 12px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #d4af37; }
         .painel-adm h3 { font-size: 15px; color: #f1c40f; margin-top: 0; text-align: center; }
@@ -57,7 +62,7 @@
 <div class="container">
     <h1>Painel de Entregas - Motoboy</h1>
     
-    <button class="btn-gerenciar" onclick="toggleCardapioAdm()">🍔 Ver/Atualizar Cardápio Completo</button>
+    <button class="btn-gerenciar" onclick="toggleCardapioAdm(); desbloquearAudio();">🍔 Ver/Atualizar Cardápio Completo</button>
 
     <div id="painel-adm" class="painel-adm" style="display: none;">
         <h3>Gerenciamento de Cardápio (Selecione o quadradinho para editar)</h3>
@@ -69,6 +74,64 @@
 </div>
 
 <script>
+    let idsPedidosConhecidos = new Set();
+    let audioLoopInterval = null;
+    let somAtivo = false;
+
+    // Gerador de som contínuo e vibração usando sintese de áudio (Web Audio API)
+    function tocarAlertaContinuo() {
+        if (somAtivo) return;
+        somAtivo = true;
+
+        // Tenta vibrar o celular (padrão contínuo: vibra 500ms, pausa 200ms)
+        if ("vibrate" in navigator) {
+            try { navigator.vibrate([500, 200, 500, 200]); } catch (e) {}
+        }
+
+        audioLoopInterval = setInterval(() => {
+            try {
+                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(800, audioCtx.currentTime); // Tom de bipe
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start();
+                gain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + 0.6);
+                osc.stop(audioCtx.currentTime + 0.6);
+
+                if ("vibrate" in navigator) {
+                    try { navigator.vibrate([500, 200]); } catch (e) {}
+                }
+            } catch (e) {}
+        }, 1000);
+    }
+
+    function pararAlertaContinuo() {
+        somAtivo = false;
+        if (audioLoopInterval) {
+            clearInterval(audioLoopInterval);
+            audioLoopInterval = null;
+        }
+        if ("vibrate" in navigator) {
+            try { navigator.vibrate(0); } catch (e) {}
+        }
+    }
+
+    // Necessário em navegadores mobile para liberar a reprodução de áudio após um toque na tela
+    function desbloquearAudio() {
+        try {
+            const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+        } catch(e) {}
+    }
+
+    // Dispara desbloqueio automático no primeiro toque na tela
+    window.addEventListener('click', desbloquearAudio, { once: true });
+
     function toggleCardapioAdm() {
         const painel = document.getElementById('painel-adm');
         if (painel.style.display === 'none') {
@@ -167,8 +230,28 @@
             
             if (pedidos.length === 0) {
                 container.innerHTML = '<p style="text-align: center; color: #aaa;">Nenhum pedido no momento.</p>';
+                pararAlertaContinuo();
+                idsPedidosConhecidos.clear();
                 return;
             }
+
+            let temNovoPendente = false;
+            let novosIds = new Set();
+
+            pedidos.forEach(p => {
+                novosIds.add(p.id);
+                // Verifica se é um pedido recém-chegado (pendente/aguardando)
+                if (!idsPedidosConhecidos.has(p.id) && (!p.status || p.status.includes("Aguardando") || p.status.includes("Recebido"))) {
+                    temNovoPendente = true;
+                }
+            });
+
+            // Se houver pedidos pendentes novos que ainda não foram tocados, dispara o alarme sonoro e vibração
+            if (temNovoPendente) {
+                tocarAlertaContinuo();
+            }
+
+            idsPedidosConhecidos = novosIds;
 
             container.innerHTML = '';
             pedidos.forEach(p => {
@@ -196,8 +279,10 @@
                         ${htmlPagamento}
                         <p><strong>Status Atual:</strong> <span style="color: #ffc107;">${p.status}</span></p>
                         
-                        <div style="margin-top: 8px; display: flex; flex-wrap: wrap; gap: 5px;">
-                            ${p.status !== "Motoboy a caminho do seu endereço 🛵" ? `<button onclick="marcarMotoboyACaminho(${p.id})" style="background: #e67e22;">📦 Enviar Motoboy</button>` : '<p style="color: #28a745; font-weight: bold; margin: 5px 0;">✔ Motoboy a caminho</p>'}
+                        <div style="margin-top: 8px; display: flex; flex-wrap: wrap; gap: 5px; align-items: center;">
+                            <button class="btn-aceitar" onclick="aceitarPedido(${p.id})">✅ Aceitar Pedido</button>
+                            <button class="btn-recusar" onclick="recusarPedido(${p.id})">❌ Recusar Pedido</button>
+                            ${p.status === "Motoboy a caminho do seu endereço 🛵" ? '<p style="color: #28a745; font-weight: bold; margin: 5px 0;">✔ Motoboy a caminho</p>' : ''}
                             <button class="btn-copiar" onclick='copiarPedido(${JSON.stringify(p)})'>📋 Copiar</button>
                             <button class="btn-imprimir" onclick='imprimirPedido(${JSON.stringify(p)})'>🖨️ Imprimir</button>
                         </div>
@@ -209,11 +294,22 @@
         }
     }
 
-    async function marcarMotoboyACaminho(id) {
+    async function aceitarPedido(id) {
+        pararAlertaContinuo();
         await fetch(`/api/pedidos/${id}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ status: 'Motoboy a caminho do seu endereço 🛵' })
+        });
+        carregarPedidos();
+    }
+
+    async function recusarPedido(id) {
+        pararAlertaContinuo();
+        await fetch(`/api/pedidos/${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status: 'Pedido cancelado pelo estabelecimento/motoboy ❌' })
         });
         carregarPedidos();
     }
