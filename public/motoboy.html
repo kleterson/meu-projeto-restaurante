@@ -287,8 +287,8 @@
                 }
 
                 // Lógica para exibir os botões de Aceitar/Recusar apenas se não foi aceito nem recusado ainda
-                let isAceito = p.status === "Motoboy a caminho do seu endereço 🛵";
-                let isRecusado = p.status && p.status.includes("Pedido cancelado pelo estabelecimento");
+                let isAceito = p.status === "Estabelecimento aceitou seu pedido";
+                let isRecusado = p.status && p.status.includes("Pedido recusado pelo estabelecimento 😢");
                 
                 let botoesAcaoHtml = '';
                 if (!isAceito && !isRecusado) {
@@ -297,9 +297,9 @@
                         <button class="btn-recusar" onclick="recusarPedido(${p.id})">❌ Recusar Pedido</button>
                     `;
                 } else if (isAceito) {
-                    botoesAcaoHtml = `<p style="color: #28a745; font-weight: bold; margin: 5px 0;">✔ Motoboy a caminho</p>`;
+                    botoesAcaoHtml = `<p style="color: #28a745; font-weight: bold; margin: 5px 0;">✔ Pedido Aceito</p>`;
                 } else if (isRecusado) {
-                    botoesAcaoHtml = `<p style="color: #c0392b; font-weight: bold; margin: 5px 0;">❌ Pedido Recusado</p>`;
+                    botoesAcaoHtml = `<p style="color: #c0392b; font-weight: bold; margin: 5px 0;">😢 Pedido Recusado</p>`;
                 }
 
                 container.innerHTML += `
@@ -312,7 +312,7 @@
                         <p><strong>Itens:</strong> ${itensStr}</p>
                         <p><strong>Total Geral:</strong> R$ ${p.total.toFixed(2)}</p>
                         ${htmlPagamento}
-                        <p><strong>Status Atual:</strong> <span style="color: #ffc107;">${p.status}</span></p>
+                        <p><strong>Status Atual:</strong> <span style="color: ${isAceito ? '#28a745' : (isRecusado ? '#c0392b' : '#ffc107')}; font-weight: ${isAceito || isRecusado ? 'bold' : 'normal'};">${p.status}</span></p>
                         
                         <div style="margin-top: 8px; display: flex; flex-wrap: wrap; gap: 5px; align-items: center;">
                             ${botoesAcaoHtml}
@@ -332,7 +332,7 @@
         await fetch(`/api/pedidos/${id}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ status: 'Motoboy a caminho do seu endereço 🛵' })
+            body: JSON.stringify({ status: 'Estabelecimento aceitou seu pedido' })
         });
         carregarPedidos();
     }
@@ -342,7 +342,7 @@
         await fetch(`/api/pedidos/${id}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ status: 'Pedido cancelado pelo estabelecimento ❌' })
+            body: JSON.stringify({ status: 'Pedido recusado pelo estabelecimento 😢' })
         });
         carregarPedidos();
     }
