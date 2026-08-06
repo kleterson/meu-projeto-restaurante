@@ -2,28 +2,55 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
     <title>Painel do Motoboy - Entregas</title>
     <style>
-        body { font-family: Arial, sans-serif; background: #333; color: white; padding: 20px; }
-        .container { max-width: 900px; margin: auto; }
-        .card { background: #444; padding: 15px; border-radius: 6px; margin-bottom: 15px; border-left: 5px solid #ffc107; }
-        button { background: #007bff; color: white; border: none; padding: 10px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; margin-right: 5px; margin-top: 5px; }
+        * {
+            box-sizing: border-box;
+        }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+            background: #222; 
+            color: #fff; 
+            padding: 10px; 
+            margin: 0;
+            -webkit-text-size-adjust: 100%;
+            -webkit-font-smoothing: antialiased;
+        }
+        .container { max-width: 900px; margin: auto; padding: 5px; }
+        h1 { font-size: 22px; text-align: center; color: #f1c40f; text-transform: uppercase; margin-bottom: 15px; }
+        h2 { font-size: 18px; color: #f1c40f; border-bottom: 2px solid #d4af37; padding-bottom: 5px; margin-top: 25px; }
+        
+        .card { background: #333; padding: 12px; border-radius: 8px; margin-bottom: 12px; border-left: 5px solid #ffc107; box-shadow: 0 2px 8px rgba(0,0,0,0.5); }
+        .card p { font-size: 14px; margin: 6px 0; line-height: 1.4; }
+        .card h3 { font-size: 16px; margin: 0 0 10px 0; color: #f1c40f; }
+
+        button { background: #007bff; color: white; border: none; padding: 10px 14px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 13px; margin-right: 5px; margin-top: 6px; min-height: 40px; box-shadow: 0 2px 4px rgba(0,0,0,0.3); }
         button:hover { background: #0056b3; }
-        .btn-gerenciar { background: #e67e22; margin-bottom: 20px; }
+        
+        .btn-gerenciar { background: #e67e22; width: 100%; font-size: 15px; padding: 12px; border-radius: 8px; margin-bottom: 15px; }
         .btn-gerenciar:hover { background: #d35400; }
         .btn-copiar { background: #27ae60; }
         .btn-copiar:hover { background: #219653; }
         .btn-imprimir { background: #8e44ad; }
         .btn-imprimir:hover { background: #732d91; }
-        .btn-salvar { background: #27ae60; padding: 5px 10px; font-size: 12px; }
-        .painel-adm { background: #222; padding: 15px; border-radius: 6px; margin-bottom: 20px; border: 1px solid #d4af37; }
-        .categoria-titulo { color: #f1c40f; margin-top: 15px; border-bottom: 1px solid #444; padding-bottom: 5px; }
-        .item-adm { display: flex; flex-direction: column; background: #444; padding: 10px; margin-bottom: 8px; border-radius: 4px; gap: 8px; }
-        .item-linha { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
-        .item-edicao { display: none; background: #2a2a2a; padding: 8px; border-radius: 4px; gap: 8px; align-items: center; }
+        .btn-salvar { background: #27ae60; padding: 8px 12px; font-size: 12px; min-height: auto; }
+
+        .painel-adm { background: #2a2a2a; padding: 12px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #d4af37; }
+        .painel-adm h3 { font-size: 15px; color: #f1c40f; margin-top: 0; text-align: center; }
+        
+        .categoria-titulo { color: #f1c40f; margin-top: 15px; border-bottom: 1px solid #444; padding-bottom: 5px; font-size: 15px; }
+        .item-adm { display: flex; flex-direction: column; background: #3b3b3b; padding: 10px; margin-bottom: 8px; border-radius: 6px; gap: 8px; }
+        .item-linha { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
+        .item-linha span { font-size: 14px; }
+        
+        .item-edicao { display: none; background: #222; padding: 8px; border-radius: 4px; gap: 8px; align-items: center; }
         .esgotado-tag { color: #ff4d4d; font-weight: bold; }
         .disponivel-tag { color: #2ecc71; font-weight: bold; }
-        input[type="text"], input[type="number"] { padding: 5px; border-radius: 4px; border: 1px solid #ccc; background: #111; color: white; }
+        
+        input[type="text"], input[type="number"] { padding: 10px; border-radius: 6px; border: 1px solid #d4af37; background: #111; color: white; font-size: 16px; width: 100%; }
     </style>
 </head>
 <body>
@@ -60,7 +87,6 @@
             
             container.innerHTML = '';
             
-            // Agrupar por categoria
             const categorias = {};
             itens.forEach(item => {
                 if (!categorias[item.categoria]) categorias[item.categoria] = [];
@@ -73,15 +99,15 @@
                     container.innerHTML += `
                         <div class="item-adm" id="adm-item-${item.id}">
                             <div class="item-linha">
-                                <label style="cursor: pointer; display: flex; align-items: center; gap: 8px;">
-                                    <input type="checkbox" onchange="toggleModoEdicao('${item.id}')"> 
+                                <label style="cursor: pointer; display: flex; align-items: center; gap: 8px; flex: 1; word-break: break-word;">
+                                    <input type="checkbox" onchange="toggleModoEdicao('${item.id}')" style="width: 20px; height: 20px;"> 
                                     <span><strong>${item.nome}</strong> - R$ ${item.preco.toFixed(2)} (${item.esgotado ? '<span class="esgotado-tag">ESGOTADO</span>' : '<span class="disponivel-tag">DISPONÍVEL</span>'})</span>
                                 </label>
-                                <button onclick="alternarEsgotado('${item.id}')">${item.esgotado ? 'Marcar Disponível' : 'Marcar Esgotado'}</button>
+                                <button onclick="alternarEsgotado('${item.id}')" style="background: ${item.esgotado ? '#27ae60' : '#c0392b'};">${item.esgotado ? 'Disponível' : 'Esgotado'}</button>
                             </div>
                             <div id="edicao-${item.id}" class="item-edicao">
-                                <input type="text" id="nome-${item.id}" value="${item.nome}" placeholder="Novo nome" style="flex:1;">
-                                <input type="number" step="0.01" id="preco-${item.id}" value="${item.preco}" placeholder="Novo preço" style="width: 100px;">
+                                <input type="text" id="nome-${item.id}" value="${item.nome}" placeholder="Novo nome">
+                                <input type="number" step="0.01" id="preco-${item.id}" value="${item.preco}" placeholder="Novo preço" style="width: 110px;">
                                 <button class="btn-salvar" onclick="salvarEdicaoItem('${item.id}')">💾 Salvar</button>
                             </div>
                         </div>
@@ -115,7 +141,7 @@
             });
             const resultado = await res.json();
             if (resultado.success) {
-                alert('Item atualizado com sucesso! Atualizará na página principal.');
+                alert('Item atualizado com sucesso!');
                 carregarCardapioAdm();
             }
         } catch (e) {
@@ -140,7 +166,7 @@
             const container = document.getElementById('pedidos-lista');
             
             if (pedidos.length === 0) {
-                container.innerHTML = '<p>Nenhum pedido no momento.</p>';
+                container.innerHTML = '<p style="text-align: center; color: #aaa;">Nenhum pedido no momento.</p>';
                 return;
             }
 
@@ -170,10 +196,10 @@
                         ${htmlPagamento}
                         <p><strong>Status Atual:</strong> <span style="color: #ffc107;">${p.status}</span></p>
                         
-                        <div style="margin-top: 10px;">
-                            ${p.status !== "Motoboy a caminho do seu endereço 🛵" ? `<button onclick="marcarMotoboyACaminho(${p.id})">📦 Enviar Motoboy</button>` : '<p style="color: #28a745; font-weight: bold; display:inline-block; margin-right: 10px;">✔ Motoboy a caminho</p>'}
-                            <button class="btn-copiar" onclick='copiarPedido(${JSON.stringify(p)})'>📋 Copiar Pedido</button>
-                            <button class="btn-imprimir" onclick='imprimirPedido(${JSON.stringify(p)})'>🖨️ Imprimir Pedido</button>
+                        <div style="margin-top: 8px; display: flex; flex-wrap: wrap; gap: 5px;">
+                            ${p.status !== "Motoboy a caminho do seu endereço 🛵" ? `<button onclick="marcarMotoboyACaminho(${p.id})" style="background: #e67e22;">📦 Enviar Motoboy</button>` : '<p style="color: #28a745; font-weight: bold; margin: 5px 0;">✔ Motoboy a caminho</p>'}
+                            <button class="btn-copiar" onclick='copiarPedido(${JSON.stringify(p)})'>📋 Copiar</button>
+                            <button class="btn-imprimir" onclick='imprimirPedido(${JSON.stringify(p)})'>🖨️ Imprimir</button>
                         </div>
                     </div>
                 `;
