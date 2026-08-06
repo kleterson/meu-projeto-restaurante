@@ -77,35 +77,55 @@
     let idsPedidosConhecidos = new Set();
     let audioLoopInterval = null;
     let somAtivo = false;
+    let audioCtxGlobal = null;
 
-    // Gerador de som contínuo e vibração usando sintese de áudio (Web Audio API)
+    // Alerta sonoro bem alto e contínuo com Web Audio API
     function tocarAlertaContinuo() {
         if (somAtivo) return;
         somAtivo = true;
 
-        // Tenta vibrar o celular (padrão contínuo: vibra 500ms, pausa 200ms)
         if ("vibrate" in navigator) {
-            try { navigator.vibrate([500, 200, 500, 200]); } catch (e) {}
+            try { navigator.vibrate([800, 300, 800, 300, 800, 300]); } catch (e) {}
         }
 
         audioLoopInterval = setInterval(() => {
             try {
-                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                const osc = audioCtx.createOscillator();
-                const gain = audioCtx.createGain();
-                osc.type = 'sine';
-                osc.frequency.setValueAtTime(800, audioCtx.currentTime); // Tom de bipe
-                osc.connect(gain);
-                gain.connect(audioCtx.destination);
-                osc.start();
-                gain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + 0.6);
-                osc.stop(audioCtx.currentTime + 0.6);
+                if (!audioCtxGlobal || audioCtxGlobal.state === 'closed') {
+                    audioCtxGlobal = new (window.AudioContext || window.webkitAudioContext)();
+                }
+                if (audioCtxGlobal.state === 'suspended') {
+                    audioCtxGlobal.resume();
+                }
+
+                // Som mais alto e chamativo (frequências duplas estilo alarme)
+                const osc1 = audioCtxGlobal.createOscillator();
+                const osc2 = audioCtxGlobal.createOscillator();
+                const gainNode = audioCtxGlobal.createGain();
+
+                osc1.type = 'sawtooth';
+                osc1.frequency.setValueAtTime(900, audioCtxGlobal.currentTime);
+                
+                osc2.type = 'square';
+                osc2.frequency.setValueAtTime(1200, audioCtxGlobal.currentTime);
+
+                // Volume alto (ganho máximo seguro)
+                gainNode.gain.setValueAtTime(0.5, audioCtxGlobal.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtxGlobal.currentTime + 0.5);
+
+                osc1.connect(gainNode);
+                osc2.connect(gainNode);
+                gainNode.connect(audioCtxGlobal.destination);
+
+                osc1.start();
+                osc2.start();
+                osc1.stop(audioCtxGlobal.currentTime + 0.5);
+                osc2.stop(audioCtxGlobal.currentTime + 0.5);
 
                 if ("vibrate" in navigator) {
-                    try { navigator.vibrate([500, 200]); } catch (e) {}
+                    try { navigator.vibrate([600, 200]); } catch (e) {}
                 }
             } catch (e) {}
-        }, 1000);
+        }, 800);
     }
 
     function pararAlertaContinuo() {
@@ -119,18 +139,19 @@
         }
     }
 
-    // Necessário em navegadores mobile para liberar a reprodução de áudio após um toque na tela
     function desbloquearAudio() {
         try {
-            const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            if (audioCtx.state === 'suspended') {
-                audioCtx.resume();
+            if (!audioCtxGlobal) {
+                audioCtxGlobal = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (audioCtxGlobal.state === 'suspended') {
+                audioCtxGlobal.resume();
             }
         } catch(e) {}
     }
 
-    // Dispara desbloqueio automático no primeiro toque na tela
     window.addEventListener('click', desbloquearAudio, { once: true });
+    window.addEventListener('touchstart', desbloquearAudio, { once: true });
 
     function toggleCardapioAdm() {
         const painel = document.getElementById('painel-adm');
@@ -240,13 +261,11 @@
 
             pedidos.forEach(p => {
                 novosIds.add(p.id);
-                // Verifica se é um pedido recém-chegado (pendente/aguardando)
                 if (!idsPedidosConhecidos.has(p.id) && (!p.status || p.status.includes("Aguardando") || p.status.includes("Recebido"))) {
                     temNovoPendente = true;
                 }
             });
 
-            // Se houver pedidos pendentes novos que ainda não foram tocados, dispara o alarme sonoro e vibração
             if (temNovoPendente) {
                 tocarAlertaContinuo();
             }
@@ -267,6 +286,22 @@
                     htmlPagamento = `<p><strong>Forma de Pagamento:</strong> <span style="color: #28a745; font-weight: bold;">Pix (Pago)</span></p>`;
                 }
 
+                // Lógica para exibir os botões de Aceitar/Recusar apenas se não foi aceito nem recusado ainda
+                let isAceito = p.status === "Motoboy a caminho do seu endereço 🛵";
+                let isRecusado = p.status && p.status.includes("Pedido cancelado pelo estabelecimento");
+                
+                let botoesAcaoHtml = '';
+                if (!isAceito && !isRecusado) {
+                    botoesAcaoHtml = `
+                        <button class="btn-aceitar" onclick="aceitarPedido(${p.id})">✅ Aceitar Pedido</button>
+                        <button class="btn-recusar" onclick="recusarPedido(${p.id})">❌ Recusar Pedido</button>
+                    `;
+                } else if (isAceito) {
+                    botoesAcaoHtml = `<p style="color: #28a745; font-weight: bold; margin: 5px 0;">✔ Motoboy a caminho</p>`;
+                } else if (isRecusado) {
+                    botoesAcaoHtml = `<p style="color: #c0392b; font-weight: bold; margin: 5px 0;">❌ Pedido Recusado</p>`;
+                }
+
                 container.innerHTML += `
                     <div class="card">
                         <h3>Código do Pedido: #${p.codigo || '----'}</h3>
@@ -280,9 +315,7 @@
                         <p><strong>Status Atual:</strong> <span style="color: #ffc107;">${p.status}</span></p>
                         
                         <div style="margin-top: 8px; display: flex; flex-wrap: wrap; gap: 5px; align-items: center;">
-                            <button class="btn-aceitar" onclick="aceitarPedido(${p.id})">✅ Aceitar Pedido</button>
-                            <button class="btn-recusar" onclick="recusarPedido(${p.id})">❌ Recusar Pedido</button>
-                            ${p.status === "Motoboy a caminho do seu endereço 🛵" ? '<p style="color: #28a745; font-weight: bold; margin: 5px 0;">✔ Motoboy a caminho</p>' : ''}
+                            ${botoesAcaoHtml}
                             <button class="btn-copiar" onclick='copiarPedido(${JSON.stringify(p)})'>📋 Copiar</button>
                             <button class="btn-imprimir" onclick='imprimirPedido(${JSON.stringify(p)})'>🖨️ Imprimir</button>
                         </div>
@@ -309,7 +342,7 @@
         await fetch(`/api/pedidos/${id}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ status: 'Pedido cancelado pelo estabelecimento/motoboy ❌' })
+            body: JSON.stringify({ status: 'Pedido cancelado pelo estabelecimento ❌' })
         });
         carregarPedidos();
     }
