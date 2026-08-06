@@ -92,6 +92,11 @@ app.put('/api/pedidos/:id', (req, res) => {
     }
 });
 
+app.delete('/api/pedidos', (req, res) => {
+    pedidos = [];
+    res.json({ success: true, message: 'Histórico limpo com sucesso!' });
+});
+
 // Armazenamento em memória para o Cardápio Completo
 let cardapio = [
     { id: 'p_dia_1', categoria: 'Prato do Dia', nome: 'Frango Milanesa c/ Creme de Milho', preco: 16.00, esgotado: false },
