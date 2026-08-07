@@ -91,7 +91,7 @@
 <div id="modal-grupo" class="modal-grupo">
     <div class="modal-conteudo">
         <h3>Selecione onde deseja adicionar o item:</h3>
-        <label style="font-size: 13px; color: #ccc;">Escolher grupo existente:</label>
+        <label style="font-size: 13px; color: #ccc;">Escolher grupo existente (opcional):</label>
         <select id="select-grupo-existente">
             <!-- Preenchido dinamicamente -->
         </select>
@@ -230,18 +230,21 @@
                     </h4>
                 `;
                 categorias[cat].forEach(item => {
+                    const isOpen = item.nome === 'Novo Item' && item.preco === 0 ? 'display: flex;' : 'display: none;';
+                    const isChecked = item.nome === 'Novo Item' && item.preco === 0 ? 'checked' : '';
+
                     container.innerHTML += `
                         <div class="item-adm" id="adm-item-${item.id}">
                             <div class="item-linha">
                                 <label style="cursor: pointer; display: flex; align-items: center; gap: 8px; flex: 1; word-break: break-word;">
-                                    <input type="checkbox" onchange="toggleModoEdicao('${item.id}')" style="width: 20px; height: 20px;"> 
+                                    <input type="checkbox" ${isChecked} onchange="toggleModoEdicao('${item.id}')" style="width: 20px; height: 20px;"> 
                                     <span><strong>${item.nome}</strong> - R$ ${item.preco.toFixed(2)} (${item.esgotado ? '<span class="esgotado-tag">ESGOTADO</span>' : '<span class="disponivel-tag">DISPONÍVEL</span>'})</span>
                                 </label>
                                 <button onclick="alternarEsgotado('${item.id}')" style="background: ${item.esgotado ? '#27ae60' : '#c0392b'};">${item.esgotado ? 'Disponível' : 'Esgotado'}</button>
                             </div>
-                            <div id="edicao-${item.id}" class="item-edicao">
+                            <div id="edicao-${item.id}" class="item-edicao" style="${isOpen}">
                                 <input type="text" id="cat-${item.id}" value="${cat}" placeholder="Categoria">
-                                <input type="text" id="nome-${item.id}" value="${item.nome}" placeholder="Nome do item">
+                                <input type="text" id="nome-${item.id}" value="${item.nome === 'Novo Item' ? '' : item.nome}" placeholder="Nome do item">
                                 <input type="number" step="0.01" id="preco-${item.id}" value="${item.preco}" placeholder="Preço">
                                 <input type="text" id="acompanhamento-${item.id}" value="${item.acompanhamento || ''}" placeholder="Observação / Acompanhamento">
                                 <div style="display: flex; gap: 8px;">
@@ -265,20 +268,16 @@
 
     function abrirModalAdicionarItem() {
         const select = document.getElementById('select-grupo-existente');
-        select.innerHTML = '';
+        select.innerHTML = '<option value="">-- Nenhum (Apenas se quiser) --</option>';
         
         // Pega somente as categorias do tipo selecionado atualmente
         const itensFiltrados = cardapioCacheAdm.filter(item => (item.tipo || 'almoco') === tipoCardapioAtual);
         const categoriasSet = new Set();
         itensFiltrados.forEach(i => categoriasSet.add(i.categoria || 'Geral'));
 
-        if (categoriasSet.size === 0) {
-            select.innerHTML = '<option value="">Nenhum grupo existente</option>';
-        } else {
-            categoriasSet.forEach(cat => {
-                select.innerHTML += `<option value="${cat}">${cat}</option>`;
-            });
-        }
+        categoriasSet.forEach(cat => {
+            select.innerHTML += `<option value="${cat}">${cat}</option>`;
+        });
 
         document.getElementById('input-novo-grupo').value = '';
         document.getElementById('modal-grupo').style.display = 'flex';
@@ -291,11 +290,12 @@
     async function confirmarAdicaoItem() {
         const novoGrupoInput = document.getElementById('input-novo-grupo').value.trim();
         const grupoExistente = document.getElementById('select-grupo-existente').value;
-        const categoriaEscolhida = novoGrupoInput !== '' ? novoGrupoInput : grupoExistente;
-
-        if (!categoriaEscolhida) {
-            alert('Selecione um grupo existente ou digite o nome de um novo grupo!');
-            return;
+        
+        let categoriaEscolhida = 'Geral';
+        if (novoGrupoInput !== '') {
+            categoriaEscolhida = novoGrupoInput;
+        } else if (grupoExistente !== '') {
+            categoriaEscolhida = grupoExistente;
         }
 
         fecharModalAdicionarItem();
