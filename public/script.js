@@ -1,11 +1,9 @@
 // --- LÓGICA DE CARRINHO COM LOCALSTORAGE (SALVA ENTRE PÁGINAS) ---
 
-// Tenta carregar o carrinho salvo no navegador; se não houver, começa vazio
 let carrinho = JSON.parse(localStorage.getItem('carrinho_restaurante')) || [];
 let dadosPedidoGlobal = {};
 let intervaloVerificacao = null;
 
-// Salva o carrinho atual na memória do navegador
 function salvarCarrinhoNoNavegador() {
     localStorage.setItem('carrinho_restaurante', JSON.stringify(carrinho));
 }
@@ -22,7 +20,6 @@ function atualizarCarrinho() {
     const taxaEl = document.getElementById('taxa-entrega');
     const totalEl = document.getElementById('total-carrinho');
     
-    // Atualiza o contador flutuante em qualquer página
     const contadorEl = document.getElementById('contador-carrinho');
     if (contadorEl) {
         contadorEl.innerText = carrinho.length;
@@ -57,11 +54,11 @@ function removerItem(index) {
     atualizarCarrinho();
 }
 
-// --- LÓGICA DE CARREGAMENTO DINÂMICO E DIVISÃO POR GRUPOS ---
+// --- LÓGICA DE CARREGAMENTO DINÂMICO E GRUPOS FIXOS (CORRIGIDO) ---
 
 async function carregarCardapioDinamico() {
     const path = window.location.pathname;
-    let tipoPagina = 'almoco'; // Padrão
+    let tipoPagina = 'almoco'; 
     if (path.includes('lanches')) tipoPagina = 'lanches';
     if (path.includes('bebidas')) tipoPagina = 'bebidas';
 
@@ -87,20 +84,20 @@ async function carregarCardapioDinamico() {
             return;
         }
 
-        // Recupera os grupos do adm
+        // Recupera APENAS os grupos criados manualmente pelo administrador (permanentes)
         let gruposSalvos = JSON.parse(localStorage.getItem('grupos_cardapio')) || {};
         let listaGrupos = gruposSalvos[tipoPagina] || [];
         listaGrupos.sort((a, b) => a.ordem - b.ordem);
 
+        // Se o admin não criou nenhum grupo, não exibe itens aleatórios (evita o erro visual)
         if (listaGrupos.length === 0) {
-            const categoriasUnicas = [...new Set(itensFiltrados.map(i => i.categoria || 'Geral'))];
-            listaGrupos = categoriasUnicas.map((cat, idx) => ({ nome: cat, ordem: idx + 1 }));
+            container.innerHTML = '<p style="color: #f1c40f; text-align: center; padding: 20px;">Nenhum grupo configurado pelo Administrador para esta página.</p>';
+            return;
         }
 
-        let itensExibidosIds = new Set();
-
         listaGrupos.forEach(grupo => {
-            const itensDoGrupo = itensFiltrados.filter(i => (i.categoria || 'Geral').trim().toLowerCase() === grupo.nome.trim().toLowerCase());
+            // Filtra estritamente pelo nome exato do grupo criado pelo admin
+            const itensDoGrupo = itensFiltrados.filter(i => (i.categoria || '').trim().toLowerCase() === grupo.nome.trim().toLowerCase());
             
             if (itensDoGrupo.length === 0) return;
 
@@ -121,7 +118,6 @@ async function carregarCardapioDinamico() {
             itensContainer.style.gap = "10px";
 
             itensDoGrupo.forEach(item => {
-                itensExibidosIds.add(item.id);
                 const div = document.createElement('div');
                 div.className = 'item';
                 div.id = item.id;
@@ -154,38 +150,6 @@ async function carregarCardapioDinamico() {
             secaoDiv.appendChild(itensContainer);
             container.appendChild(secaoDiv);
         });
-
-        const itensRestantes = itensFiltrados.filter(i => !itensExibidosIds.has(i.id));
-        if (itensRestantes.length > 0) {
-            const secaoOutros = document.createElement('div');
-            secaoOutros.style.marginBottom = "25px";
-            secaoOutros.innerHTML = `<h3 style="color: #2ecc71; border-bottom: 2px solid #444; padding-bottom: 5px; margin-bottom: 12px; font-size: 17px;">Outros Itens</h3>`;
-            
-            const itensContainer = document.createElement('div');
-            itensContainer.style.display = "flex";
-            itensContainer.style.flexDirection = "column";
-            itensContainer.style.gap = "10px";
-
-            itensRestantes.forEach(item => {
-                const div = document.createElement('div');
-                div.className = 'item';
-                div.id = item.id;
-                div.innerHTML = `
-                    <div style="flex-grow: 1;">
-                        <span style="font-weight: bold; color: #fff; font-size: 16px;">${item.nome}</span>
-                        <p style="color: #f1c40f; margin: 4px 0; font-size: 15px;">R$ ${item.preco.toFixed(2)}</p>
-                    </div>
-                    <button onclick="adicionarAoCarrinho('${item.nome.replace(/'/g, "\\'")}', ${item.preco}, '${item.id}')" 
-                        style="background: #27ae60; color: white; border: none; padding: 8px 12px; border-radius: 5px; cursor: pointer; font-weight: bold;"
-                        ${item.esgotado ? 'disabled' : ''}>
-                        ${item.esgotado ? 'ESGOTADO' : 'Adicionar'}
-                    </button>
-                `;
-                itensContainer.appendChild(div);
-            });
-            secaoOutros.appendChild(itensContainer);
-            container.appendChild(secaoOutros);
-        }
 
         verificarCardapioEsgotado();
     } catch (e) { console.error("Erro ao carregar cardápio:", e); }
@@ -251,12 +215,11 @@ async function finalizarCompra() {
             `*TOTAL A PAGAR:* *R$ ${totalCarrinho.toFixed(2)}*\n` +
             `*Forma de Pagamento:* ${informacaoPagamento}`;
 
-        const numeroWhatsAppRestaurante = "5513981515612"; 
+        const numeroWhatsAppRestaurante = "5534999999999"; 
         const urlWhatsApp = `https://api.whatsapp.com/send?phone=${numeroWhatsAppRestaurante}&text=${encodeURIComponent(textoWhatsApp)}`;
         
         window.open(urlWhatsApp, '_blank');
 
-        // Limpa o carrinho após finalizar com sucesso
         carrinho = [];
         salvarCarrinhoNoNavegador();
 
@@ -338,6 +301,6 @@ async function verificarCardapioEsgotado() {
 
 document.addEventListener("DOMContentLoaded", () => {
     carregarCardapioDinamico();
-    atualizarCarrinho(); // Garante que o contador já comece atualizado ao abrir a página
+    atualizarCarrinho();
     setInterval(verificarCardapioEsgotado, 5000);
 });
