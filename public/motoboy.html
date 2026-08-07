@@ -52,7 +52,7 @@
         .painel-adm { background: #2a2a2a; padding: 12px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #d4af37; }
         .painel-adm h3 { font-size: 15px; color: #f1c40f; margin-top: 0; text-align: center; }
         
-        .categoria-titulo { color: #f1c40f; margin-top: 15px; border-bottom: 1px solid #444; padding-bottom: 5px; font-size: 15px; }
+        .categoria-titulo { color: #f1c40f; margin-top: 15px; border-bottom: 1px solid #444; padding-bottom: 5px; font-size: 15px; display: flex; justify-content: space-between; align-items: center; }
         .item-adm { display: flex; flex-direction: column; background: #3b3b3b; padding: 10px; margin-bottom: 8px; border-radius: 6px; gap: 8px; }
         .item-linha { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
         .item-linha span { font-size: 14px; }
@@ -61,7 +61,12 @@
         .esgotado-tag { color: #ff4d4d; font-weight: bold; }
         .disponivel-tag { color: #2ecc71; font-weight: bold; }
         
-        input[type="text"], input[type="number"], select { padding: 10px; border-radius: 6px; border: 1px solid #d4af37; background: #111; color: white; font-size: 16px; width: 100%; }
+        input[type="text"], input[type="number"], select { padding: 10px; border-radius: 6px; border: 1px solid #d4af37; background: #111; color: white; font-size: 16px; width: 100%; margin-top: 5px; margin-bottom: 5px; }
+        
+        /* Modal simples para seleção de grupo */
+        .modal-grupo { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 9999; justify-content: center; align-items: center; }
+        .modal-conteudo { background: #333; padding: 20px; border-radius: 8px; width: 90%; max-width: 400px; border: 1px solid #d4af37; }
+        .modal-conteudo h3 { color: #f1c40f; margin-top: 0; font-size: 16px; }
     </style>
 </head>
 <body>
@@ -74,12 +79,31 @@
 
     <div id="painel-adm" class="painel-adm" style="display: none;">
         <h3 id="titulo-painel-tipo">Gerenciamento de Cardápio</h3>
-        <button class="btn-adicionar" onclick="adicionarNovoItemCardapio()">➕ Adicionar Novo Item em Branco</button>
+        <button class="btn-adicionar" onclick="abrirModalAdicionarItem()">➕ Adicionar Novo Item em Branco</button>
         <div id="lista-cardapio-adm">Carregando cardápio...</div>
     </div>
 
     <h2>Pedidos Recebidos</h2>
     <div id="pedidos-lista">Carregando pedidos...</div>
+</div>
+
+<!-- Modal para Escolher o Grupo ao Adicionar Item -->
+<div id="modal-grupo" class="modal-grupo">
+    <div class="modal-conteudo">
+        <h3>Selecione onde deseja adicionar o item:</h3>
+        <label style="font-size: 13px; color: #ccc;">Escolher grupo existente:</label>
+        <select id="select-grupo-existente">
+            <!-- Preenchido dinamicamente -->
+        </select>
+        
+        <label style="font-size: 13px; color: #ccc; margin-top: 10px; display: block;">Ou criar um novo grupo:</label>
+        <input type="text" id="input-novo-grupo" placeholder="Nome do novo grupo">
+
+        <div style="display: flex; gap: 10px; margin-top: 15px;">
+            <button onclick="confirmarAdicaoItem()" style="background: #27ae60; flex: 1;">Confirmar</button>
+            <button onclick="fecharModalAdicionarItem()" style="background: #c0392b; flex: 1;">Cancelar</button>
+        </div>
+    </div>
 </div>
 
 <script>
@@ -88,6 +112,7 @@
     let somAtivo = false;
     let audioCtxGlobal = null;
     let tipoCardapioAtual = 'almoco';
+    let cardapioCacheAdm = [];
 
     // Alerta sonoro bem alto e contínuo com Web Audio API
     function tocarAlertaContinuo() {
@@ -177,6 +202,7 @@
         try {
             const res = await fetch('/api/cardapio');
             const itens = await res.json();
+            cardapioCacheAdm = itens;
             const container = document.getElementById('lista-cardapio-adm');
             
             container.innerHTML = '';
@@ -197,7 +223,12 @@
             });
 
             for (let cat in categorias) {
-                container.innerHTML += `<h4 class="categoria-titulo">${cat}</h4>`;
+                container.innerHTML += `
+                    <h4 class="categoria-titulo">
+                        <span>📂 ${cat}</span>
+                        <button class="btn-excluir-item" onclick="excluirGrupoCardapio('${cat}')" style="margin:0; padding:4px 8px; font-size:11px;">🗑️ Excluir Grupo</button>
+                    </h4>
+                `;
                 categorias[cat].forEach(item => {
                     container.innerHTML += `
                         <div class="item-adm" id="adm-item-${item.id}">
@@ -232,15 +263,50 @@
         blocoEdicao.style.display = blocoEdicao.style.display === 'flex' ? 'none' : 'flex';
     }
 
-    async function adicionarNovoItemCardapio() {
-        const novaCategoria = tipoCardapioAtual === 'almoco' ? 'Marmitas Completas G' : 'Lanches Especiais';
+    function abrirModalAdicionarItem() {
+        const select = document.getElementById('select-grupo-existente');
+        select.innerHTML = '';
+        
+        // Pega somente as categorias do tipo selecionado atualmente
+        const itensFiltrados = cardapioCacheAdm.filter(item => (item.tipo || 'almoco') === tipoCardapioAtual);
+        const categoriasSet = new Set();
+        itensFiltrados.forEach(i => categoriasSet.add(i.categoria || 'Geral'));
+
+        if (categoriasSet.size === 0) {
+            select.innerHTML = '<option value="">Nenhum grupo existente</option>';
+        } else {
+            categoriasSet.forEach(cat => {
+                select.innerHTML += `<option value="${cat}">${cat}</option>`;
+            });
+        }
+
+        document.getElementById('input-novo-grupo').value = '';
+        document.getElementById('modal-grupo').style.display = 'flex';
+    }
+
+    function fecharModalAdicionarItem() {
+        document.getElementById('modal-grupo').style.display = 'none';
+    }
+
+    async function confirmarAdicaoItem() {
+        const novoGrupoInput = document.getElementById('input-novo-grupo').value.trim();
+        const grupoExistente = document.getElementById('select-grupo-existente').value;
+        const categoriaEscolhida = novoGrupoInput !== '' ? novoGrupoInput : grupoExistente;
+
+        if (!categoriaEscolhida) {
+            alert('Selecione um grupo existente ou digite o nome de um novo grupo!');
+            return;
+        }
+
+        fecharModalAdicionarItem();
+
         try {
             const res = await fetch('/api/cardapio', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     tipo: tipoCardapioAtual,
-                    categoria: novaCategoria,
+                    categoria: categoriaEscolhida,
                     nome: 'Novo Item',
                     preco: 0.00,
                     acompanhamento: ''
@@ -253,6 +319,20 @@
         } catch (e) {
             console.error('Erro ao adicionar novo item', e);
             alert('Erro ao criar novo item.');
+        }
+    }
+
+    async function excluirGrupoCardapio(nomeGrupo) {
+        if (!confirm(`Deseja realmente excluir o grupo "${nomeGrupo}" e TODOS os seus itens?`)) return;
+        try {
+            const itensFiltrados = cardapioCacheAdm.filter(item => (item.tipo || 'almoco') === tipoCardapioAtual && (item.categoria || 'Geral') === nomeGrupo);
+            for (let item of itensFiltrados) {
+                await fetch(`/api/cardapio/${item.id}`, { method: 'DELETE' });
+            }
+            carregarCardapioAdm();
+        } catch (e) {
+            console.error('Erro ao excluir grupo', e);
+            alert('Erro ao excluir o grupo.');
         }
     }
 
