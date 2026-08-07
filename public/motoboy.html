@@ -22,23 +22,12 @@
             <a href="/" style="color: #f1c40f; text-decoration: none; font-weight: bold;">🏠 Voltar para a Página Inicial do Cliente</a>
         </div>
 
-        <!-- Gerenciamento de Grupos e Posições -->
-        <div style="background: #2c2c2c; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #444;">
-            <h3 style="color: #f1c40f; margin-top: 0;">📁 Gerenciar Grupos/Categorias e Ordem na Tela</h3>
-            <div style="display: flex; gap: 10px; margin-bottom: 10px;">
-                <input type="text" id="novo-grupo-nome" placeholder="Nome do Novo Grupo (Ex: Promoções)" style="flex-grow: 1; padding: 8px; border-radius: 4px; border: 1px solid #555; background: #333; color: white;">
-                <input type="number" id="novo-grupo-ordem" placeholder="Ordem (Ex: 1, 2, 3...)" style="width: 120px; padding: 8px; border-radius: 4px; border: 1px solid #555; background: #333; color: white;">
-                <button onclick="adicionarGrupo()" style="background: #3498db; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; font-weight: bold;">Adicionar Grupo</button>
-            </div>
-            <div id="lista-grupos-config" style="font-size: 13px; color: #aaa;"></div>
-        </div>
-
-        <!-- Seção de Cadastro de Itens -->
+        <!-- Seção de Cadastro com Seletor de Categoria Dinâmico -->
         <div style="background: #2c2c2c; padding: 15px; border-radius: 8px; margin-bottom: 25px; border: 1px solid #444;">
             <h3 style="color: #2ecc71; margin-top: 0;">➕ Adicionar Novo Item no Cardápio Atual</h3>
             <div style="display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 10px; align-items: center;">
                 <select id="novo-categoria" style="padding: 9px; border-radius: 4px; border: 1px solid #555; background: #333; color: white;">
-                    <!-- Preenchido dinamicamente -->
+                    <!-- As opções mudam conforme o tipo escolhido -->
                 </select>
                 <input type="text" id="novo-nome" placeholder="Nome do Produto" style="padding: 8px; border-radius: 4px; border: 1px solid #555; background: #333; color: white;">
                 <input type="number" id="novo-preco" placeholder="Preço (Ex: 10.00)" step="0.01" style="padding: 8px; border-radius: 4px; border: 1px solid #555; background: #333; color: white;">
@@ -58,79 +47,22 @@
     <script>
         let tipoAtual = 'almoco';
 
-        // Grupos salvos por tipo com suas respectivas ordens/posições
-        let gruposPorTipo = JSON.parse(localStorage.getItem('grupos_cardapio')) || {
-            almoco: [
-                { nome: 'Prato do Dia', ordem: 1 },
-                { nome: 'Marmitas Econômicas', ordem: 2 },
-                { nome: 'Marmitas Completas G', ordem: 3 },
-                { nome: 'Adicionais', ordem: 4 }
-            ],
-            lanches: [
-                { nome: 'X-Burguer', ordem: 1 },
-                { nome: 'X-Tudo', ordem: 2 },
-                { nome: 'Porções', ordem: 3 },
-                { nome: 'Combos', ordem: 4 }
-            ],
-            bebidas: [
-                { nome: 'Refrigerantes', ordem: 1 },
-                { nome: 'Sucos', ordem: 2 },
-                { nome: 'Água', ordem: 3 },
-                { nome: 'Cervejas', ordem: 4 }
-            ]
+        const categoriasPorTipo = {
+            almoco: ['Prato do Dia', 'Marmitas Econômicas', 'Marmitas Completas G', 'Adicionais'],
+            lanches: ['X-Burguer', 'X-Tudo', 'Porções', 'Combos'],
+            bebidas: ['Refrigerantes', 'Sucos', 'Água', 'Cervejas']
         };
-
-        function salvarGruposStorage() {
-            localStorage.setItem('grupos_cardapio', JSON.stringify(gruposPorTipo));
-        }
 
         function atualizarSelectCategorias() {
             const select = document.getElementById('novo-categoria');
             select.innerHTML = '';
-            
-            // Ordena os grupos pelo número da ordem escolhido pelo adm
-            if (!gruposPorTipo[tipoAtual]) gruposPorTipo[tipoAtual] = [];
-            gruposPorTipo[tipoAtual].sort((a, b) => a.ordem - b.ordem);
-
-            gruposPorTipo[tipoAtual].forEach(g => {
+            const lista = categoriasPorTipo[tipoAtual] || ['Geral'];
+            lista.forEach(cat => {
                 const opt = document.createElement('option');
-                opt.value = g.nome;
-                opt.innerText = `${g.ordem} - ${g.nome}`;
+                opt.value = cat;
+                opt.innerText = cat;
                 select.appendChild(opt);
             });
-
-            // Renderiza a listagem de configuração de grupos na tela
-            const configDiv = document.getElementById('lista-grupos-config');
-            configDiv.innerHTML = '<strong>Grupos Atuais e Posições:</strong> ' + 
-                gruposPorTipo[tipoAtual].map(g => `<span style="background: #444; padding: 2px 6px; border-radius: 4px; margin-right: 5px; display: inline-block; margin-top: 3px;">[Posição ${g.ordem}] ${g.nome} <button onclick="removerGrupo('${g.nome}')" style="background:transparent; border:none; color:#e74c3c; cursor:pointer; font-weight:bold;">×</button></span>`).join('');
-        }
-
-        function adicionarGrupo() {
-            const nomeInput = document.getElementById('novo-grupo-nome');
-            const ordemInput = document.getElementById('novo-grupo-ordem');
-            
-            if (!nomeInput.value) {
-                alert('Digite o nome do grupo!');
-                return;
-            }
-
-            const ordem = parseInt(ordemInput.value) || (gruposPorTipo[tipoAtual].length + 1);
-
-            if (!gruposPorTipo[tipoAtual]) gruposPorTipo[tipoAtual] = [];
-            gruposPorTipo[tipoAtual].push({ nome: nomeInput.value, ordem: ordem });
-            
-            salvarGruposStorage();
-            nomeInput.value = '';
-            ordemInput.value = '';
-            atualizarSelectCategorias();
-        }
-
-        function removerGrupo(nomeGrupo) {
-            if (confirm(`Deseja remover o grupo "${nomeGrupo}"?`)) {
-                gruposPorTipo[tipoAtual] = gruposPorTipo[tipoAtual].filter(g => g.nome !== nomeGrupo);
-                salvarGruposStorage();
-                atualizarSelectCategorias();
-            }
         }
 
         function mudarTipoCardapio(tipo) {
@@ -189,8 +121,8 @@
             const nome = document.getElementById('novo-nome').value;
             const preco = document.getElementById('novo-preco').value;
 
-            if (!nome || !preco || !categoria) {
-                alert('Preencha a categoria, o nome e o preço!');
+            if (!nome || !preco) {
+                alert('Preencha o nome e o preço!');
                 return;
             }
 
