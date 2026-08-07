@@ -15,6 +15,12 @@ function atualizarCarrinho() {
     const taxaEl = document.getElementById('taxa-entrega');
     const totalEl = document.getElementById('total-carrinho');
     
+    // Atualiza também o contador flutuante do botão nas páginas, caso exista
+    const contadorEl = document.getElementById('contador-carrinho');
+    if (contadorEl) {
+        contadorEl.innerText = carrinho.length;
+    }
+    
     if (!lista || !totalEl) return;
     
     lista.innerHTML = '';
@@ -221,8 +227,11 @@ async function finalizarCompra() {
         status: "⏳ Aguardando preparo na cozinha"
     };
 
-    document.getElementById('app-container').classList.add('hidden');
-    document.getElementById('pagamento-container').classList.remove('hidden');
+    const appContainer = document.getElementById('app-container');
+    const pagamentoContainer = document.getElementById('pagamento-container');
+    
+    if (appContainer) appContainer.classList.add('hidden');
+    if (pagamentoContainer) pagamentoContainer.classList.remove('hidden');
 
     // Função auxiliar interna para disparar o WhatsApp do estabelecimento junto com o sucesso
     const concluirEnvioWhatsAppESucesso = () => {
@@ -245,9 +254,12 @@ async function finalizarCompra() {
         // Abre o WhatsApp para o estabelecimento receber os detalhes formatados
         window.open(urlWhatsApp, '_blank');
 
-        document.getElementById('pagamento-container').classList.add('hidden');
-        document.getElementById('sucesso-container').classList.remove('hidden');
-        document.getElementById('codigo-pedido-exibido').innerText = `Código: #${codigoPedido}`;
+        if (pagamentoContainer) pagamentoContainer.classList.add('hidden');
+        const sucessoContainer = document.getElementById('sucesso-container');
+        if (sucessoContainer) sucessoContainer.classList.remove('hidden');
+        
+        const codigoExibido = document.getElementById('codigo-pedido-exibido');
+        if (codigoExibido) codigoExibido.innerText = `Código: #${codigoPedido}`;
     };
 
     if (formaPagamento !== 'Pix') {
@@ -265,8 +277,10 @@ async function finalizarCompra() {
             const resJson = await res.json();
             
             if(resJson.qr_code) {
-                document.getElementById('qr-code-input').value = resJson.qr_code;
-                document.getElementById('qr-code-img').src = `data:image/jpeg;base64,${resJson.qr_code_base64}`;
+                const qrInput = document.getElementById('qr-code-input');
+                const qrImg = document.getElementById('qr-code-img');
+                if (qrInput) qrInput.value = resJson.qr_code;
+                if (qrImg) qrImg.src = `data:image/jpeg;base64,${resJson.qr_code_base64}`;
             }
             iniciarVerificacaoPagamentoMP(resJson.id_pagamento, codigoPedido, concluirEnvioWhatsAppESucesso);
         } catch(e) {

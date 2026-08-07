@@ -7,6 +7,11 @@
     <link rel="stylesheet" href="../style.css">
 </head>
 <body>
+    <!-- BOTÃO FLUTUANTE DO CARRINHO (Fica visível em todas as telas) -->
+    <div id="floating-cart" onclick="abrirCarrinhoFlutuante()" style="position: fixed; bottom: 20px; right: 20px; background: #27ae60; color: white; padding: 12px 20px; border-radius: 30px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); cursor: pointer; z-index: 9999; display: flex; align-items: center; gap: 10px; font-weight: bold; font-size: 16px;">
+        🛒 Ver Carrinho (<span id="contador-carrinho">0</span>)
+    </div>
+
     <div class="container">
         <h1 id="titulo-categoria">Carregando...</h1>
         
@@ -19,5 +24,29 @@
     </div>
 
     <script src="/script.js"></script>
+    <script>
+        // Atualiza o contador flutuante sempre que o carrinho mudar
+        window.addEventListener('DOMContentLoaded', () => {
+            if (typeof originalAtualizarCarrinho === 'undefined' && typeof atualizarCarrinho === 'function') {
+                const originalAtualizarCarrinho = window.atualizarCarrinho;
+                window.atualizarCarrinho = function() {
+                    originalAtualizarCarrinho();
+                    const contadorEl = document.getElementById('contador-carrinho');
+                    if (contadorEl && typeof carrinho !== 'undefined') {
+                        contadorEl.innerText = carrinho.length;
+                    }
+                };
+            }
+        });
+
+        function abrirCarrinhoFlutuante() {
+            const modalCarrinho = document.getElementById('modal-carrinho') || document.getElementById('carrinho-container');
+            if (modalCarrinho) {
+                modalCarrinho.style.display = 'block';
+            } else {
+                alert(`Você tem ${typeof carrinho !== 'undefined' ? carrinho.length : 0} item(ns) no carrinho.`);
+            }
+        }
+    </script>
 </body>
 </html>
