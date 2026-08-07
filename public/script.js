@@ -251,7 +251,7 @@ async function finalizarCompra() {
             `*TOTAL A PAGAR:* *R$ ${totalCarrinho.toFixed(2)}*\n` +
             `*Forma de Pagamento:* ${informacaoPagamento}`;
 
-        const numeroWhatsAppRestaurante = "5534999999999"; 
+        const numeroWhatsAppRestaurante = "5513981515612"; 
         const urlWhatsApp = `https://api.whatsapp.com/send?phone=${numeroWhatsAppRestaurante}&text=${encodeURIComponent(textoWhatsApp)}`;
         
         window.open(urlWhatsApp, '_blank');
