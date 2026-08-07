@@ -5,11 +5,116 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cardápio - Gonçalves Lanches & Refeições</title>
     <link rel="stylesheet" href="../style.css">
+    <style>
+        /* Estilos do Modal do Carrinho e Checkout */
+        #modal-carrinho {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-conteudo {
+            background: #1e1e1e;
+            color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+        }
+        .hidden { display: none !important; }
+        .input-grupo { margin-bottom: 12px; }
+        .input-grupo label { display: block; margin-bottom: 5px; font-size: 14px; color: #f1c40f; }
+        .input-grupo input, .input-grupo select { width: 100%; padding: 10px; border-radius: 5px; border: 1px solid #444; background: #2a2a2a; color: #fff; }
+    </style>
 </head>
 <body>
-    <!-- BOTÃO FLUTUANTE DO CARRINHO (Fica visível em todas as telas) -->
-    <div id="floating-cart" onclick="abrirCarrinhoFlutuante()" style="position: fixed; bottom: 20px; right: 20px; background: #27ae60; color: white; padding: 12px 20px; border-radius: 30px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); cursor: pointer; z-index: 9999; display: flex; align-items: center; gap: 10px; font-weight: bold; font-size: 16px;">
+    <!-- BOTÃO FLUTUANTE DO CARRINHO -->
+    <div id="floating-cart" onclick="abrirCarrinhoFlutuante()" style="position: fixed; bottom: 20px; right: 20px; background: #27ae60; color: white; padding: 12px 20px; border-radius: 30px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); cursor: pointer; z-index: 999; display: flex; align-items: center; gap: 10px; font-weight: bold; font-size: 16px;">
         🛒 Ver Carrinho (<span id="contador-carrinho">0</span>)
+    </div>
+
+    <!-- MODAL / TELA DE CHECKOUT E CARRINHO -->
+    <div id="modal-carrinho">
+        <div class="modal-conteudo">
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #444; padding-bottom: 10px; margin-bottom: 15px;">
+                <h2 style="margin: 0; font-size: 20px; color: #2ecc71;">🛒 Seu Carrinho</h2>
+                <button onclick="fecharCarrinhoFlutuante()" style="background: #dc3545; color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer; font-weight: bold;">X</button>
+            </div>
+
+            <!-- ETAPA 1: ITENS E DADOS DE ENTREGA -->
+            <div id="app-container">
+                <ul id="lista-carrinho" style="list-style: none; padding: 0; margin-bottom: 15px;"></ul>
+                
+                <div style="border-top: 1px dashed #444; padding-top: 10px; margin-bottom: 15px; font-size: 15px;">
+                    <p>Subtotal: R$ <span id="subtotal-carrinho">0.00</span></p>
+                    <p>Taxa de Entrega: R$ <span id="taxa-entrega">0.00</span></p>
+                    <p style="font-weight: bold; font-size: 18px; color: #f1c40f;">Total: R$ <span id="total-carrinho">0.00</span></p>
+                </div>
+
+                <h3 style="font-size: 16px; color: #3498db; border-bottom: 1px solid #444; padding-bottom: 5px; margin-bottom: 10px;">Dados para Entrega</h3>
+                
+                <div class="input-grupo">
+                    <label>Seu Nome:</label>
+                    <input type="text" id="cliente-nome" placeholder="Digite seu nome completo">
+                </div>
+                <div class="input-grupo">
+                    <label>Seu WhatsApp:</label>
+                    <input type="text" id="cliente-whatsapp" placeholder="(00) 00000-0000">
+                </div>
+                <div class="input-grupo">
+                    <label>Endereço (Rua e Número):</label>
+                    <input type="text" id="cliente-endereco" placeholder="Ex: Rua das Flores, 123">
+                </div>
+                <div class="input-grupo">
+                    <label>Bairro:</label>
+                    <select id="cliente-bairro" onchange="atualizarCarrinho()">
+                        <option value="" data-taxa="0">Selecione seu Bairro...</option>
+                        <option value="Centro" data-taxa="5.00">Centro (Taxa: R$ 5.00)</option>
+                        <option value="Bairro Alto" data-taxa="8.00">Bairro Alto (Taxa: R$ 8.00)</option>
+                        <option value="Jardim America" data-taxa="7.00">Jardim América (Taxa: R$ 7.00)</option>
+                    </select>
+                </div>
+                <div class="input-grupo">
+                    <label>Forma de Pagamento:</label>
+                    <select id="forma-pagamento" onchange="toggleTroco()">
+                        <option value="Pix">Pix (Automático)</option>
+                        <option value="Cartao">Cartão (Na Entrega)</option>
+                        <option value="Dinheiro">Dinheiro (Na Entrega)</option>
+                    </select>
+                </div>
+                <div id="campo-troco" class="input-grupo hidden">
+                    <label>Troco para quanto?</label>
+                    <input type="number" id="valor-troco" placeholder="Ex: 50.00">
+                </div>
+
+                <button onclick="finalizarCompra()" style="width: 100%; background: #27ae60; color: white; border: none; padding: 12px; border-radius: 5px; font-weight: bold; font-size: 16px; cursor: pointer; margin-top: 10px;">
+                    Finalizar e Enviar Pedido 🚀
+                </button>
+            </div>
+
+            <!-- ETAPA 2: PAGAMENTO PIX -->
+            <div id="pagamento-container" class="hidden" style="text-align: center;">
+                <h3>Escaneie o QR Code Pix</h3>
+                <img id="qr-code-img" src="" alt="QR Code Pix" style="max-width: 200px; margin: 10px 0;">
+                <br>
+                <input type="text" id="qr-code-input" readonly style="width: 100%; font-size: 12px; padding: 5px; margin-bottom: 10px;">
+                <p style="color: #f1c40f; font-size: 14px;">Aguardando confirmação automática do pagamento...</p>
+            </div>
+
+            <!-- ETAPA 3: SUCESSO -->
+            <div id="sucesso-container" class="hidden" style="text-align: center;">
+                <h3 style="color: #2ecc71;">Pedido Realizado com Sucesso! 🎉</h3>
+                <p id="codigo-pedido-exibido" style="font-size: 18px; font-weight: bold; margin: 15px 0;"></p>
+                <p style="font-size: 14px; color: #ccc;">O WhatsApp do estabelecimento foi aberto para o envio do resumo e o pedido já está no painel da cozinha!</p>
+                <button onclick="fecharCarrinhoFlutuante(); location.reload();" style="background: #3498db; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold; margin-top: 15px;">Concluir</button>
+            </div>
+        </div>
     </div>
 
     <div class="container">
@@ -25,26 +130,22 @@
 
     <script src="/script.js"></script>
     <script>
-        // Atualiza o contador flutuante sempre que o carrinho mudar
-        window.addEventListener('DOMContentLoaded', () => {
-            if (typeof originalAtualizarCarrinho === 'undefined' && typeof atualizarCarrinho === 'function') {
-                const originalAtualizarCarrinho = window.atualizarCarrinho;
-                window.atualizarCarrinho = function() {
-                    originalAtualizarCarrinho();
-                    const contadorEl = document.getElementById('contador-carrinho');
-                    if (contadorEl && typeof carrinho !== 'undefined') {
-                        contadorEl.innerText = carrinho.length;
-                    }
-                };
-            }
-        });
-
         function abrirCarrinhoFlutuante() {
-            const modalCarrinho = document.getElementById('modal-carrinho') || document.getElementById('carrinho-container');
-            if (modalCarrinho) {
-                modalCarrinho.style.display = 'block';
+            document.getElementById('modal-carrinho').style.display = 'flex';
+            if (typeof atualizarCarrinho === 'function') atualizarCarrinho();
+        }
+
+        function fecharCarrinhoFlutuante() {
+            document.getElementById('modal-carrinho').style.display = 'none';
+        }
+
+        function toggleTroco() {
+            const forma = document.getElementById('forma-pagamento').value;
+            const campoTroco = document.getElementById('campo-troco');
+            if (forma === 'Dinheiro') {
+                campoTroco.classList.remove('hidden');
             } else {
-                alert(`Você tem ${typeof carrinho !== 'undefined' ? carrinho.length : 0} item(ns) no carrinho.`);
+                campoTroco.classList.add('hidden');
             }
         }
     </script>
