@@ -84,11 +84,9 @@ async function carregarCardapioDinamico() {
             return;
         }
 
-        // Tenta buscar os grupos salvos pelo admin
         let gruposSalvos = JSON.parse(localStorage.getItem('grupos_cardapio')) || {};
         let listaGrupos = gruposSalvos[tipoPagina] || [];
         
-        // Se o admin cadastrou grupos, ordena por eles. Se não, cria as seções baseadas nas categorias dos itens.
         if (listaGrupos.length > 0) {
             listaGrupos.sort((a, b) => a.ordem - b.ordem);
         } else {
@@ -130,9 +128,11 @@ async function carregarCardapioDinamico() {
                     div.style.background = "rgba(241, 196, 15, 0.08)";
                 }
 
+                // Pega a observação ou acompanhamento cadastrado no ADM e define a letra BRANCA
+                const textoObs = item.acompanhamento || item.observacao || '';
                 let htmlAcompanhamento = '';
-                if (item.acompanhamento && item.acompanhamento.trim() !== '') {
-                    htmlAcompanhamento = `<div style="font-size: 13px; color: #3498db; margin-top: 4px;">${item.acompanhamento}</div>`;
+                if (textoObs.trim() !== '') {
+                    htmlAcompanhamento = `<div style="font-size: 13px; color: #ffffff; margin-top: 4px;">${textoObs}</div>`;
                 }
 
                 div.innerHTML = `
@@ -154,7 +154,6 @@ async function carregarCardapioDinamico() {
             container.appendChild(secaoDiv);
         });
 
-        // Caso haja algum item cuja categoria não esteja nos grupos cadastrados, exibe em "Outros Itens" para nunca sumir nada
         const itensRestantes = itensFiltrados.filter(i => !itensExibidosIds.has(i.id));
         if (itensRestantes.length > 0) {
             const secaoOutros = document.createElement('div');
@@ -170,10 +169,18 @@ async function carregarCardapioDinamico() {
                 const div = document.createElement('div');
                 div.className = 'item';
                 div.id = item.id;
+
+                const textoObs = item.acompanhamento || item.observacao || '';
+                let htmlAcompanhamento = '';
+                if (textoObs.trim() !== '') {
+                    htmlAcompanhamento = `<div style="font-size: 13px; color: #ffffff; margin-top: 4px;">${textoObs}</div>`;
+                }
+
                 div.innerHTML = `
                     <div style="flex-grow: 1;">
                         <span style="font-weight: bold; color: #fff; font-size: 16px;">${item.nome}</span>
                         <p style="color: #f1c40f; margin: 4px 0; font-size: 15px;">R$ ${item.preco.toFixed(2)}</p>
+                        ${htmlAcompanhamento}
                     </div>
                     <button onclick="adicionarAoCarrinho('${item.nome.replace(/'/g, "\\'")}', ${item.preco}, '${item.id}')" 
                         style="background: #27ae60; color: white; border: none; padding: 8px 12px; border-radius: 5px; cursor: pointer; font-weight: bold;"
