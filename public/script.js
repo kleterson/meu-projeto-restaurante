@@ -1,11 +1,18 @@
-let carrinho = [];
+// --- LÓGICA DE CARRINHO COM LOCALSTORAGE (SALVA ENTRE PÁGINAS) ---
+
+// Tenta carregar o carrinho salvo no navegador; se não houver, começa vazio
+let carrinho = JSON.parse(localStorage.getItem('carrinho_restaurante')) || [];
 let dadosPedidoGlobal = {};
 let intervaloVerificacao = null;
 
-// --- LÓGICA DE CARRINHO ---
+// Salva o carrinho atual na memória do navegador
+function salvarCarrinhoNoNavegador() {
+    localStorage.setItem('carrinho_restaurante', JSON.stringify(carrinho));
+}
 
 function adicionarAoCarrinho(nome, preco, itemId) {
     carrinho.push({ nome, preco, itemId });
+    salvarCarrinhoNoNavegador();
     atualizarCarrinho();
 }
 
@@ -15,7 +22,7 @@ function atualizarCarrinho() {
     const taxaEl = document.getElementById('taxa-entrega');
     const totalEl = document.getElementById('total-carrinho');
     
-    // Atualiza também o contador flutuante do botão nas páginas, caso exista
+    // Atualiza o contador flutuante em qualquer página
     const contadorEl = document.getElementById('contador-carrinho');
     if (contadorEl) {
         contadorEl.innerText = carrinho.length;
@@ -46,6 +53,7 @@ function atualizarCarrinho() {
 
 function removerItem(index) {
     carrinho.splice(index, 1);
+    salvarCarrinhoNoNavegador();
     atualizarCarrinho();
 }
 
@@ -84,7 +92,6 @@ async function carregarCardapioDinamico() {
         let listaGrupos = gruposSalvos[tipoPagina] || [];
         listaGrupos.sort((a, b) => a.ordem - b.ordem);
 
-        // Se não houver grupos salvos para essa página, cria automaticamente com base nas categorias dos itens
         if (listaGrupos.length === 0) {
             const categoriasUnicas = [...new Set(itensFiltrados.map(i => i.categoria || 'Geral'))];
             listaGrupos = categoriasUnicas.map((cat, idx) => ({ nome: cat, ordem: idx + 1 }));
@@ -92,7 +99,6 @@ async function carregarCardapioDinamico() {
 
         let itensExibidosIds = new Set();
 
-        // Renderiza os grupos configurados
         listaGrupos.forEach(grupo => {
             const itensDoGrupo = itensFiltrados.filter(i => (i.categoria || 'Geral').trim().toLowerCase() === grupo.nome.trim().toLowerCase());
             
@@ -149,7 +155,6 @@ async function carregarCardapioDinamico() {
             container.appendChild(secaoDiv);
         });
 
-        // Garante que nenhum item fique de fora caso a categoria não batesse exatamente
         const itensRestantes = itensFiltrados.filter(i => !itensExibidosIds.has(i.id));
         if (itensRestantes.length > 0) {
             const secaoOutros = document.createElement('div');
@@ -186,7 +191,7 @@ async function carregarCardapioDinamico() {
     } catch (e) { console.error("Erro ao carregar cardápio:", e); }
 }
 
-// --- LÓGICA DE CHECKOUT E PAGAMENTO (COM ENVIO AUTOMÁTICO WHATSAPP) ---
+// --- LÓGICA DE CHECKOUT E PAGAMENTO ---
 
 async function finalizarCompra() {
     if (carrinho.length === 0) { alert('Seu carrinho está vazio!'); return; }
@@ -233,7 +238,6 @@ async function finalizarCompra() {
     if (appContainer) appContainer.classList.add('hidden');
     if (pagamentoContainer) pagamentoContainer.classList.remove('hidden');
 
-    // Função auxiliar interna para disparar o WhatsApp do estabelecimento junto com o sucesso
     const concluirEnvioWhatsAppESucesso = () => {
         let mensagemItens = carrinho.map(i => `▪️ ${i.nome} - R$ ${i.preco.toFixed(2)}`).join('\n');
         
@@ -247,12 +251,14 @@ async function finalizarCompra() {
             `*TOTAL A PAGAR:* *R$ ${totalCarrinho.toFixed(2)}*\n` +
             `*Forma de Pagamento:* ${informacaoPagamento}`;
 
-        // Altere abaixo para o número oficial de WhatsApp do restaurante (Ex: 55 + DDD + Número)
         const numeroWhatsAppRestaurante = "5534999999999"; 
         const urlWhatsApp = `https://api.whatsapp.com/send?phone=${numeroWhatsAppRestaurante}&text=${encodeURIComponent(textoWhatsApp)}`;
         
-        // Abre o WhatsApp para o estabelecimento receber os detalhes formatados
         window.open(urlWhatsApp, '_blank');
+
+        // Limpa o carrinho após finalizar com sucesso
+        carrinho = [];
+        salvarCarrinhoNoNavegador();
 
         if (pagamentoContainer) pagamentoContainer.classList.add('hidden');
         const sucessoContainer = document.getElementById('sucesso-container');
@@ -289,8 +295,6 @@ async function finalizarCompra() {
     }
 }
 
-// --- FUNÇÃO DE VERIFICAÇÃO DE PIX E MERCADO PAGO ---
-
 function iniciarVerificacaoPagamentoMP(idPagamento, codigoPedido, callbackSucesso) {
     if (intervaloVerificacao) clearInterval(intervaloVerificacao);
 
@@ -311,8 +315,6 @@ function iniciarVerificacaoPagamentoMP(idPagamento, codigoPedido, callbackSucess
         }
     }, 4000);
 }
-
-// --- UTILITÁRIOS E STATUS ---
 
 async function registrarPedidoFinal() {
     try {
@@ -336,5 +338,6 @@ async function verificarCardapioEsgotado() {
 
 document.addEventListener("DOMContentLoaded", () => {
     carregarCardapioDinamico();
+    atualizarCarrinho(); // Garante que o contador já comece atualizado ao abrir a página
     setInterval(verificarCardapioEsgotado, 5000);
 });
