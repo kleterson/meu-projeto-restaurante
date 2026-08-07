@@ -43,7 +43,7 @@ function removerItem(index) {
     atualizarCarrinho();
 }
 
-// --- LÓGICA DE CARREGAMENTO DINÂMICO ---
+// --- LÓGICA DE CARREGAMENTO DINÂMICO E DIVISÃO POR GRUPOS ---
 
 async function carregarCardapioDinamico() {
     const path = window.location.pathname;
@@ -67,32 +67,79 @@ async function carregarCardapioDinamico() {
         
         if (!container) return;
         container.innerHTML = '';
+
+        // Recupera os grupos e ordens definidos no painel do adm
+        let gruposSalvos = JSON.parse(localStorage.getItem('grupos_cardapio')) || {};
+        let listaGrupos = gruposSalvos[tipoPagina] || [];
         
-        itensFiltrados.forEach(item => {
-            const div = document.createElement('div');
-            div.className = 'item';
-            div.id = item.id;
+        // Ordena os grupos pela ordem numérica (1, 2, 3...)
+        listaGrupos.sort((a, b) => a.ordem - b.ordem);
 
-            // Tratamento da observação/acompanhamento cadastrada pelo adm
-            let htmlAcompanhamento = '';
-            if (item.acompanhamento && item.acompanhamento.trim() !== '') {
-                htmlAcompanhamento = `<div style="font-size: 13px; color: #3498db; margin-top: 4px;">${item.acompanhamento}</div>`;
-            }
+        // Se não houver grupos criados, cria uma listagem padrão baseada nos itens existentes
+        if (listaGrupos.length === 0) {
+            const categoriasUnicas = [...new Set(itensFiltrados.map(i => i.categoria || 'Geral'))];
+            listaGrupos = categoriasUnicas.map((cat, idx) => ({ nome: cat, ordem: idx + 1 }));
+        }
 
-            div.innerHTML = `
-                <div style="flex-grow: 1;">
-                    <span style="font-weight: bold; color: #fff; font-size: 16px;">${item.nome}</span>
-                    <p style="color: #f1c40f; margin: 4px 0; font-size: 15px;">R$ ${item.preco.toFixed(2)}</p>
-                    ${htmlAcompanhamento}
-                </div>
-                <button onclick="adicionarAoCarrinho('${item.nome.replace(/'/g, "\\'")}', ${item.preco}, '${item.id}')" 
-                    style="background: #27ae60; color: white; border: none; padding: 8px 12px; border-radius: 5px; cursor: pointer; font-weight: bold;"
-                    ${item.esgotado ? 'disabled' : ''}>
-                    ${item.esgotado ? 'ESGOTADO' : 'Adicionar'}
-                </button>
+        // Renderiza cada grupo separadamente na tela do cliente
+        listaGrupos.forEach(grupo => {
+            const itensDoGrupo = itensFiltrados.filter(i => (i.categoria || 'Geral') === grupo.nome);
+            
+            // Se o grupo estiver vazio, não mostra a seção
+            if (itensDoGrupo.length === 0) return;
+
+            const secaoDiv = document.createElement('div');
+            secaoDiv.style.marginBottom = "25px";
+
+            // Verifica se é o Prato do Dia (ou grupo 1) para dar um destaque visual bonito
+            const isDestaque = grupo.ordem === 1 || grupo.nome.toLowerCase().includes('prato do dia');
+
+            secaoDiv.innerHTML = `
+                <h3 style="color: ${isDestaque ? '#f1c40f' : '#2ecc71'}; border-bottom: 2px solid ${isDestaque ? '#f1c40f' : '#444'}; padding-bottom: 5px; margin-bottom: 12px; font-size: ${isDestaque ? '20px' : '17px'};">
+                    ${isDestaque ? '⭐ ' : ''}${grupo.nome}
+                </h3>
             `;
-            container.appendChild(div);
+
+            const itensContainer = document.createElement('div');
+            itensContainer.style.display = "flex";
+            itensContainer.style.flexDirection = "column";
+            itensContainer.style.gap = "10px";
+
+            itensDoGrupo.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'item';
+                div.id = item.id;
+                
+                // Se for o Prato do Dia / destaque, adiciona uma borda especial e fundo diferenciado
+                if (isDestaque) {
+                    div.style.border = "2px solid #f1c40f";
+                    div.style.background = "rgba(241, 196, 15, 0.08)";
+                }
+
+                let htmlAcompanhamento = '';
+                if (item.acompanhamento && item.acompanhamento.trim() !== '') {
+                    htmlAcompanhamento = `<div style="font-size: 13px; color: #3498db; margin-top: 4px;">${item.acompanhamento}</div>`;
+                }
+
+                div.innerHTML = `
+                    <div style="flex-grow: 1;">
+                        <span style="font-weight: bold; color: #fff; font-size: 16px;">${item.nome}</span>
+                        <p style="color: #f1c40f; margin: 4px 0; font-size: 15px;">R$ ${item.preco.toFixed(2)}</p>
+                        ${htmlAcompanhamento}
+                    </div>
+                    <button onclick="adicionarAoCarrinho('${item.nome.replace(/'/g, "\\'")}', ${item.preco}, '${item.id}')" 
+                        style="background: #27ae60; color: white; border: none; padding: 8px 12px; border-radius: 5px; cursor: pointer; font-weight: bold;"
+                        ${item.esgotado ? 'disabled' : ''}>
+                        ${item.esgotado ? 'ESGOTADO' : 'Adicionar'}
+                    </button>
+                `;
+                itensContainer.appendChild(div);
+            });
+
+            secaoDiv.appendChild(itensContainer);
+            container.appendChild(secaoDiv);
         });
+
         verificarCardapioEsgotado();
     } catch (e) { console.error("Erro ao carregar cardápio:", e); }
 }
