@@ -99,6 +99,7 @@ app.delete('/api/pedidos', (req, res) => {
 
 // Armazenamento em memória para o Cardápio Completo (com suporte a tipo, categoria e acompanhamento)
 let cardapio = [
+    // Pratos e Refeições (almoco)
     { id: 'p_dia_1', tipo: 'almoco', categoria: 'Prato do Dia', nome: 'Frango Milanesa c/ Creme de Milho', preco: 16.00, esgotado: false, acompanhamento: '' },
     { id: 'm_eco_1', tipo: 'almoco', categoria: 'Marmitas Econômicas', nome: 'Calabresa Acebolada', preco: 10.00, esgotado: false, acompanhamento: '' },
     { id: 'm_eco_2', tipo: 'almoco', categoria: 'Marmitas Econômicas', nome: 'Frango Milanesa', preco: 10.00, esgotado: false, acompanhamento: '' },
@@ -120,10 +121,16 @@ let cardapio = [
     { id: 'ad_1', tipo: 'almoco', categoria: 'Adicionais', nome: 'Porção Batata Frita', preco: 4.00, esgotado: false, acompanhamento: '' },
     { id: 'ad_2', tipo: 'almoco', categoria: 'Adicionais', nome: 'Ovo Extra', preco: 4.00, esgotado: false, acompanhamento: '' },
     { id: 'ad_3', tipo: 'almoco', categoria: 'Adicionais', nome: 'Mistura Extra', preco: 9.00, esgotado: false, acompanhamento: '' },
-    { id: 'beb_1', tipo: 'almoco', categoria: 'Bebidas (Sucos e Refrigerantes)', nome: 'Coca-Cola Lata', preco: 6.00, esgotado: false, acompanhamento: '' },
-    { id: 'beb_2', tipo: 'almoco', categoria: 'Bebidas (Sucos e Refrigerantes)', nome: 'Guaraná Lata', preco: 6.00, esgotado: false, acompanhamento: '' },
-    { id: 'beb_3', tipo: 'almoco', categoria: 'Bebidas (Sucos e Refrigerantes)', nome: 'Fanta Lata', preco: 6.00, esgotado: false, acompanhamento: '' },
-    { id: 'beb_4', tipo: 'almoco', categoria: 'Bebidas (Sucos e Refrigerantes)', nome: 'Suco Natural (Laranja/Outros)', preco: 8.00, esgotado: false, acompanhamento: '' }
+
+    // Lanches (lanches)
+    { id: 'lanche_1', tipo: 'lanches', categoria: 'X-Burguer', nome: 'X-Salada Especial', preco: 18.00, esgotado: false, acompanhamento: '' },
+    { id: 'lanche_2', tipo: 'lanches', categoria: 'X-Tudo', nome: 'X-Tudo Completo', preco: 22.00, esgotado: false, acompanhamento: '' },
+
+    // Bebidas (bebidas)
+    { id: 'beb_1', tipo: 'bebidas', categoria: 'Refrigerantes', nome: 'Coca-Cola Lata', preco: 6.00, esgotado: false, acompanhamento: '' },
+    { id: 'beb_2', tipo: 'bebidas', categoria: 'Refrigerantes', nome: 'Guaraná Lata', preco: 6.00, esgotado: false, acompanhamento: '' },
+    { id: 'beb_3', tipo: 'bebidas', categoria: 'Refrigerantes', nome: 'Fanta Lata', preco: 6.00, esgotado: false, acompanhamento: '' },
+    { id: 'beb_4', tipo: 'bebidas', categoria: 'Sucos', nome: 'Suco Natural (Laranja/Outros)', preco: 8.00, esgotado: false, acompanhamento: '' }
 ];
 
 // Rota para buscar o cardápio
