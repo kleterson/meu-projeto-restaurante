@@ -54,7 +54,7 @@ function removerItem(index) {
     atualizarCarrinho();
 }
 
-// --- LÓGICA DE CARREGAMENTO DINÂMICO E GRUPOS FIXOS (CORRIGIDO) ---
+// --- LÓGICA DE CARREGAMENTO DINÂMICO E EXIBIÇÃO INTELIGENTE ---
 
 async function carregarCardapioDinamico() {
     const path = window.location.pathname;
@@ -84,20 +84,22 @@ async function carregarCardapioDinamico() {
             return;
         }
 
-        // Recupera APENAS os grupos criados manualmente pelo administrador (permanentes)
+        // Tenta buscar os grupos salvos pelo admin
         let gruposSalvos = JSON.parse(localStorage.getItem('grupos_cardapio')) || {};
         let listaGrupos = gruposSalvos[tipoPagina] || [];
-        listaGrupos.sort((a, b) => a.ordem - b.ordem);
-
-        // Se o admin não criou nenhum grupo, não exibe itens aleatórios (evita o erro visual)
-        if (listaGrupos.length === 0) {
-            container.innerHTML = '<p style="color: #f1c40f; text-align: center; padding: 20px;">Nenhum grupo configurado pelo Administrador para esta página.</p>';
-            return;
+        
+        // Se o admin cadastrou grupos, ordena por eles. Se não, cria as seções baseadas nas categorias dos itens.
+        if (listaGrupos.length > 0) {
+            listaGrupos.sort((a, b) => a.ordem - b.ordem);
+        } else {
+            const categoriasUnicas = [...new Set(itensFiltrados.map(i => i.categoria || 'Geral'))];
+            listaGrupos = categoriasUnicas.map((cat, idx) => ({ nome: cat, ordem: idx + 1 }));
         }
 
+        let itensExibidosIds = new Set();
+
         listaGrupos.forEach(grupo => {
-            // Filtra estritamente pelo nome exato do grupo criado pelo admin
-            const itensDoGrupo = itensFiltrados.filter(i => (i.categoria || '').trim().toLowerCase() === grupo.nome.trim().toLowerCase());
+            const itensDoGrupo = itensFiltrados.filter(i => (i.categoria || 'Geral').trim().toLowerCase() === grupo.nome.trim().toLowerCase());
             
             if (itensDoGrupo.length === 0) return;
 
@@ -118,6 +120,7 @@ async function carregarCardapioDinamico() {
             itensContainer.style.gap = "10px";
 
             itensDoGrupo.forEach(item => {
+                itensExibidosIds.add(item.id);
                 const div = document.createElement('div');
                 div.className = 'item';
                 div.id = item.id;
@@ -150,6 +153,39 @@ async function carregarCardapioDinamico() {
             secaoDiv.appendChild(itensContainer);
             container.appendChild(secaoDiv);
         });
+
+        // Caso haja algum item cuja categoria não esteja nos grupos cadastrados, exibe em "Outros Itens" para nunca sumir nada
+        const itensRestantes = itensFiltrados.filter(i => !itensExibidosIds.has(i.id));
+        if (itensRestantes.length > 0) {
+            const secaoOutros = document.createElement('div');
+            secaoOutros.style.marginBottom = "25px";
+            secaoOutros.innerHTML = `<h3 style="color: #2ecc71; border-bottom: 2px solid #444; padding-bottom: 5px; margin-bottom: 12px; font-size: 17px;">Outros Itens</h3>`;
+            
+            const itensContainer = document.createElement('div');
+            itensContainer.style.display = "flex";
+            itensContainer.style.flexDirection = "column";
+            itensContainer.style.gap = "10px";
+
+            itensRestantes.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'item';
+                div.id = item.id;
+                div.innerHTML = `
+                    <div style="flex-grow: 1;">
+                        <span style="font-weight: bold; color: #fff; font-size: 16px;">${item.nome}</span>
+                        <p style="color: #f1c40f; margin: 4px 0; font-size: 15px;">R$ ${item.preco.toFixed(2)}</p>
+                    </div>
+                    <button onclick="adicionarAoCarrinho('${item.nome.replace(/'/g, "\\'")}', ${item.preco}, '${item.id}')" 
+                        style="background: #27ae60; color: white; border: none; padding: 8px 12px; border-radius: 5px; cursor: pointer; font-weight: bold;"
+                        ${item.esgotado ? 'disabled' : ''}>
+                        ${item.esgotado ? 'ESGOTADO' : 'Adicionar'}
+                    </button>
+                `;
+                itensContainer.appendChild(div);
+            });
+            secaoOutros.appendChild(itensContainer);
+            container.appendChild(secaoOutros);
+        }
 
         verificarCardapioEsgotado();
     } catch (e) { console.error("Erro ao carregar cardápio:", e); }
