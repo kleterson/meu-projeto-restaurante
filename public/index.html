@@ -5,29 +5,114 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gonçalves Lanches & Refeições</title>
     <link rel="stylesheet" href="style.css">
+    <style>
+        /* Ajustes para a página inicial ocupar a tela com estilo moderno */
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            background-color: #121212;
+            color: #fff;
+        }
+        .home-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            text-align: center;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        .categorias-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            margin-top: 30px;
+        }
+        .card-categoria {
+            position: relative;
+            height: 130px;
+            border-radius: 12px;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            transition: transform 0.2s, box-shadow 0.2s;
+            border: 2px solid rgba(255,255,255,0.1);
+        }
+        .card-categoria:hover {
+            transform: scale(1.02);
+            box-shadow: 0 6px 20px rgba(241,196,15,0.4);
+            border-color: #f1c40f;
+        }
+        /* Imagem de fundo com escurecimento para o texto aparecer */
+        .card-categoria::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.65); /* Camada escura */
+            z-index: 1;
+        }
+        .card-categoria img {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            object-fit: cover;
+            z-index: 0;
+        }
+        .card-conteudo {
+            position: relative;
+            z-index: 2;
+            color: #fff;
+            font-size: 24px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+        }
+    </style>
 </head>
 <body>
-
-    <div class="container">
-        <div class="header-title">
-            <h1>Gonçalves Lanches & Refeições</h1>
-            <p>Escolha uma categoria para ver o cardápio</p>
+    <div class="home-container">
+        <div style="background: rgba(0,0,0,0.7); padding: 25px; border-radius: 15px; border: 1px solid #333;">
+            <h1 style="color: #f1c40f; margin: 0 0 10px 0; font-size: 28px;">GONÇALVES LANCHES & REFEIÇÕES</h1>
+            <p style="color: #ccc; margin-bottom: 15px; font-size: 16px;">Escolha uma categoria abaixo para ver o cardápio:</p>
+            <div style="display: inline-block; background: #27ae60; color: white; padding: 6px 15px; border-radius: 20px; font-size: 14px; font-weight: bold;">
+                🛵 Delivery Ativo
+            </div>
         </div>
 
-        <div class="header-actions">
-            <span class="delivery-badge">🛵 Delivery Ativo</span>
-        </div>
+        <div class="categorias-grid">
+            <!-- Botão Lanches -->
+            <a href="lanches/index.html" class="card-categoria">
+                <!-- Cole o link da foto de lanche que preferir no 'src' -->
+                <img src="https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=800&q=80" alt="Lanches">
+                <div class="card-conteudo">
+                    <span>🍔</span> Lanches Especiais
+                </div>
+            </a>
 
-        <hr style="border-color: #d4af37; margin: 20px 0;">
+            <!-- Botão Almoço / Refeições -->
+            <a href="refeicoes/index.html" class="card-categoria">
+                <!-- Foto de comida / marmita -->
+                <img src="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=800&q=80" alt="Refeições">
+                <div class="card-conteudo">
+                    <span>🍲</span> Pratos e Marmitas (Almoço)
+                </div>
+            </a>
 
-        <!-- Botões das categorias -->
-        <div style="display: flex; flex-direction: column; gap: 15px; margin-top: 20px;">
-            <button onclick="window.location.href='lanches/index.html'" style="background: #e67e22; font-size: 18px; padding: 15px; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold;">🍔 Lanches Especiais</button>
-            <button onclick="window.location.href='refeicoes/index.html'" style="background: #27ae60; font-size: 18px; padding: 15px; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold;">🍲 Pratos e Marmitas (Almoço)</button>
-            <button onclick="window.location.href='bebidas/index.html'" style="background: #2980b9; font-size: 18px; padding: 15px; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold;">🥤 Bebidas e Sucos</button>
+            <!-- Botão Bebidas -->
+            <a href="bebidas/index.html" class="card-categoria">
+                <!-- Foto de bebidas / sucos -->
+                <img src="https://images.unsplash.com/photo-1551024709-8f23befc6f87?auto=format&fit=crop&w=800&q=80" alt="Bebidas">
+                <div class="card-conteudo">
+                    <span>🥤</span> Bebidas e Sucos
+                </div>
+            </a>
         </div>
     </div>
-
-    <script src="script.js"></script>
 </body>
 </html>
