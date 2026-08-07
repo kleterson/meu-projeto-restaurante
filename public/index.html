@@ -230,6 +230,13 @@
         ⏳ Aguardando... estabelecimento aceitar seu pedido<span class="pontos-animados"><span>.</span><span>.</span><span>.</span></span>
     </p>
     <p id="codigo-pedido-exibido" style="font-size: 16px; color: #f1c40f; margin-top: 10px;"></p>
+
+    <!-- Botão de WhatsApp que aparece após o estabelecimento aceitar -->
+    <div id="container-btn-whatsapp" class="hidden" style="margin-top: 25px;">
+        <button onclick="enviarPedidoWhatsApp()" style="background: #25D366; color: white; font-size: 16px; padding: 14px 20px; width: 100%; max-width: 400px; border-radius: 8px; font-weight: bold; box-shadow: 0 4px 10px rgba(0,0,0,0.5);">
+            💬 Enviar Pedido para o WhatsApp do Comércio
+        </button>
+    </div>
 </div>
 
 <script>
@@ -426,6 +433,7 @@
             taxa,
             formaPagamento: informacaoPagamento,
             itens: [...carrinho],
+            subtotal: subtotalCarrinho,
             total: totalCarrinho,
             status: '⏳ Aguardando... estabelecimento aceitar seu pedido'
         };
@@ -528,7 +536,7 @@
     }
 
     function verificarStatusPedido() {
-        setInterval(async () => {
+        const timerStatus = setInterval(async () => {
             try {
                 const res = await fetch('/api/pedidos');
                 const pedidos = await res.json();
@@ -536,9 +544,40 @@
                 if (meuPedido) {
                     const textoStatus = document.getElementById('status-pedido-texto');
                     if (textoStatus) textoStatus.innerText = meuPedido.status;
+
+                    // Se o status indicar que o estabelecimento aceitou o pedido, exibe o botão do WhatsApp
+                    if (meuPedido.status.toLowerCase().includes('aceito') || meuPedido.status.toLowerCase().includes('preparo') || meuPedido.status.toLowerCase().includes('saiu para entrega')) {
+                        document.getElementById('container-btn-whatsapp').classList.remove('hidden');
+                    }
                 }
             } catch(e) {}
         }, 3000);
+    }
+
+    function enviarPedidoWhatsApp() {
+        const p = dadosPedidoGlobal;
+        let itensTexto = "";
+        p.itens.forEach(item => {
+            itensTexto += `- ${item.nome} (R$ ${item.preco.toFixed(2)})\n`;
+        });
+
+        const mensagem = `*NOVO PEDIDO - Gonçalves Lanches & Refeições*\n\n` +
+            `🔢 *Código:* #${p.codigo}\n` +
+            `👤 *Cliente:* ${p.nome}\n` +
+            `📱 *WhatsApp:* ${p.whatsapp}\n\n` +
+            `🍽️ *Itens do Pedido:*\n${itensTexto}\n` +
+            `💰 *Subtotal:* R$ ${p.subtotal.toFixed(2)}\n` +
+            `🛵 *Taxa de Entrega (${p.bairro}):* R$ ${p.taxa.toFixed(2)}\n` +
+            `💳 *Total Geral:* R$ ${p.total.toFixed(2)}\n\n` +
+            `💳 *Forma de Pagamento:* ${p.formaPagamento}\n\n` +
+            `📍 *Endereço de Entrega:*\n` +
+            `Rua: ${p.endereco}\n` +
+            `Bairro: ${p.bairro}\n` +
+            `Referência: ${p.referencia}`;
+
+        const numeroComercio = "5513981515612";
+        const urlWhatsApp = `https://api.whatsapp.com/send?phone=${numeroComercio}&text=${encodeURIComponent(mensagem)}`;
+        window.open(urlWhatsApp, '_blank');
     }
 
     carregarCardapio();
