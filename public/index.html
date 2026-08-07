@@ -40,12 +40,101 @@
         }
         .btn-dashboard:hover { background: #d35400; }
 
+        /* Botão do Menu Dashboard (Três Barrinhas) */
+        .btn-menu-lateral {
+            background: #f1c40f;
+            color: #000;
+            border: none;
+            padding: 6px 14px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 14px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .btn-menu-lateral:hover { background: #d4af37; }
+
+        /* Estilo do Menu Lateral / Dashboard Sanfona */
+        .drawer-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 99998;
+            display: none;
+        }
+        .drawer-menu {
+            position: fixed;
+            top: 0;
+            left: -280px;
+            width: 270px;
+            height: 100%;
+            background: #1a0808;
+            border-right: 2px solid #d4af37;
+            z-index: 99999;
+            transition: left 0.3s ease;
+            padding: 20px 15px;
+            box-shadow: 5px 0 15px rgba(0,0,0,0.8);
+            overflow-y: auto;
+        }
+        .drawer-menu.ativo {
+            left: 0;
+        }
+        .drawer-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #d4af37;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+        .drawer-header h3 {
+            color: #f1c40f;
+            margin: 0;
+            font-size: 18px;
+        }
+        .btn-fechar-drawer {
+            background: #c0392b;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .drawer-lista-grupos {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .drawer-lista-grupos li {
+            padding: 10px 12px;
+            margin-bottom: 8px;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 6px;
+            cursor: pointer;
+            color: #fff;
+            font-weight: bold;
+            font-size: 14px;
+            border-left: 4px solid #f1c40f;
+            transition: background 0.2s;
+        }
+        .drawer-lista-grupos li:hover {
+            background: rgba(241, 196, 15, 0.2);
+            color: #f1c40f;
+        }
+
         h2 { color: #f1c40f; border-bottom: 2px solid #d4af37; padding-bottom: 5px; margin-top: 20px; font-size: 18px; text-shadow: 1px 1px 3px rgba(0,0,0,0.8); }
         
         .menu-grid { display: grid; grid-template-columns: 1fr; gap: 15px; }
         @media (min-width: 768px) { .menu-grid { grid-template-columns: 1fr 1fr; } }
 
-        .category { background: rgba(40, 10, 10, 0.75); padding: 12px; border-radius: 8px; border: 1px solid rgba(160, 82, 45, 0.8); margin-bottom: 15px; }
+        .category { background: rgba(40, 10, 10, 0.75); padding: 12px; border-radius: 8px; border: 1px solid rgba(160, 82, 45, 0.8); margin-bottom: 15px; scroll-margin-top: 20px; }
         
         .item { display: flex; justify-content: space-between; margin-bottom: 10px; background: rgba(55, 15, 15, 0.8); padding: 10px; border-radius: 6px; border: 1px solid rgba(184, 134, 11, 0.7); align-items: center; gap: 10px;}
         .item span { font-size: 15px; line-height: 1.3; }
@@ -120,12 +209,26 @@
     </style>
 </head>
 <body>
+
+<!-- Overlay e Menu Lateral / Dashboard Sanfona -->
+<div class="drawer-overlay" id="drawer-overlay" onclick="fecharMenuLateral()"></div>
+<div class="drawer-menu" id="drawer-menu">
+    <div class="drawer-header">
+        <h3>📂 Categorias</h3>
+        <button class="btn-fechar-drawer" onclick="fecharMenuLateral()">✕</button>
+    </div>
+    <ul class="drawer-lista-grupos" id="drawer-lista-grupos">
+        <!-- Preenchido dinamicamente -->
+    </ul>
+</div>
+
 <div class="container" id="app-container">
     <div class="header-title">
         <h1>Gonçalves Lanches & Refeições</h1>
         <p>Mais sabor, mais qualidade, melhor preço!</p>
         <div class="header-actions">
             <div class="delivery-badge">📞 Delivery: (13) 98151-5612</div>
+            <button class="btn-menu-lateral" onclick="abrirMenuLateral()">☰ Grupos</button>
             <button class="btn-dashboard hidden" id="btn-voltar-status" onclick="
                 document.getElementById('app-container').classList.add('hidden');
                 document.getElementById('sucesso-container').classList.remove('hidden');
@@ -240,6 +343,24 @@
 </div>
 
 <script>
+    function abrirMenuLateral() {
+        document.getElementById('drawer-menu').classList.add('ativo');
+        document.getElementById('drawer-overlay').style.display = 'block';
+    }
+
+    function fecharMenuLateral() {
+        document.getElementById('drawer-menu').classList.remove('ativo');
+        document.getElementById('drawer-overlay').style.display = 'none';
+    }
+
+    function irParaCategoria(idCategoria) {
+        fecharMenuLateral();
+        const elemento = document.getElementById(idCategoria);
+        if (elemento) {
+            elemento.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    }
+
     function verificarFormaPagamento() {
         const formaPagamento = document.getElementById('forma-pagamento').value;
         const campoTroco = document.getElementById('campo-troco');
@@ -274,9 +395,26 @@
             const res = await fetch('/api/cardapio');
             cardapioGlobal = await res.json();
             renderizarCardapioNaTela();
+            atualizarMenuLateralDrawer();
         } catch (e) {
             console.error("Erro ao carregar cardápio:", e);
         }
+    }
+
+    function atualizarMenuLateralDrawer() {
+        const listaDrawer = document.getElementById('drawer-lista-grupos');
+        if (!listaDrawer) return;
+
+        const categoriasSet = new Set();
+        cardapioGlobal.forEach(item => {
+            categoriasSet.add(item.categoria || 'Geral');
+        });
+
+        listaDrawer.innerHTML = '';
+        categoriasSet.forEach(cat => {
+            const idCat = 'cat-' + cat.replace(/\s+/g, '-').toLowerCase();
+            listaDrawer.innerHTML += `<li onclick="irParaCategoria('${idCat}')">📂 ${cat}</li>`;
+        });
     }
 
     function renderizarCardapioNaTela() {
@@ -285,8 +423,9 @@
 
         const categorias = {};
         cardapioGlobal.forEach(item => {
-            if (!categorias[item.categoria]) categorias[item.categoria] = [];
-            categorias[item.categoria].push(item);
+            const cat = item.categoria || 'Geral';
+            if (!categorias[cat]) categorias[cat] = [];
+            categorias[cat].push(item);
         });
 
         container.innerHTML = '';
@@ -313,8 +452,9 @@
                 }
             });
 
+            const idCat = 'cat-' + cat.replace(/\s+/g, '-').toLowerCase();
             container.innerHTML += `
-                <div class="category">
+                <div class="category" id="${idCat}">
                     <h2>${cat}</h2>
                     ${itensHtml}
                 </div>
@@ -545,7 +685,6 @@
                     const textoStatus = document.getElementById('status-pedido-texto');
                     if (textoStatus) textoStatus.innerText = meuPedido.status;
 
-                    // Se o status indicar que o estabelecimento aceitou o pedido, exibe o botão do WhatsApp
                     if (meuPedido.status.toLowerCase().includes('aceito') || meuPedido.status.toLowerCase().includes('preparo') || meuPedido.status.toLowerCase().includes('saiu para entrega')) {
                         document.getElementById('container-btn-whatsapp').classList.remove('hidden');
                     }
