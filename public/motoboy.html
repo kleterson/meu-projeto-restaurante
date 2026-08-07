@@ -22,11 +22,13 @@
             <a href="/" style="color: #f1c40f; text-decoration: none; font-weight: bold;">🏠 Voltar para a Página Inicial do Cliente</a>
         </div>
 
-        <!-- Seção de Cadastro de Novo Item -->
+        <!-- Seção de Cadastro com Seletor de Categoria Dinâmico -->
         <div style="background: #2c2c2c; padding: 15px; border-radius: 8px; margin-bottom: 25px; border: 1px solid #444;">
             <h3 style="color: #2ecc71; margin-top: 0;">➕ Adicionar Novo Item no Cardápio Atual</h3>
             <div style="display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 10px; align-items: center;">
-                <input type="text" id="novo-categoria" placeholder="Categoria (ex: Refrigerantes, Prato do Dia)" style="padding: 8px; border-radius: 4px; border: 1px solid #555; background: #333; color: white;">
+                <select id="novo-categoria" style="padding: 9px; border-radius: 4px; border: 1px solid #555; background: #333; color: white;">
+                    <!-- As opções mudam conforme o tipo escolhido -->
+                </select>
                 <input type="text" id="novo-nome" placeholder="Nome do Produto" style="padding: 8px; border-radius: 4px; border: 1px solid #555; background: #333; color: white;">
                 <input type="number" id="novo-preco" placeholder="Preço (Ex: 10.00)" step="0.01" style="padding: 8px; border-radius: 4px; border: 1px solid #555; background: #333; color: white;">
                 <button onclick="adicionarItemCardapio()" style="background: #27ae60; color: white; border: none; padding: 9px 15px; border-radius: 4px; cursor: pointer; font-weight: bold;">Salvar Item</button>
@@ -45,8 +47,27 @@
     <script>
         let tipoAtual = 'almoco';
 
+        const categoriasPorTipo = {
+            almoco: ['Prato do Dia', 'Marmitas Econômicas', 'Marmitas Completas G', 'Adicionais'],
+            lanches: ['X-Burguer', 'X-Tudo', 'Porções', 'Combos'],
+            bebidas: ['Refrigerantes', 'Sucos', 'Água', 'Cervejas']
+        };
+
+        function atualizarSelectCategorias() {
+            const select = document.getElementById('novo-categoria');
+            select.innerHTML = '';
+            const lista = categoriasPorTipo[tipoAtual] || ['Geral'];
+            lista.forEach(cat => {
+                const opt = document.createElement('option');
+                opt.value = cat;
+                opt.innerText = cat;
+                select.appendChild(opt);
+            });
+        }
+
         function mudarTipoCardapio(tipo) {
             tipoAtual = tipo;
+            atualizarSelectCategorias();
             carregarCardapioPainel();
         }
 
@@ -72,13 +93,16 @@
                 filtrados.forEach(item => {
                     const div = document.createElement('div');
                     div.style.cssText = "background: #2c2c2c; padding: 10px 15px; margin-bottom: 8px; border-radius: 5px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #444;";
+                    
                     div.innerHTML = `
-                        <div>
+                        <div style="flex-grow: 1;">
                             <span style="font-size: 12px; color: #f1c40f; text-transform: uppercase;">[${item.categoria}]</span><br>
                             <span style="font-weight: bold; font-size: 15px;">${item.nome}</span> - <span style="color: #2ecc71;">R$ ${item.preco.toFixed(2)}</span>
                             <span style="font-size: 12px; margin-left: 10px; color: ${item.esgotado ? '#e74c3c' : '#2ecc71'};">(${item.esgotado ? 'ESGOTADO' : 'DISPONÍVEL'})</span>
+                            ${item.acompanhamento ? `<br><small style="color: #3498db;">Acompanha: ${item.acompanhamento}</small>` : ''}
                         </div>
                         <div style="display: flex; gap: 8px;">
+                            <button onclick="abrirEditar('${item.id}', '${item.nome}', ${item.preco}, '${item.acompanhamento || ''}')" style="background: #3498db; color: white; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold;">Editar</button>
                             <button onclick="alternarEsgotado('${item.id}')" style="background: ${item.esgotado ? '#27ae60' : '#c0392b'}; color: white; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; font-size: 12px;">
                                 ${item.esgotado ? 'Disponibilizar' : 'Esgotar'}
                             </button>
@@ -98,19 +122,37 @@
             const preco = document.getElementById('novo-preco').value;
 
             if (!nome || !preco) {
-                alert('Preencha pelo menos o nome e o preço!');
+                alert('Preencha o nome e o preço!');
                 return;
             }
 
             await fetch('/api/cardapio', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ tipo: tipoAtual, categoria, nome, preco })
+                body: JSON.stringify({ tipo: tipoAtual, categoria, nome, preco, acompanhamento: '' })
             });
 
-            document.getElementById('novo-categoria').value = '';
             document.getElementById('novo-nome').value = '';
             document.getElementById('novo-preco').value = '';
+            carregarCardapioPainel();
+        }
+
+        async function abrirEditar(id, nomeAtual, precoAtual, acompAtual) {
+            const novoNome = prompt("Editar Nome do Produto:", nomeAtual);
+            if (novoNome === null) return;
+
+            const novoPrecoStr = prompt("Editar Preço:", precoAtual);
+            if (novoPrecoStr === null) return;
+
+            const novoAcomp = prompt("Adicionar/Editar Observação (Ex: Acompanha: arroz, feijão...):", acompAtual);
+            if (novoAcomp === null) return;
+
+            await fetch(`/api/cardapio/${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ nome: novoNome, preco: Number(novoPrecoStr), acompanhamento: novoAcomp })
+            });
+
             carregarCardapioPainel();
         }
 
@@ -166,6 +208,7 @@
         }
 
         document.addEventListener("DOMContentLoaded", () => {
+            atualizarSelectCategorias();
             carregarCardapioPainel();
             carregarPedidos();
             setInterval(carregarPedidos, 5000);
