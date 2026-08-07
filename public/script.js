@@ -129,10 +129,13 @@ async function finalizarCompra() {
             document.getElementById('codigo-pedido-exibido').innerText = `Código: #${codigoPedido}`;
         }, 1500);
     } else {
-        // Lógica Pix mantida como no original...
         const res = await fetch('/api/criar-pagamento', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(dadosPedidoGlobal) });
         const resJson = await res.json();
-        // ... (resto da lógica Pix)
+        
+        if(resJson.qr_code) {
+            document.getElementById('qr-code-input').value = resJson.qr_code;
+            document.getElementById('qr-code-img').src = `data:image/jpeg;base64,${resJson.qr_code_base64}`;
+        }
         iniciarVerificacaoPagamentoMP(resJson.id_pagamento, codigoPedido);
     }
 }
