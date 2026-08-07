@@ -53,7 +53,7 @@
         .item-linha { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
         .item-linha span { font-size: 14px; }
         
-        .item-edicao { display: none; background: #222; padding: 8px; border-radius: 4px; gap: 8px; align-items: center; }
+        .item-edicao { display: none; background: #222; padding: 8px; border-radius: 4px; flex-direction: column; gap: 8px; align-items: stretch; }
         .esgotado-tag { color: #ff4d4d; font-weight: bold; }
         .disponivel-tag { color: #2ecc71; font-weight: bold; }
         
@@ -194,7 +194,8 @@
                             </div>
                             <div id="edicao-${item.id}" class="item-edicao">
                                 <input type="text" id="nome-${item.id}" value="${item.nome}" placeholder="Novo nome">
-                                <input type="number" step="0.01" id="preco-${item.id}" value="${item.preco}" placeholder="Novo preço" style="width: 110px;">
+                                <input type="number" step="0.01" id="preco-${item.id}" value="${item.preco}" placeholder="Novo preço">
+                                <input type="text" id="acompanhamento-${item.id}" value="${item.acompanhamento || ''}" placeholder="Observação / Acompanhamento (Ex: Arroz, feijão, farofa)">
                                 <button class="btn-salvar" onclick="salvarEdicaoItem('${item.id}')">💾 Salvar</button>
                             </div>
                         </div>
@@ -214,6 +215,7 @@
     async function salvarEdicaoItem(id) {
         const novoNome = document.getElementById(`nome-${id}`).value;
         const novoPreco = parseFloat(document.getElementById(`preco-${id}`).value);
+        const novoAcompanhamento = document.getElementById(`acompanhamento-${id}`).value;
 
         if (!novoNome || isNaN(novoPreco)) {
             alert('Preencha um nome e um preço válido!');
@@ -224,7 +226,7 @@
             const res = await fetch(`/api/cardapio/${id}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ nome: novoNome, preco: novoPreco })
+                body: JSON.stringify({ nome: novoNome, preco: novoPreco, acompanhamento: novoAcompanhamento })
             });
             const resultado = await res.json();
             if (resultado.success) {
@@ -370,13 +372,13 @@
     function copiarPedido(p) {
         const itensTexto = p.itens.map(i => `- ${i.nome} (R$ ${i.preco.toFixed(2)})`).join('\n');
         const texto = `📦 *PEDIDO #${p.codigo}*\n\n` +
-                      `👤 *Cliente:* ${p.nome}\n` +
-                      `📱 *WhatsApp:* ${p.whatsapp}\n` +
-                      `🏠 *Endereço:* ${p.endereco}\n` +
-                      `📍 *Bairro:* ${p.bairro} (Taxa: R$ ${(p.taxa || 0).toFixed(2)})\n` +
-                      `🔍 *Referência:* ${p.referencia}\n\n` +
-                      `🛒 *Itens:*\n${itensTexto}\n\n` +
-                      `💰 *Total Geral:* R$ ${p.total.toFixed(2)}`;
+                    `👤 *Cliente:* ${p.nome}\n` +
+                    `📱 *WhatsApp:* ${p.whatsapp}\n` +
+                    `🏠 *Endereço:* ${p.endereco}\n` +
+                    `📍 *Bairro:* ${p.bairro} (Taxa: R$ ${(p.taxa || 0).toFixed(2)})\n` +
+                    `🔍 *Referência:* ${p.referencia}\n\n` +
+                    `🛒 *Itens:*\n${itensTexto}\n\n` +
+                    `💰 *Total Geral:* R$ ${p.total.toFixed(2)}`;
 
         navigator.clipboard.writeText(texto).then(() => {
             alert("Pedido copiado com sucesso!");

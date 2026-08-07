@@ -296,7 +296,10 @@
                 } else {
                     itensHtml += `
                         <div class="item">
-                            <span style="flex: 1;">${item.nome} - <strong>R$ ${item.preco.toFixed(2)}</strong></span>
+                            <div style="flex: 1;">
+                                <span>${item.nome} - <strong>R$ ${item.preco.toFixed(2)}</strong></span>
+                                ${item.acompanhamento ? `<br><small style="font-size: 12px; color: #ccc; font-style: italic;">${item.acompanhamento}</small>` : ''}
+                            </div>
                             <button onclick="adicionarAoCarrinho('${item.id}')">Adicionar</button>
                         </div>
                     `;
@@ -315,7 +318,7 @@
     function adicionarAoCarrinho(id) {
         const item = cardapioGlobal.find(i => i.id === id);
         if (item && !item.esgotado) {
-            carrinho.push({ id: item.id, nome: item.nome, preco: item.preco });
+            carrinho.push({ id: item.id, nome: item.nome, preco: item.preco, acompanhamento: item.acompanhamento });
             atualizarCarrinho();
         }
     }
