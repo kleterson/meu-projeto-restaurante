@@ -75,23 +75,27 @@ async function carregarCardapioDinamico() {
         // Ordena os grupos pela ordem numérica (1, 2, 3...)
         listaGrupos.sort((a, b) => a.ordem - b.ordem);
 
-        // Se não houver grupos criados, cria uma listagem padrão baseada nos itens existentes
+        // Se não houver grupos criados, cria uma listagem padrão
         if (listaGrupos.length === 0) {
-            const categoriasUnicas = [...new Set(itensFiltrados.map(i => i.categoria || 'Geral'))];
-            listaGrupos = categoriasUnicas.map((cat, idx) => ({ nome: cat, ordem: idx + 1 }));
+            listaGrupos = [
+                { nome: 'Prato do Dia', ordem: 1 },
+                { nome: 'Marmitas Econômicas', ordem: 2 },
+                { nome: 'Marmitas Completas G', ordem: 3 },
+                { nome: 'Adicionais', ordem: 4 }
+            ];
         }
 
         // Renderiza cada grupo separadamente na tela do cliente
         listaGrupos.forEach(grupo => {
-            const itensDoGrupo = itensFiltrados.filter(i => (i.categoria || 'Geral') === grupo.nome);
+            const itensDoGrupo = itensFiltrados.filter(i => (i.categoria || '').trim().toLowerCase() === grupo.nome.trim().toLowerCase());
             
-            // Se o grupo estiver vazio, não mostra a seção
+            // Se o grupo estiver vazio, não exibe a seção
             if (itensDoGrupo.length === 0) return;
 
             const secaoDiv = document.createElement('div');
             secaoDiv.style.marginBottom = "25px";
 
-            // Verifica se é o Prato do Dia (ou grupo 1) para dar um destaque visual bonito
+            // Verifica se é o Prato do Dia (ou grupo 1) para dar destaque visual
             const isDestaque = grupo.ordem === 1 || grupo.nome.toLowerCase().includes('prato do dia');
 
             secaoDiv.innerHTML = `
@@ -110,7 +114,6 @@ async function carregarCardapioDinamico() {
                 div.className = 'item';
                 div.id = item.id;
                 
-                // Se for o Prato do Dia / destaque, adiciona uma borda especial e fundo diferenciado
                 if (isDestaque) {
                     div.style.border = "2px solid #f1c40f";
                     div.style.background = "rgba(241, 196, 15, 0.08)";
@@ -193,6 +196,29 @@ async function finalizarCompra() {
         }
         iniciarVerificacaoPagamentoMP(resJson.id_pagamento, codigoPedido);
     }
+}
+
+// --- FUNÇÃO DE VERIFICAÇÃO DE PIX E MERCADO PAGO ---
+
+function iniciarVerificacaoPagamentoMP(idPagamento, codigoPedido) {
+    if (intervaloVerificacao) clearInterval(intervaloVerificacao);
+
+    intervaloVerificacao = setInterval(async () => {
+        try {
+            const res = await fetch(`/api/verificar-pagamento/${idPagamento}`);
+            const data = await res.json();
+
+            if (data.status === 'approved') {
+                clearInterval(intervaloVerificacao);
+                await registrarPedidoFinal();
+                document.getElementById('pagamento-container').classList.add('hidden');
+                document.getElementById('sucesso-container').classList.remove('hidden');
+                document.getElementById('codigo-pedido-exibido').innerText = `Código: #${codigoPedido}`;
+            }
+        } catch (e) {
+            console.error("Erro ao verificar pagamento:", e);
+        }
+    }, 4000);
 }
 
 // --- UTILITÁRIOS E STATUS ---
