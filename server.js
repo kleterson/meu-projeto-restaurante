@@ -126,7 +126,8 @@ let cardapio = [
     { id: 'lanche_1', tipo: 'lanches', categoria: 'X-Burguer', nome: 'X-Salada Especial', preco: 18.00, esgotado: false, acompanhamento: '' },
     { id: 'lanche_2', tipo: 'lanches', categoria: 'X-Tudo', nome: 'X-Tudo Completo', preco: 22.00, esgotado: false, acompanhamento: '' },
 
-    // Bebidas (bebidas)
+    // Bebidas (bebidas) - Corrigido para o tipo correto
+    { id: 'coca_lata_extra', tipo: 'bebidas', categoria: 'Bebidas', nome: 'coca cola', preco: 5.00, esgotado: false, acompanhamento: '' },
     { id: 'beb_1', tipo: 'bebidas', categoria: 'Refrigerantes', nome: 'Coca-Cola Lata', preco: 6.00, esgotado: false, acompanhamento: '' },
     { id: 'beb_2', tipo: 'bebidas', categoria: 'Refrigerantes', nome: 'Guaraná Lata', preco: 6.00, esgotado: false, acompanhamento: '' },
     { id: 'beb_3', tipo: 'bebidas', categoria: 'Refrigerantes', nome: 'Fanta Lata', preco: 6.00, esgotado: false, acompanhamento: '' },
