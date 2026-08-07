@@ -72,10 +72,18 @@ async function carregarCardapioDinamico() {
             const div = document.createElement('div');
             div.className = 'item';
             div.id = item.id;
+
+            // Tratamento da observação/acompanhamento cadastrada pelo adm
+            let htmlAcompanhamento = '';
+            if (item.acompanhamento && item.acompanhamento.trim() !== '') {
+                htmlAcompanhamento = `<div style="font-size: 13px; color: #3498db; margin-top: 4px;">${item.acompanhamento}</div>`;
+            }
+
             div.innerHTML = `
                 <div style="flex-grow: 1;">
                     <span style="font-weight: bold; color: #fff; font-size: 16px;">${item.nome}</span>
                     <p style="color: #f1c40f; margin: 4px 0; font-size: 15px;">R$ ${item.preco.toFixed(2)}</p>
+                    ${htmlAcompanhamento}
                 </div>
                 <button onclick="adicionarAoCarrinho('${item.nome.replace(/'/g, "\\'")}', ${item.preco}, '${item.id}')" 
                     style="background: #27ae60; color: white; border: none; padding: 8px 12px; border-radius: 5px; cursor: pointer; font-weight: bold;"
