@@ -97,33 +97,33 @@ app.delete('/api/pedidos', (req, res) => {
     res.json({ success: true, message: 'Histórico limpo com sucesso!' });
 });
 
-// Armazenamento em memória para o Cardápio Completo
+// Armazenamento em memória para o Cardápio Completo (com suporte a acompanhamento)
 let cardapio = [
-    { id: 'p_dia_1', categoria: 'Prato do Dia', nome: 'Frango Milanesa c/ Creme de Milho', preco: 16.00, esgotado: false },
-    { id: 'm_eco_1', categoria: 'Marmitas Econômicas', nome: 'Calabresa Acebolada', preco: 10.00, esgotado: false },
-    { id: 'm_eco_2', categoria: 'Marmitas Econômicas', nome: 'Frango Milanesa', preco: 10.00, esgotado: false },
-    { id: 'm_eco_3', categoria: 'Marmitas Econômicas', nome: 'Toscana', preco: 10.00, esgotado: false },
-    { id: 'm_eco_4', categoria: 'Marmitas Econômicas', nome: 'Fígado Acebolado', preco: 10.00, esgotado: false },
-    { id: 'm_eco_5', categoria: 'Marmitas Econômicas', nome: 'Nuggets', preco: 10.00, esgotado: false },
-    { id: 'm_eco_6', categoria: 'Marmitas Econômicas', nome: 'Omelete Simples', preco: 10.00, esgotado: false },
-    { id: 'm_comp_1', categoria: 'Marmitas Completas G', nome: 'Filé Grelhado', preco: 14.00, esgotado: false },
-    { id: 'm_comp_2', categoria: 'Marmitas Completas G', nome: 'Frango a Milanesa', preco: 16.00, esgotado: false },
-    { id: 'm_comp_3', categoria: 'Marmitas Completas G', nome: 'Calabresa Acebolada', preco: 15.00, esgotado: false },
-    { id: 'm_comp_4', categoria: 'Marmitas Completas G', nome: 'Toscana Acebolada', preco: 15.00, esgotado: false },
-    { id: 'm_comp_5', categoria: 'Marmitas Completas G', nome: 'Bisteca com Ovo', preco: 15.00, esgotado: false },
-    { id: 'm_comp_6', categoria: 'Marmitas Completas G', nome: 'Fígado Acebolado', preco: 15.00, esgotado: false },
-    { id: 'm_comp_7', categoria: 'Marmitas Completas G', nome: 'Omelete Recheado', preco: 16.00, esgotado: false },
-    { id: 'm_comp_8', categoria: 'Marmitas Completas G', nome: 'Frango Parmegiana', preco: 20.00, esgotado: false },
-    { id: 'm_comp_9', categoria: 'Marmitas Completas G', nome: 'Contra Filé Acebolado', preco: 23.00, esgotado: false },
-    { id: 'm_comp_10', categoria: 'Marmitas Completas G', nome: 'Contra Filé Parmegiana', preco: 25.00, esgotado: false },
-    { id: 'm_comp_11', categoria: 'Marmitas Completas G', nome: 'Contra Filé com Ovo', preco: 25.00, esgotado: false },
-    { id: 'ad_1', categoria: 'Adicionais', nome: 'Porção Batata Frita', preco: 4.00, esgotado: false },
-    { id: 'ad_2', categoria: 'Adicionais', nome: 'Ovo Extra', preco: 4.00, esgotado: false },
-    { id: 'ad_3', categoria: 'Adicionais', nome: 'Mistura Extra', preco: 9.00, esgotado: false },
-    { id: 'beb_1', categoria: 'Bebidas (Sucos e Refrigerantes)', nome: 'Coca-Cola Lata', preco: 6.00, esgotado: false },
-    { id: 'beb_2', categoria: 'Bebidas (Sucos e Refrigerantes)', nome: 'Guaraná Lata', preco: 6.00, esgotado: false },
-    { id: 'beb_3', categoria: 'Bebidas (Sucos e Refrigerantes)', nome: 'Fanta Lata', preco: 6.00, esgotado: false },
-    { id: 'beb_4', categoria: 'Bebidas (Sucos e Refrigerantes)', nome: 'Suco Natural (Laranja/Outros)', preco: 8.00, esgotado: false }
+    { id: 'p_dia_1', categoria: 'Prato do Dia', nome: 'Frango Milanesa c/ Creme de Milho', preco: 16.00, esgotado: false, acompanhamento: '' },
+    { id: 'm_eco_1', categoria: 'Marmitas Econômicas', nome: 'Calabresa Acebolada', preco: 10.00, esgotado: false, acompanhamento: '' },
+    { id: 'm_eco_2', categoria: 'Marmitas Econômicas', nome: 'Frango Milanesa', preco: 10.00, esgotado: false, acompanhamento: '' },
+    { id: 'm_eco_3', categoria: 'Marmitas Econômicas', nome: 'Toscana', preco: 10.00, esgotado: false, acompanhamento: '' },
+    { id: 'm_eco_4', categoria: 'Marmitas Econômicas', nome: 'Fígado Acebolado', preco: 10.00, esgotado: false, acompanhamento: '' },
+    { id: 'm_eco_5', categoria: 'Marmitas Econômicas', nome: 'Nuggets', preco: 10.00, esgotado: false, acompanhamento: '' },
+    { id: 'm_eco_6', categoria: 'Marmitas Econômicas', nome: 'Omelete Simples', preco: 10.00, esgotado: false, acompanhamento: '' },
+    { id: 'm_comp_1', categoria: 'Marmitas Completas G', nome: 'Filé Grelhado', preco: 14.00, esgotado: false, acompanhamento: '' },
+    { id: 'm_comp_2', categoria: 'Marmitas Completas G', nome: 'Frango a Milanesa', preco: 16.00, esgotado: false, acompanhamento: '' },
+    { id: 'm_comp_3', categoria: 'Marmitas Completas G', nome: 'Calabresa Acebolada', preco: 15.00, esgotado: false, acompanhamento: '' },
+    { id: 'm_comp_4', categoria: 'Marmitas Completas G', nome: 'Toscana Acebolada', preco: 15.00, esgotado: false, acompanhamento: '' },
+    { id: 'm_comp_5', categoria: 'Marmitas Completas G', nome: 'Bisteca com Ovo', preco: 15.00, esgotado: false, acompanhamento: '' },
+    { id: 'm_comp_6', categoria: 'Marmitas Completas G', nome: 'Fígado Acebolado', preco: 15.00, esgotado: false, acompanhamento: '' },
+    { id: 'm_comp_7', categoria: 'Marmitas Completas G', nome: 'Omelete Recheado', preco: 16.00, esgotado: false, acompanhamento: '' },
+    { id: 'm_comp_8', categoria: 'Marmitas Completas G', nome: 'Frango Parmegiana', preco: 20.00, esgotado: false, acompanhamento: '' },
+    { id: 'm_comp_9', categoria: 'Marmitas Completas G', nome: 'Contra Filé Acebolado', preco: 23.00, esgotado: false, acompanhamento: '' },
+    { id: 'm_comp_10', categoria: 'Marmitas Completas G', nome: 'Contra Filé Parmegiana', preco: 25.00, esgotado: false, acompanhamento: '' },
+    { id: 'm_comp_11', categoria: 'Marmitas Completas G', nome: 'Contra Filé com Ovo', preco: 25.00, esgotado: false, acompanhamento: '' },
+    { id: 'ad_1', categoria: 'Adicionais', nome: 'Porção Batata Frita', preco: 4.00, esgotado: false, acompanhamento: '' },
+    { id: 'ad_2', categoria: 'Adicionais', nome: 'Ovo Extra', preco: 4.00, esgotado: false, acompanhamento: '' },
+    { id: 'ad_3', categoria: 'Adicionais', nome: 'Mistura Extra', preco: 9.00, esgotado: false, acompanhamento: '' },
+    { id: 'beb_1', categoria: 'Bebidas (Sucos e Refrigerantes)', nome: 'Coca-Cola Lata', preco: 6.00, esgotado: false, acompanhamento: '' },
+    { id: 'beb_2', categoria: 'Bebidas (Sucos e Refrigerantes)', nome: 'Guaraná Lata', preco: 6.00, esgotado: false, acompanhamento: '' },
+    { id: 'beb_3', categoria: 'Bebidas (Sucos e Refrigerantes)', nome: 'Fanta Lata', preco: 6.00, esgotado: false, acompanhamento: '' },
+    { id: 'beb_4', categoria: 'Bebidas (Sucos e Refrigerantes)', nome: 'Suco Natural (Laranja/Outros)', preco: 8.00, esgotado: false, acompanhamento: '' }
 ];
 
 // Rota para buscar o cardápio
@@ -144,15 +144,16 @@ app.post('/api/cardapio/:id/toggle', (req, res) => {
     }
 });
 
-// Rota para atualizar nome e preço (CORRIGIDA)
+// Rota para atualizar nome, preço e acompanhamento
 app.put('/api/cardapio/:id', (req, res) => {
     const idItem = req.params.id;
-    const { nome, preco } = req.body;
+    const { nome, preco, acompanhamento } = req.body;
     const item = cardapio.find(i => i.id === idItem);
 
     if (item) {
         if (nome !== undefined) item.nome = nome;
         if (preco !== undefined) item.preco = Number(preco);
+        if (acompanhamento !== undefined) item.acompanhamento = acompanhamento;
         res.json({ success: true, item });
     } else {
         res.status(404).json({ error: 'Item não encontrado' });
