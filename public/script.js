@@ -180,7 +180,7 @@ async function carregarCardapioDinamico() {
     } catch (e) { console.error("Erro ao carregar cardápio:", e); }
 }
 
-// --- LÓGICA DE CHECKOUT E PAGAMENTO ---
+// --- LÓGICA DE CHECKOUT E PAGAMENTO (COM ENVIO AUTOMÁTICO WHATSAPP) ---
 
 async function finalizarCompra() {
     if (carrinho.length === 0) { alert('Seu carrinho está vazio!'); return; }
@@ -197,7 +197,8 @@ async function finalizarCompra() {
     }
 
     const taxa = parseFloat(bairroSelect.options[bairroSelect.selectedIndex].getAttribute('data-taxa')) || 0;
-    const totalCarrinho = carrinho.reduce((acc, item) => acc + item.preco, 0) + taxa;
+    const subtotal = carrinho.reduce((acc, item) => acc + item.preco, 0);
+    const totalCarrinho = subtotal + taxa;
     const codigoPedido = Math.floor(1000 + Math.random() * 9000);
 
     let informacaoPagamento = formaPagamento;
@@ -207,33 +208,76 @@ async function finalizarCompra() {
         informacaoPagamento = `Dinheiro (Troco para R$ ${parseFloat(trocoVal).toFixed(2)})`;
     }
 
-    dadosPedidoGlobal = { codigo: codigoPedido, nome, whatsapp, endereco, bairro: bairroSelect.value, taxa, formaPagamento: informacaoPagamento, itens: [...carrinho], total: totalCarrinho };
+    dadosPedidoGlobal = { 
+        codigo: codigoPedido, 
+        nome, 
+        whatsapp, 
+        endereco, 
+        bairro: bairroSelect.value, 
+        taxa, 
+        formaPagamento: informacaoPagamento, 
+        itens: [...carrinho], 
+        total: totalCarrinho,
+        status: "⏳ Aguardando preparo na cozinha"
+    };
 
     document.getElementById('app-container').classList.add('hidden');
     document.getElementById('pagamento-container').classList.remove('hidden');
 
+    // Função auxiliar interna para disparar o WhatsApp do estabelecimento junto com o sucesso
+    const concluirEnvioWhatsAppESucesso = () => {
+        let mensagemItens = carrinho.map(i => `▪️ ${i.nome} - R$ ${i.preco.toFixed(2)}`).join('\n');
+        
+        let textoWhatsApp = `*NOVO PEDIDO #${codigoPedido}* 🍔🍲\n\n` +
+            `*Cliente:* ${nome}\n` +
+            `*WhatsApp:* ${whatsapp}\n` +
+            `*Endereço:* ${endereco} (${bairroSelect.value})\n\n` +
+            `*Itens do Pedido:*\n${mensagemItens}\n\n` +
+            `*Subtotal:* R$ ${subtotal.toFixed(2)}\n` +
+            `*Taxa de Entrega:* R$ ${taxa.toFixed(2)}\n` +
+            `*TOTAL A PAGAR:* *R$ ${totalCarrinho.toFixed(2)}*\n` +
+            `*Forma de Pagamento:* ${informacaoPagamento}`;
+
+        // Altere abaixo para o número oficial de WhatsApp do restaurante (Ex: 55 + DDD + Número)
+        const numeroWhatsAppRestaurante = "5534999999999"; 
+        const urlWhatsApp = `https://api.whatsapp.com/send?phone=${numeroWhatsAppRestaurante}&text=${encodeURIComponent(textoWhatsApp)}`;
+        
+        // Abre o WhatsApp para o estabelecimento receber os detalhes formatados
+        window.open(urlWhatsApp, '_blank');
+
+        document.getElementById('pagamento-container').classList.add('hidden');
+        document.getElementById('sucesso-container').classList.remove('hidden');
+        document.getElementById('codigo-pedido-exibido').innerText = `Código: #${codigoPedido}`;
+    };
+
     if (formaPagamento !== 'Pix') {
         await registrarPedidoFinal();
         setTimeout(() => {
-            document.getElementById('pagamento-container').classList.add('hidden');
-            document.getElementById('sucesso-container').classList.remove('hidden');
-            document.getElementById('codigo-pedido-exibido').innerText = `Código: #${codigoPedido}`;
+            concluirEnvioWhatsAppESucesso();
         }, 1500);
     } else {
-        const res = await fetch('/api/criar-pagamento', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(dadosPedidoGlobal) });
-        const resJson = await res.json();
-        
-        if(resJson.qr_code) {
-            document.getElementById('qr-code-input').value = resJson.qr_code;
-            document.getElementById('qr-code-img').src = `data:image/jpeg;base64,${resJson.qr_code_base64}`;
+        try {
+            const res = await fetch('/api/criar-pagamento', { 
+                method: 'POST', 
+                headers: { 'Content-Type': 'application/json' }, 
+                body: JSON.stringify(dadosPedidoGlobal) 
+            });
+            const resJson = await res.json();
+            
+            if(resJson.qr_code) {
+                document.getElementById('qr-code-input').value = resJson.qr_code;
+                document.getElementById('qr-code-img').src = `data:image/jpeg;base64,${resJson.qr_code_base64}`;
+            }
+            iniciarVerificacaoPagamentoMP(resJson.id_pagamento, codigoPedido, concluirEnvioWhatsAppESucesso);
+        } catch(e) {
+            console.error("Erro ao gerar pagamento Pix:", e);
         }
-        iniciarVerificacaoPagamentoMP(resJson.id_pagamento, codigoPedido);
     }
 }
 
 // --- FUNÇÃO DE VERIFICAÇÃO DE PIX E MERCADO PAGO ---
 
-function iniciarVerificacaoPagamentoMP(idPagamento, codigoPedido) {
+function iniciarVerificacaoPagamentoMP(idPagamento, codigoPedido, callbackSucesso) {
     if (intervaloVerificacao) clearInterval(intervaloVerificacao);
 
     intervaloVerificacao = setInterval(async () => {
@@ -244,9 +288,9 @@ function iniciarVerificacaoPagamentoMP(idPagamento, codigoPedido) {
             if (data.status === 'approved') {
                 clearInterval(intervaloVerificacao);
                 await registrarPedidoFinal();
-                document.getElementById('pagamento-container').classList.add('hidden');
-                document.getElementById('sucesso-container').classList.remove('hidden');
-                document.getElementById('codigo-pedido-exibido').innerText = `Código: #${codigoPedido}`;
+                if (typeof callbackSucesso === 'function') {
+                    callbackSucesso();
+                }
             }
         } catch (e) {
             console.error("Erro ao verificar pagamento:", e);
