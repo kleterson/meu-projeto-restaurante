@@ -231,7 +231,7 @@
                 `;
                 categorias[cat].forEach(item => {
                     const isOpen = item.nome === 'Novo Item' && item.preco === 0 ? 'display: flex;' : 'display: none;';
-                    const isChecked = item.nome === 'Novo Item' && item.preco === 0 ? 'checked' : '';
+                    const isChecked = item.nome === 'Novo Item' && item.preco === 0 ? '' : '';
 
                     container.innerHTML += `
                         <div class="item-adm" id="adm-item-${item.id}">
