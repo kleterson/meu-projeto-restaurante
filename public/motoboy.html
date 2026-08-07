@@ -2,554 +2,174 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="mobile-web-app-capable" content="yes">
-    <title>Painel do Motoboy</title>
-    <style>
-        * {
-            box-sizing: border-box;
-        }
-        body { 
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
-            background: #222; 
-            color: #fff; 
-            padding: 10px; 
-            margin: 0;
-            -webkit-text-size-adjust: 100%;
-            -webkit-font-smoothing: antialiased;
-        }
-        .container { max-width: 900px; margin: auto; padding: 5px; }
-        h1 { font-size: 22px; text-align: center; color: #f1c40f; text-transform: uppercase; margin-bottom: 15px; }
-        h2 { font-size: 18px; color: #f1c40f; border-bottom: 2px solid #d4af37; padding-bottom: 5px; margin-top: 25px; }
-        
-        .card { background: #333; padding: 12px; border-radius: 8px; margin-bottom: 12px; border-left: 5px solid #ffc107; box-shadow: 0 2px 8px rgba(0,0,0,0.5); }
-        .card p { font-size: 14px; margin: 6px 0; line-height: 1.4; }
-        .card h3 { font-size: 16px; margin: 0 0 10px 0; color: #f1c40f; }
-
-        button { background: #007bff; color: white; border: none; padding: 10px 14px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 13px; margin-right: 5px; margin-top: 6px; min-height: 40px; box-shadow: 0 2px 4px rgba(0,0,0,0.3); }
-        button:hover { background: #0056b3; }
-        
-        .btn-gerenciar { background: #e67e22; width: 100%; font-size: 15px; padding: 12px; border-radius: 8px; margin-bottom: 10px; }
-        .btn-gerenciar:hover { background: #d35400; }
-        .btn-copiar { background: #27ae60; }
-        .btn-copiar:hover { background: #219653; }
-        .btn-imprimir { background: #8e44ad; }
-        .btn-imprimir:hover { background: #732d91; }
-        .btn-salvar { background: #27ae60; padding: 8px 12px; font-size: 12px; min-height: auto; }
-        .btn-excluir-item { background: #c0392b; padding: 8px 12px; font-size: 12px; min-height: auto; }
-        .btn-excluir-item:hover { background: #a93226; }
-        .btn-adicionar { background: #2980b9; width: 100%; font-size: 14px; padding: 10px; border-radius: 6px; margin-top: 10px; }
-        .btn-adicionar:hover { background: #2471a3; }
-        
-        .btn-aceitar { background: #27ae60; font-size: 14px; }
-        .btn-aceitar:hover { background: #219653; }
-        .btn-recusar { background: #c0392b; font-size: 14px; }
-        .btn-recusar:hover { background: #a93226; }
-        .btn-limpar { background: #c0392b; width: 100%; font-size: 15px; padding: 12px; border-radius: 8px; margin-bottom: 15px; margin-top: 5px; }
-        .btn-limpar:hover { background: #a93226; }
-
-        .painel-adm { background: #2a2a2a; padding: 12px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #d4af37; }
-        .painel-adm h3 { font-size: 15px; color: #f1c40f; margin-top: 0; text-align: center; }
-        
-        .categoria-titulo { color: #f1c40f; margin-top: 15px; border-bottom: 1px solid #444; padding-bottom: 5px; font-size: 15px; display: flex; justify-content: space-between; align-items: center; }
-        .item-adm { display: flex; flex-direction: column; background: #3b3b3b; padding: 10px; margin-bottom: 8px; border-radius: 6px; gap: 8px; }
-        .item-linha { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
-        .item-linha span { font-size: 14px; }
-        
-        .item-edicao { display: none; background: #222; padding: 8px; border-radius: 4px; flex-direction: column; gap: 8px; align-items: stretch; }
-        .esgotado-tag { color: #ff4d4d; font-weight: bold; }
-        .disponivel-tag { color: #2ecc71; font-weight: bold; }
-        
-        input[type="text"], input[type="number"], select { padding: 10px; border-radius: 6px; border: 1px solid #d4af37; background: #111; color: white; font-size: 16px; width: 100%; margin-top: 5px; margin-bottom: 5px; }
-        
-        /* Modal simples para seleção de grupo */
-        .modal-grupo { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 9999; justify-content: center; align-items: center; }
-        .modal-conteudo { background: #333; padding: 20px; border-radius: 8px; width: 90%; max-width: 400px; border: 1px solid #d4af37; }
-        .modal-conteudo h3 { color: #f1c40f; margin-top: 0; font-size: 16px; }
-    </style>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel de Controle - Gonçalves Lanches</title>
+    <link rel="stylesheet" href="/style.css">
 </head>
-<body>
-<div class="container">
-    <h1>Painel de Entregas</h1>
-    
-    <button class="btn-gerenciar" onclick="abrirCardapioAdm('almoco'); desbloquearAudio();">🍱 Acessar Cardápio do Almoço</button>
-    <button class="btn-gerenciar" onclick="abrirCardapioAdm('lanches'); desbloquearAudio();">🍔 Acessar Cardápio dos Lanches</button>
-    <button class="btn-gerenciar" onclick="abrirCardapioAdm('Bebidas'); desbloquearAudio();">🥤 Acessar Cardápio de Bebidas</button>
-    <button class="btn-limpar" onclick="limparHistoricoPedidos()">🗑️ Limpar Histórico de Pedidos</button>
+<body style="background: #1e1e1e; color: white; padding: 20px;">
+    <div class="container" style="max-width: 1000px; margin: auto;">
+        <h1 style="text-align: center; color: #f1c40f; margin-bottom: 20px;">PAINEL DE GERENCIAMENTO</h1>
 
-    <div id="painel-adm" class="painel-adm" style="display: none;">
-        <h3 id="titulo-painel-tipo">Gerenciamento de Cardápio</h3>
-        <button class="btn-adicionar" onclick="abrirModalAdicionarItem()">➕ Adicionar Novo Item em Branco</button>
-        <div id="lista-cardapio-adm">Carregando cardápio...</div>
-    </div>
-
-    <h2>Pedidos Recebidos</h2>
-    <div id="pedidos-lista">Carregando pedidos...</div>
-</div>
-
-<!-- Modal para Escolher o Grupo ao Adicionar Item -->
-<div id="modal-grupo" class="modal-grupo">
-    <div class="modal-conteudo">
-        <h3>Selecione onde deseja adicionar o item:</h3>
-        <label style="font-size: 13px; color: #ccc;">Escolher grupo existente (opcional):</label>
-        <select id="select-grupo-existente">
-            <!-- Preenchido dinamicamente -->
-        </select>
-        
-        <label style="font-size: 13px; color: #ccc; margin-top: 10px; display: block;">Ou criar um novo grupo:</label>
-        <input type="text" id="input-novo-grupo" placeholder="Nome do novo grupo">
-
-        <div style="display: flex; gap: 10px; margin-top: 15px;">
-            <button onclick="confirmarAdicaoItem()" style="background: #27ae60; flex: 1;">Confirmar</button>
-            <button onclick="fecharModalAdicionarItem()" style="background: #c0392b; flex: 1;">Cancelar</button>
+        <!-- Botões de Navegação entre Cardápios -->
+        <div style="display: flex; gap: 10px; justify-content: center; margin-bottom: 20px; flex-wrap: wrap;">
+            <button onclick="mudarTipoCardapio('almoco')" id="btn-almoco" style="background: #d35400; color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; font-weight: bold;">🍲 Gerenciar Almoço</button>
+            <button onclick="mudarTipoCardapio('lanches')" id="btn-lanches" style="background: #e67e22; color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; font-weight: bold;">🍔 Gerenciar Lanches</button>
+            <button onclick="mudarTipoCardapio('bebidas')" id="btn-bebidas" style="background: #27ae60; color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; font-weight: bold;">🥤 Gerenciar Bebidas</button>
+            <button onclick="limparHistorico()" style="background: #c0392b; color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; font-weight: bold;">🗑️ Limpar Histórico de Pedidos</button>
         </div>
-    </div>
-</div>
 
-<script>
-    let idsPedidosConhecidos = new Set();
-    let audioLoopInterval = null;
-    let somAtivo = false;
-    let audioCtxGlobal = null;
-    let tipoCardapioAtual = 'almoco';
-    let cardapioCacheAdm = [];
+        <div style="text-align: center; margin-bottom: 15px;">
+            <a href="/" style="color: #f1c40f; text-decoration: none; font-weight: bold;">🏠 Voltar para a Página Inicial do Cliente</a>
+        </div>
 
-    // Alerta sonoro bem alto e contínuo com Web Audio API
-    function tocarAlertaContinuo() {
-        if (somAtivo) return;
-        somAtivo = true;
+        <!-- Seção de Cadastro de Novo Item -->
+        <div style="background: #2c2c2c; padding: 15px; border-radius: 8px; margin-bottom: 25px; border: 1px solid #444;">
+            <h3 style="color: #2ecc71; margin-top: 0;">➕ Adicionar Novo Item no Cardápio Atual</h3>
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 10px; align-items: center;">
+                <input type="text" id="novo-categoria" placeholder="Categoria (ex: Refrigerantes, Prato do Dia)" style="padding: 8px; border-radius: 4px; border: 1px solid #555; background: #333; color: white;">
+                <input type="text" id="novo-nome" placeholder="Nome do Produto" style="padding: 8px; border-radius: 4px; border: 1px solid #555; background: #333; color: white;">
+                <input type="number" id="novo-preco" placeholder="Preço (Ex: 10.00)" step="0.01" style="padding: 8px; border-radius: 4px; border: 1px solid #555; background: #333; color: white;">
+                <button onclick="adicionarItemCardapio()" style="background: #27ae60; color: white; border: none; padding: 9px 15px; border-radius: 4px; cursor: pointer; font-weight: bold;">Salvar Item</button>
+            </div>
+        </div>
 
-        if ("vibrate" in navigator) {
-            try { navigator.vibrate([800, 300, 800, 300, 800, 300]); } catch (e) {}
-        }
-
-        audioLoopInterval = setInterval(() => {
-            try {
-                if (!audioCtxGlobal || audioCtxGlobal.state === 'closed') {
-                    audioCtxGlobal = new (window.AudioContext || window.webkitAudioContext)();
-                }
-                if (audioCtxGlobal.state === 'suspended') {
-                    audioCtxGlobal.resume();
-                }
-
-                const osc1 = audioCtxGlobal.createOscillator();
-                const osc2 = audioCtxGlobal.createOscillator();
-                const gainNode = audioCtxGlobal.createGain();
-
-                osc1.type = 'sawtooth';
-                osc1.frequency.setValueAtTime(900, audioCtxGlobal.currentTime);
-                
-                osc2.type = 'square';
-                osc2.frequency.setValueAtTime(1200, audioCtxGlobal.currentTime);
-
-                gainNode.gain.setValueAtTime(0.5, audioCtxGlobal.currentTime);
-                gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtxGlobal.currentTime + 0.5);
-
-                osc1.connect(gainNode);
-                osc2.connect(gainNode);
-                gainNode.connect(audioCtxGlobal.destination);
-
-                osc1.start();
-                osc2.start();
-                osc1.stop(audioCtxGlobal.currentTime + 0.5);
-                osc2.stop(audioCtxGlobal.currentTime + 0.5);
-
-                if ("vibrate" in navigator) {
-                    try { navigator.vibrate([600, 200]); } catch (e) {}
-                }
-            } catch (e) {}
-        }, 800);
-    }
-
-    function pararAlertaContinuo() {
-        somAtivo = false;
-        if (audioLoopInterval) {
-            clearInterval(audioLoopInterval);
-            audioLoopInterval = null;
-        }
-        if ("vibrate" in navigator) {
-            try { navigator.vibrate(0); } catch (e) {}
-        }
-    }
-
-    function desbloquearAudio() {
-        try {
-            if (!audioCtxGlobal) {
-                audioCtxGlobal = new (window.AudioContext || window.webkitAudioContext)();
-            }
-            if (audioCtxGlobal.state === 'suspended') {
-                audioCtxGlobal.resume();
-            }
-        } catch(e) {}
-    }
-
-    window.addEventListener('click', desbloquearAudio, { once: true });
-    window.addEventListener('touchstart', desbloquearAudio, { once: true });
-
-    function abrirCardapioAdm(tipo) {
-        tipoCardapioAtual = tipo;
-        const painel = document.getElementById('painel-adm');
-        const titulo = document.getElementById('titulo-painel-tipo');
-        titulo.innerText = tipo === 'almoco' ? 'Gerenciamento - Cardápio de Almoço' : 'Gerenciamento - Cardápio de Lanches';
+        <h2 id="titulo-painel" style="color: #f1c40f; border-bottom: 2px solid #444; padding-bottom: 5px;">Gerenciamento do Cardápio</h2>
         
-        if (painel.style.display === 'none') {
-            painel.style.display = 'block';
+        <!-- Lista Dinâmica de Produtos no Painel -->
+        <div id="painel-lista-produtos">Carregando cardápio...</div>
+
+        <h2 style="color: #f1c40f; margin-top: 40px; border-bottom: 2px solid #444; padding-bottom: 5px;">📦 Pedidos Recebidos</h2>
+        <div id="painel-pedidos">Nenhum pedido no momento.</div>
+    </div>
+
+    <script>
+        let tipoAtual = 'almoco';
+
+        function mudarTipoCardapio(tipo) {
+            tipoAtual = tipo;
+            carregarCardapioPainel();
         }
-        carregarCardapioAdm();
-    }
 
-    async function carregarCardapioAdm() {
-        try {
-            const res = await fetch('/api/cardapio');
-            const itens = await res.json();
-            cardapioCacheAdm = itens;
-            const container = document.getElementById('lista-cardapio-adm');
-            
-            container.innerHTML = '';
-            
-            // Filtra apenas os itens do tipo selecionado (Almoço ou Lanches)
-            const itensFiltrados = itens.filter(item => (item.tipo || 'almoco') === tipoCardapioAtual);
+        async function carregarCardapioPainel() {
+            try {
+                const res = await fetch('/api/cardapio');
+                const itens = await res.json();
+                const container = document.getElementById('painel-lista-produtos');
+                const titulo = document.getElementById('titulo-painel');
 
-            if (itensFiltrados.length === 0) {
-                container.innerHTML = '<p style="text-align: center; color: #aaa; margin-top: 15px;">Nenhum item cadastrado neste cardápio. Clique no botão acima para adicionar.</p>';
+                if (tipoAtual === 'lanches') titulo.innerText = '🍔 Gerenciamento - Cardápio de Lanches';
+                else if (tipoAtual === 'bebidas') titulo.innerText = '🥤 Gerenciamento - Cardápio de Bebidas';
+                else titulo.innerText = '🍲 Gerenciamento - Cardápio de Almoço';
+
+                const filtrados = itens.filter(i => i.tipo === tipoAtual);
+                container.innerHTML = '';
+
+                if (filtrados.length === 0) {
+                    container.innerHTML = '<p style="color: #888;">Nenhum item cadastrado nesta categoria.</p>';
+                    return;
+                }
+
+                filtrados.forEach(item => {
+                    const div = document.createElement('div');
+                    div.style.cssText = "background: #2c2c2c; padding: 10px 15px; margin-bottom: 8px; border-radius: 5px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #444;";
+                    div.innerHTML = `
+                        <div>
+                            <span style="font-size: 12px; color: #f1c40f; text-transform: uppercase;">[${item.categoria}]</span><br>
+                            <span style="font-weight: bold; font-size: 15px;">${item.nome}</span> - <span style="color: #2ecc71;">R$ ${item.preco.toFixed(2)}</span>
+                            <span style="font-size: 12px; margin-left: 10px; color: ${item.esgotado ? '#e74c3c' : '#2ecc71'};">(${item.esgotado ? 'ESGOTADO' : 'DISPONÍVEL'})</span>
+                        </div>
+                        <div style="display: flex; gap: 8px;">
+                            <button onclick="alternarEsgotado('${item.id}')" style="background: ${item.esgotado ? '#27ae60' : '#c0392b'}; color: white; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; font-size: 12px;">
+                                ${item.esgotado ? 'Disponibilizar' : 'Esgotar'}
+                            </button>
+                            <button onclick="excluirItem('${item.id}')" style="background: #444; color: white; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; font-size: 12px;">Excluir</button>
+                        </div>
+                    `;
+                    container.appendChild(div);
+                });
+            } catch (e) {
+                console.error("Erro ao carregar painel:", e);
+            }
+        }
+
+        async function adicionarItemCardapio() {
+            const categoria = document.getElementById('novo-categoria').value;
+            const nome = document.getElementById('novo-nome').value;
+            const preco = document.getElementById('novo-preco').value;
+
+            if (!nome || !preco) {
+                alert('Preencha pelo menos o nome e o preço!');
                 return;
             }
 
-            const categorias = {};
-            itensFiltrados.forEach(item => {
-                const cat = item.categoria || 'Geral';
-                if (!categorias[cat]) categorias[cat] = [];
-                categorias[cat].push(item);
-            });
-
-            for (let cat in categorias) {
-                container.innerHTML += `
-                    <h4 class="categoria-titulo">
-                        <span>📂 ${cat}</span>
-                        <button class="btn-excluir-item" onclick="excluirGrupoCardapio('${cat}')" style="margin:0; padding:4px 8px; font-size:11px;">🗑️ Excluir Grupo</button>
-                    </h4>
-                `;
-                categorias[cat].forEach(item => {
-                    const isOpen = item.nome === 'Novo Item' && item.preco === 0 ? 'display: flex;' : 'display: none;';
-                    const isChecked = item.nome === 'Novo Item' && item.preco === 0 ? '' : '';
-
-                    container.innerHTML += `
-                        <div class="item-adm" id="adm-item-${item.id}">
-                            <div class="item-linha">
-                                <label style="cursor: pointer; display: flex; align-items: center; gap: 8px; flex: 1; word-break: break-word;">
-                                    <input type="checkbox" ${isChecked} onchange="toggleModoEdicao('${item.id}')" style="width: 20px; height: 20px;"> 
-                                    <span><strong>${item.nome}</strong> - R$ ${item.preco.toFixed(2)} (${item.esgotado ? '<span class="esgotado-tag">ESGOTADO</span>' : '<span class="disponivel-tag">DISPONÍVEL</span>'})</span>
-                                </label>
-                                <button onclick="alternarEsgotado('${item.id}')" style="background: ${item.esgotado ? '#27ae60' : '#c0392b'};">${item.esgotado ? 'Disponível' : 'Esgotado'}</button>
-                            </div>
-                            <div id="edicao-${item.id}" class="item-edicao" style="${isOpen}">
-                                <input type="text" id="cat-${item.id}" value="${cat}" placeholder="Categoria">
-                                <input type="text" id="nome-${item.id}" value="${item.nome === 'Novo Item' ? '' : item.nome}" placeholder="Nome do item">
-                                <input type="number" step="0.01" id="preco-${item.id}" value="${item.preco}" placeholder="Preço">
-                                <input type="text" id="acompanhamento-${item.id}" value="${item.acompanhamento || ''}" placeholder="Observação / Acompanhamento">
-                                <div style="display: flex; gap: 8px;">
-                                    <button class="btn-salvar" onclick="salvarEdicaoItem('${item.id}')">💾 Salvar</button>
-                                    <button class="btn-excluir-item" onclick="excluirItemCardapio('${item.id}')">❌ Excluir Item</button>
-                                </div>
-                            </div>
-                        </div>
-                    `;
-                });
-            }
-        } catch (e) {
-            console.error('Erro ao carregar cardápio adm', e);
-        }
-    }
-
-    function toggleModoEdicao(id) {
-        const blocoEdicao = document.getElementById(`edicao-${id}`);
-        blocoEdicao.style.display = blocoEdicao.style.display === 'flex' ? 'none' : 'flex';
-    }
-
-    function abrirModalAdicionarItem() {
-        const select = document.getElementById('select-grupo-existente');
-        select.innerHTML = '<option value="">-- Nenhum (Apenas se quiser) --</option>';
-        
-        // Pega somente as categorias do tipo selecionado atualmente
-        const itensFiltrados = cardapioCacheAdm.filter(item => (item.tipo || 'almoco') === tipoCardapioAtual);
-        const categoriasSet = new Set();
-        itensFiltrados.forEach(i => categoriasSet.add(i.categoria || 'Geral'));
-
-        categoriasSet.forEach(cat => {
-            select.innerHTML += `<option value="${cat}">${cat}</option>`;
-        });
-
-        document.getElementById('input-novo-grupo').value = '';
-        document.getElementById('modal-grupo').style.display = 'flex';
-    }
-
-    function fecharModalAdicionarItem() {
-        document.getElementById('modal-grupo').style.display = 'none';
-    }
-
-    async function confirmarAdicaoItem() {
-        const novoGrupoInput = document.getElementById('input-novo-grupo').value.trim();
-        const grupoExistente = document.getElementById('select-grupo-existente').value;
-        
-        let categoriaEscolhida = 'Geral';
-        if (novoGrupoInput !== '') {
-            categoriaEscolhida = novoGrupoInput;
-        } else if (grupoExistente !== '') {
-            categoriaEscolhida = grupoExistente;
-        }
-
-        fecharModalAdicionarItem();
-
-        try {
-            const res = await fetch('/api/cardapio', {
+            await fetch('/api/cardapio', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    tipo: tipoCardapioAtual,
-                    categoria: categoriaEscolhida,
-                    nome: 'Novo Item',
-                    preco: 0.00,
-                    acompanhamento: ''
-                })
+                body: JSON.stringify({ tipo: tipoAtual, categoria, nome, preco })
             });
-            const resultado = await res.json();
-            if (resultado.success) {
-                carregarCardapioAdm();
-            }
-        } catch (e) {
-            console.error('Erro ao adicionar novo item', e);
-            alert('Erro ao criar novo item.');
-        }
-    }
 
-    async function excluirGrupoCardapio(nomeGrupo) {
-        if (!confirm(`Deseja realmente excluir o grupo "${nomeGrupo}" e TODOS os seus itens?`)) return;
-        try {
-            const itensFiltrados = cardapioCacheAdm.filter(item => (item.tipo || 'almoco') === tipoCardapioAtual && (item.categoria || 'Geral') === nomeGrupo);
-            for (let item of itensFiltrados) {
-                await fetch(`/api/cardapio/${item.id}`, { method: 'DELETE' });
-            }
-            carregarCardapioAdm();
-        } catch (e) {
-            console.error('Erro ao excluir grupo', e);
-            alert('Erro ao excluir o grupo.');
-        }
-    }
-
-    async function excluirItemCardapio(id) {
-        if (!confirm('Deseja realmente excluir este item?')) return;
-        try {
-            const res = await fetch(`/api/cardapio/${id}`, { method: 'DELETE' });
-            if (res.ok) {
-                carregarCardapioAdm();
-            } else {
-                alert('Erro ao excluir item.');
-            }
-        } catch (e) {
-            console.error('Erro ao excluir item', e);
-        }
-    }
-
-    async function salvarEdicaoItem(id) {
-        const novaCat = document.getElementById(`cat-${id}`).value;
-        const novoNome = document.getElementById(`nome-${id}`).value;
-        const novoPreco = parseFloat(document.getElementById(`preco-${id}`).value);
-        const novoAcompanhamento = document.getElementById(`acompanhamento-${id}`).value;
-
-        if (!novoNome || isNaN(novoPreco)) {
-            alert('Preencha um nome e um preço válido!');
-            return;
+            document.getElementById('novo-categoria').value = '';
+            document.getElementById('novo-nome').value = '';
+            document.getElementById('novo-preco').value = '';
+            carregarCardapioPainel();
         }
 
-        try {
-            const res = await fetch(`/api/cardapio/${id}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ categoria: novaCat, nome: novoNome, preco: novoPreco, acompanhamento: novoAcompanhamento })
-            });
-            const resultado = await res.json();
-            if (resultado.success) {
-                alert('Item atualizado com sucesso!');
-                carregarCardapioAdm();
-            }
-        } catch (e) {
-            console.error('Erro ao salvar item', e);
-            alert('Erro ao atualizar item.');
-        }
-    }
-
-    async function alternarEsgotado(id) {
-        try {
+        async function alternarEsgotado(id) {
             await fetch(`/api/cardapio/${id}/toggle`, { method: 'POST' });
-            carregarCardapioAdm();
-        } catch (e) {
-            console.error('Erro ao atualizar item', e);
+            carregarCardapioPainel();
         }
-    }
 
-    async function limparHistoricoPedidos() {
-        if (!confirm('Tem certeza que deseja limpar todo o histórico de pedidos?')) return;
-        try {
-            const res = await fetch('/api/pedidos', { method: 'DELETE' });
-            if (res.ok) {
-                pararAlertaContinuo();
-                carregarPedidos();
-                alert('Histórico de pedidos limpo com sucesso!');
-            } else {
-                alert('Erro ao limpar o histórico.');
+        async function excluirItem(id) {
+            if (confirm('Deseja realmente excluir este item?')) {
+                await fetch(`/api/cardapio/${id}`, { method: 'DELETE' });
+                carregarCardapioPainel();
             }
-        } catch (e) {
-            console.error('Erro ao limpar pedidos', e);
-            alert('Erro de conexão ao limpar pedidos.');
         }
-    }
 
-    async function carregarPedidos() {
-        try {
-            const res = await fetch('/api/pedidos');
-            const pedidos = await res.json();
-            const container = document.getElementById('pedidos-lista');
-            
-            if (pedidos.length === 0) {
-                container.innerHTML = '<p style="text-align: center; color: #aaa;">Nenhum pedido no momento.</p>';
-                pararAlertaContinuo();
-                idsPedidosConhecidos.clear();
-                return;
-            }
+        async function carregarPedidos() {
+            try {
+                const res = await fetch('/api/pedidos');
+                const pedidos = await res.json();
+                const container = document.getElementById('painel-pedidos');
+                container.innerHTML = '';
 
-            let temNovoPendente = false;
-            let novosIds = new Set();
-
-            pedidos.forEach(p => {
-                novosIds.add(p.id);
-                if (!idsPedidosConhecidos.has(p.id) && (!p.status || p.status.includes("Aguardando") || p.status.includes("Recebido"))) {
-                    temNovoPendente = true;
-                }
-            });
-
-            if (temNovoPendente) {
-                tocarAlertaContinuo();
-            }
-
-            idsPedidosConhecidos = novosIds;
-
-            container.innerHTML = '';
-            pedidos.forEach(p => {
-                let itensStr = p.itens.map(i => `${i.nome} (R$ ${i.preco.toFixed(2)})`).join(', ');
-
-                let htmlPagamento = '';
-                if (p.formaPagamento && p.formaPagamento.includes('Dinheiro')) {
-                    let trocoTexto = p.troco ? ` (Troco para R$ ${p.troco})` : '';
-                    htmlPagamento = `<p><strong>Forma de Pagamento:</strong> <span style="color: #ff4d4d; font-weight: bold;">Dinheiro${trocoTexto}</span></p>`;
-                } else if (p.formaPagamento && p.formaPagamento.includes('Cartão')) {
-                    htmlPagamento = `<p><strong>Forma de Pagamento:</strong> <span style="color: #3498db; font-weight: bold;">Cartão (Na Entrega)</span></p>`;
-                } else {
-                    htmlPagamento = `<p><strong>Forma de Pagamento:</strong> <span style="color: #28a745; font-weight: bold;">Pix (Pago)</span></p>`;
+                if (pedidos.length === 0) {
+                    container.innerHTML = '<p style="color: #888;">Nenhum pedido recebido no momento.</p>';
+                    return;
                 }
 
-                let isAceito = p.status === "Estabelecimento aceitou seu pedido";
-                let isRecusado = p.status && p.status.includes("Pedido recusado pelo estabelecimento 😢");
-                
-                let botoesAcaoHtml = '';
-                if (!isAceito && !isRecusado) {
-                    botoesAcaoHtml = `
-                        <button class="btn-aceitar" onclick="aceitarPedido(${p.id})">✅ Aceitar Pedido</button>
-                        <button class="btn-recusar" onclick="recusarPedido(${p.id})">❌ Recusar Pedido</button>
+                pedidos.reverse().forEach(p => {
+                    const div = document.createElement('div');
+                    div.style.cssText = "background: #2c2c2c; padding: 15px; margin-bottom: 10px; border-radius: 6px; border-left: 4px solid #f1c40f;";
+                    
+                    let itensHtml = p.itens.map(i => `<li>${i.nome} - R$ ${i.preco.toFixed(2)}</li>`).join('');
+                    
+                    div.innerHTML = `
+                        <h4 style="margin: 0 0 5px 0; color: #f1c40f;">Pedido #${p.codigo} - ${p.nome}</h4>
+                        <p style="margin: 3px 0;"><strong>WhatsApp:</strong> ${p.whatsapp}</p>
+                        <p style="margin: 3px 0;"><strong>Endereço:</strong> ${p.endereco} (${p.bairro})</p>
+                        <p style="margin: 3px 0;"><strong>Pagamento:</strong> ${p.formaPagamento}</p>
+                        <p style="margin: 3px 0;"><strong>Itens:</strong></p>
+                        <ul style="margin: 0 0 5px 20px; padding: 0;">${itensHtml}</ul>
+                        <p style="margin: 5px 0 0 0; font-weight: bold; color: #2ecc71;">Total: R$ ${p.total.toFixed(2)}</p>
                     `;
-                } else if (isAceito) {
-                    botoesAcaoHtml = `<p style="color: #28a745; font-weight: bold; margin: 5px 0;">✔ Pedido Aceito</p>`;
-                } else if (isRecusado) {
-                    botoesAcaoHtml = `<p style="color: #c0392b; font-weight: bold; margin: 5px 0;">😢 Pedido Recusado</p>`;
-                }
-
-                container.innerHTML += `
-                    <div class="card">
-                        <h3>Código do Pedido: #${p.codigo || '----'}</h3>
-                        <p><strong>Cliente:</strong> ${p.nome} (${p.whatsapp || 'Não informado'})</p>
-                        <p><strong>Endereço:</strong> ${p.endereco}</p>
-                        <p><strong>Bairro:</strong> ${p.bairro} (Taxa: R$ ${(p.taxa || 0).toFixed(2)})</p>
-                        <p><strong>Ponto de Referência:</strong> ${p.referencia || 'Não informado'}</p>
-                        <p><strong>Itens:</strong> ${itensStr}</p>
-                        <p><strong>Total Geral:</strong> R$ ${p.total.toFixed(2)}</p>
-                        ${htmlPagamento}
-                        <p><strong>Status Atual:</strong> <span style="color: ${isAceito ? '#28a745' : (isRecusado ? '#c0392b' : '#ffc107')}; font-weight: ${isAceito || isRecusado ? 'bold' : 'normal'};">${p.status}</span></p>
-                        
-                        <div style="margin-top: 8px; display: flex; flex-wrap: wrap; gap: 5px; align-items: center;">
-                            ${botoesAcaoHtml}
-                            <button class="btn-copiar" onclick='copiarPedido(${JSON.stringify(p)})'>📋 Copiar</button>
-                            <button class="btn-imprimir" onclick='imprimirPedido(${JSON.stringify(p)})'>🖨️ Imprimir</button>
-                        </div>
-                    </div>
-                `;
-            });
-        } catch (e) {
-            console.error('Erro ao buscar pedidos', e);
+                    container.appendChild(div);
+                });
+            } catch (e) {}
         }
-    }
 
-    async function aceitarPedido(id) {
-        pararAlertaContinuo();
-        await fetch(`/api/pedidos/${id}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ status: 'Estabelecimento aceitou seu pedido' })
+        async function limparHistorico() {
+            if (confirm('Deseja limpar todo o histórico de pedidos?')) {
+                await fetch('/api/pedidos', { method: 'DELETE' });
+                carregarPedidos();
+            }
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            carregarCardapioPainel();
+            carregarPedidos();
+            setInterval(carregarPedidos, 5000);
         });
-        carregarPedidos();
-    }
-
-    async function recusarPedido(id) {
-        pararAlertaContinuo();
-        await fetch(`/api/pedidos/${id}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ status: 'Pedido recusado pelo estabelecimento 😢' })
-        });
-        carregarPedidos();
-    }
-
-    function copiarPedido(p) {
-        const itensTexto = p.itens.map(i => `- ${i.nome} (R$ ${i.preco.toFixed(2)})`).join('\n');
-        const texto = `📦 *PEDIDO #${p.codigo}*\n\n` +
-                    `👤 *Cliente:* ${p.nome}\n` +
-                    `📱 *WhatsApp:* ${p.whatsapp}\n` +
-                    `🏠 *Endereço:* ${p.endereco}\n` +
-                    `📍 *Bairro:* ${p.bairro} (Taxa: R$ ${(p.taxa || 0).toFixed(2)})\n` +
-                    `🔍 *Referência:* ${p.referencia}\n\n` +
-                    `🛒 *Itens:*\n${itensTexto}\n\n` +
-                    `💰 *Total Geral:* R$ ${p.total.toFixed(2)}`;
-
-        navigator.clipboard.writeText(texto).then(() => {
-            alert("Pedido copiado com sucesso!");
-        });
-    }
-
-    function imprimirPedido(p) {
-        const itensTexto = p.itens.map(i => `<li>${i.nome} - R$ ${i.preco.toFixed(2)}</li>`).join('');
-        const janelaImpressao = window.open('', '', 'width=600,height=600');
-        janelaImpressao.document.write(`
-            <html>
-            <head><title>Imprimir Pedido #${p.codigo}</title></head>
-            <body style="font-family: monospace; padding: 20px;">
-                <h2 style="text-align:center;">COMPROVANTE DE ENTREGA</h2>
-                <p><strong>Código do Pedido:</strong> #${p.codigo}</p><hr>
-                <p><strong>Cliente:</strong> ${p.nome}</p>
-                <p><strong>WhatsApp:</strong> ${p.whatsapp}</p>
-                <p><strong>Endereço:</strong> ${p.endereco}</p>
-                <p><strong>Bairro:</strong> ${p.bairro} (Taxa: R$ ${(p.taxa || 0).toFixed(2)})</p>
-                <p><strong>Referência:</strong> ${p.referencia}</p><hr>
-                <p><strong>Itens:</strong></p><ul>${itensTexto}</ul><hr>
-                <h3>Total Geral: R$ ${p.total.toFixed(2)}</h3>
-            </body>
-            </html>
-        `);
-        janelaImpressao.document.close();
-        janelaImpressao.focus();
-        setTimeout(() => { janelaImpressao.print(); janelaImpressao.close(); }, 500);
-    }
-
-    setInterval(carregarPedidos, 3000);
-    carregarPedidos();
-</script>
+    </script>
 </body>
 </html>
