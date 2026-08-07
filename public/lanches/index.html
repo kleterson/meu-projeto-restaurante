@@ -103,7 +103,10 @@
                 <h3>Escaneie o QR Code Pix</h3>
                 <img id="qr-code-img" src="" alt="QR Code Pix" style="max-width: 200px; margin: 10px 0;">
                 <br>
-                <input type="text" id="qr-code-input" readonly style="width: 100%; font-size: 12px; padding: 5px; margin-bottom: 10px;">
+                <div style="display: flex; gap: 5px; margin-bottom: 10px;">
+                    <input type="text" id="qr-code-input" readonly style="width: 100%; font-size: 12px; padding: 5px;">
+                    <button onclick="copiarChavePix()" style="background: #27ae60; color: white; border: none; padding: 5px 12px; border-radius: 5px; cursor: pointer; font-weight: bold; white-space: nowrap;">Copiar</button>
+                </div>
                 <p style="color: #f1c40f; font-size: 14px;">Aguardando confirmação automática do pagamento...</p>
             </div>
 
@@ -147,6 +150,14 @@
             } else {
                 campoTroco.classList.add('hidden');
             }
+        }
+
+        function copiarChavePix() {
+            const inputPix = document.getElementById('qr-code-input');
+            inputPix.select();
+            inputPix.setSelectionRange(0, 99999);
+            navigator.clipboard.writeText(inputPix.value);
+            alert('Código Pix copiado com sucesso!');
         }
     </script>
 </body>
