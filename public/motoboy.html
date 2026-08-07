@@ -30,13 +30,17 @@
         button { background: #007bff; color: white; border: none; padding: 10px 14px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 13px; margin-right: 5px; margin-top: 6px; min-height: 40px; box-shadow: 0 2px 4px rgba(0,0,0,0.3); }
         button:hover { background: #0056b3; }
         
-        .btn-gerenciar { background: #e67e22; width: 100%; font-size: 15px; padding: 12px; border-radius: 8px; margin-bottom: 15px; }
+        .btn-gerenciar { background: #e67e22; width: 100%; font-size: 15px; padding: 12px; border-radius: 8px; margin-bottom: 10px; }
         .btn-gerenciar:hover { background: #d35400; }
         .btn-copiar { background: #27ae60; }
         .btn-copiar:hover { background: #219653; }
         .btn-imprimir { background: #8e44ad; }
         .btn-imprimir:hover { background: #732d91; }
         .btn-salvar { background: #27ae60; padding: 8px 12px; font-size: 12px; min-height: auto; }
+        .btn-excluir-item { background: #c0392b; padding: 8px 12px; font-size: 12px; min-height: auto; }
+        .btn-excluir-item:hover { background: #a93226; }
+        .btn-adicionar { background: #2980b9; width: 100%; font-size: 14px; padding: 10px; border-radius: 6px; margin-top: 10px; }
+        .btn-adicionar:hover { background: #2471a3; }
         
         .btn-aceitar { background: #27ae60; font-size: 14px; }
         .btn-aceitar:hover { background: #219653; }
@@ -57,18 +61,20 @@
         .esgotado-tag { color: #ff4d4d; font-weight: bold; }
         .disponivel-tag { color: #2ecc71; font-weight: bold; }
         
-        input[type="text"], input[type="number"] { padding: 10px; border-radius: 6px; border: 1px solid #d4af37; background: #111; color: white; font-size: 16px; width: 100%; }
+        input[type="text"], input[type="number"], select { padding: 10px; border-radius: 6px; border: 1px solid #d4af37; background: #111; color: white; font-size: 16px; width: 100%; }
     </style>
 </head>
 <body>
 <div class="container">
     <h1>Painel de Entregas</h1>
     
-    <button class="btn-gerenciar" onclick="toggleCardapioAdm(); desbloquearAudio();">🍔 Ver/Atualizar Cardápio Completo</button>
+    <button class="btn-gerenciar" onclick="abrirCardapioAdm('almoco'); desbloquearAudio();">🍱 Acessar Cardápio do Almoço</button>
+    <button class="btn-gerenciar" onclick="abrirCardapioAdm('lanches'); desbloquearAudio();">🍔 Acessar Cardápio dos Lanches</button>
     <button class="btn-limpar" onclick="limparHistoricoPedidos()">🗑️ Limpar Histórico de Pedidos</button>
 
     <div id="painel-adm" class="painel-adm" style="display: none;">
-        <h3>Gerenciamento de Cardápio (Selecione o quadradinho para editar)</h3>
+        <h3 id="titulo-painel-tipo">Gerenciamento de Cardápio</h3>
+        <button class="btn-adicionar" onclick="adicionarNovoItemCardapio()">➕ Adicionar Novo Item em Branco</button>
         <div id="lista-cardapio-adm">Carregando cardápio...</div>
     </div>
 
@@ -81,6 +87,7 @@
     let audioLoopInterval = null;
     let somAtivo = false;
     let audioCtxGlobal = null;
+    let tipoCardapioAtual = 'almoco';
 
     // Alerta sonoro bem alto e contínuo com Web Audio API
     function tocarAlertaContinuo() {
@@ -100,7 +107,6 @@
                     audioCtxGlobal.resume();
                 }
 
-                // Som mais alto e chamativo (frequências duplas estilo alarme)
                 const osc1 = audioCtxGlobal.createOscillator();
                 const osc2 = audioCtxGlobal.createOscillator();
                 const gainNode = audioCtxGlobal.createGain();
@@ -111,7 +117,6 @@
                 osc2.type = 'square';
                 osc2.frequency.setValueAtTime(1200, audioCtxGlobal.currentTime);
 
-                // Volume alto (ganho máximo seguro)
                 gainNode.gain.setValueAtTime(0.5, audioCtxGlobal.currentTime);
                 gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtxGlobal.currentTime + 0.5);
 
@@ -156,14 +161,16 @@
     window.addEventListener('click', desbloquearAudio, { once: true });
     window.addEventListener('touchstart', desbloquearAudio, { once: true });
 
-    function toggleCardapioAdm() {
+    function abrirCardapioAdm(tipo) {
+        tipoCardapioAtual = tipo;
         const painel = document.getElementById('painel-adm');
+        const titulo = document.getElementById('titulo-painel-tipo');
+        titulo.innerText = tipo === 'almoco' ? 'Gerenciamento - Cardápio de Almoço' : 'Gerenciamento - Cardápio de Lanches';
+        
         if (painel.style.display === 'none') {
             painel.style.display = 'block';
-            carregarCardapioAdm();
-        } else {
-            painel.style.display = 'none';
         }
+        carregarCardapioAdm();
     }
 
     async function carregarCardapioAdm() {
@@ -174,10 +181,19 @@
             
             container.innerHTML = '';
             
+            // Filtra apenas os itens do tipo selecionado (Almoço ou Lanches)
+            const itensFiltrados = itens.filter(item => (item.tipo || 'almoco') === tipoCardapioAtual);
+
+            if (itensFiltrados.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: #aaa; margin-top: 15px;">Nenhum item cadastrado neste cardápio. Clique no botão acima para adicionar.</p>';
+                return;
+            }
+
             const categorias = {};
-            itens.forEach(item => {
-                if (!categorias[item.categoria]) categorias[item.categoria] = [];
-                categorias[item.categoria].push(item);
+            itensFiltrados.forEach(item => {
+                const cat = item.categoria || 'Geral';
+                if (!categorias[cat]) categorias[cat] = [];
+                categorias[cat].push(item);
             });
 
             for (let cat in categorias) {
@@ -193,10 +209,14 @@
                                 <button onclick="alternarEsgotado('${item.id}')" style="background: ${item.esgotado ? '#27ae60' : '#c0392b'};">${item.esgotado ? 'Disponível' : 'Esgotado'}</button>
                             </div>
                             <div id="edicao-${item.id}" class="item-edicao">
-                                <input type="text" id="nome-${item.id}" value="${item.nome}" placeholder="Novo nome">
-                                <input type="number" step="0.01" id="preco-${item.id}" value="${item.preco}" placeholder="Novo preço">
-                                <input type="text" id="acompanhamento-${item.id}" value="${item.acompanhamento || ''}" placeholder="Observação / Acompanhamento (Ex: Arroz, feijão, farofa)">
-                                <button class="btn-salvar" onclick="salvarEdicaoItem('${item.id}')">💾 Salvar</button>
+                                <input type="text" id="cat-${item.id}" value="${cat}" placeholder="Categoria">
+                                <input type="text" id="nome-${item.id}" value="${item.nome}" placeholder="Nome do item">
+                                <input type="number" step="0.01" id="preco-${item.id}" value="${item.preco}" placeholder="Preço">
+                                <input type="text" id="acompanhamento-${item.id}" value="${item.acompanhamento || ''}" placeholder="Observação / Acompanhamento">
+                                <div style="display: flex; gap: 8px;">
+                                    <button class="btn-salvar" onclick="salvarEdicaoItem('${item.id}')">💾 Salvar</button>
+                                    <button class="btn-excluir-item" onclick="excluirItemCardapio('${item.id}')">❌ Excluir Item</button>
+                                </div>
                             </div>
                         </div>
                     `;
@@ -212,7 +232,46 @@
         blocoEdicao.style.display = blocoEdicao.style.display === 'flex' ? 'none' : 'flex';
     }
 
+    async function adicionarNovoItemCardapio() {
+        const novaCategoria = tipoCardapioAtual === 'almoco' ? 'Marmitas Completas G' : 'Lanches Especiais';
+        try {
+            const res = await fetch('/api/cardapio', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    tipo: tipoCardapioAtual,
+                    categoria: novaCategoria,
+                    nome: 'Novo Item',
+                    preco: 0.00,
+                    acompanhamento: ''
+                })
+            });
+            const resultado = await res.json();
+            if (resultado.success) {
+                carregarCardapioAdm();
+            }
+        } catch (e) {
+            console.error('Erro ao adicionar novo item', e);
+            alert('Erro ao criar novo item.');
+        }
+    }
+
+    async function excluirItemCardapio(id) {
+        if (!confirm('Deseja realmente excluir este item?')) return;
+        try {
+            const res = await fetch(`/api/cardapio/${id}`, { method: 'DELETE' });
+            if (res.ok) {
+                carregarCardapioAdm();
+            } else {
+                alert('Erro ao excluir item.');
+            }
+        } catch (e) {
+            console.error('Erro ao excluir item', e);
+        }
+    }
+
     async function salvarEdicaoItem(id) {
+        const novaCat = document.getElementById(`cat-${id}`).value;
         const novoNome = document.getElementById(`nome-${id}`).value;
         const novoPreco = parseFloat(document.getElementById(`preco-${id}`).value);
         const novoAcompanhamento = document.getElementById(`acompanhamento-${id}`).value;
@@ -226,7 +285,7 @@
             const res = await fetch(`/api/cardapio/${id}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ nome: novoNome, preco: novoPreco, acompanhamento: novoAcompanhamento })
+                body: JSON.stringify({ categoria: novaCat, nome: novoNome, preco: novoPreco, acompanhamento: novoAcompanhamento })
             });
             const resultado = await res.json();
             if (resultado.success) {
@@ -308,7 +367,6 @@
                     htmlPagamento = `<p><strong>Forma de Pagamento:</strong> <span style="color: #28a745; font-weight: bold;">Pix (Pago)</span></p>`;
                 }
 
-                // Lógica para exibir os botões de Aceitar/Recusar apenas se não foi aceito nem recusado ainda
                 let isAceito = p.status === "Estabelecimento aceitou seu pedido";
                 let isRecusado = p.status && p.status.includes("Pedido recusado pelo estabelecimento 😢");
                 

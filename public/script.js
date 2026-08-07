@@ -1,299 +1,196 @@
-let carrinho = [];
+const express = require('express');
+const app = express();
 
-function adicionarAoCarrinho(nome, preco, itemId) {
-    carrinho.push({ nome, preco, itemId });
-    atualizarCarrinho();
-}
+// Configurações iniciais do servidor
+app.use(express.json());
+app.use(express.static('public'));
 
-function atualizarCarrinho() {
-    const lista = document.getElementById('lista-carrinho');
-    const subtotalEl = document.getElementById('subtotal-carrinho');
-    const taxaEl = document.getElementById('taxa-entrega');
-    const totalEl = document.getElementById('total-carrinho');
-    
-    if (!lista || !totalEl) return;
-    
-    lista.innerHTML = '';
-    let subtotal = 0;
+// Token do Mercado Pago fornecido
+const MERCADO_PAGO_TOKEN = "APP_USR-517824253559090-073117-47dad5ef4352fb0abd9e5d717275dfa3-71867761";
 
-    carrinho.forEach((item, index) => {
-        subtotal += item.preco;
-        lista.innerHTML += `<li>${item.nome} - R$ ${item.preco.toFixed(2)} <button onclick="removerItem(${index})" style="background:#dc3545; padding:2px 6px; font-size:10px;">X</button></li>`;
-    });
-
-    if (subtotalEl) subtotalEl.innerText = subtotal.toFixed(2);
-    
-    // Pega a taxa com base no bairro selecionado
-    const selectBairro = document.getElementById('cliente-bairro');
-    let taxa = 0;
-    if (selectBairro && selectBairro.selectedIndex > 0) {
-        taxa = parseFloat(selectBairro.options[selectBairro.selectedIndex].getAttribute('data-taxa')) || 0;
-    }
-    if (taxaEl) taxaEl.innerText = taxa.toFixed(2);
-
-    let totalGeral = subtotal + taxa;
-    totalEl.innerText = totalGeral.toFixed(2);
-}
-
-function atualizarTaxaEntrega() {
-    atualizarCarrinho();
-}
-
-function removerItem(index) {
-    carrinho.splice(index, 1);
-    atualizarCarrinho();
-}
-
-let dadosPedidoGlobal = {};
-let intervaloVerificacao = null;
-
-async function finalizarCompra() {
-    if (carrinho.length === 0) {
-        alert('Seu carrinho está vazio!');
-        return;
-    }
-    const nome = document.getElementById('cliente-nome').value;
-    const whatsapp = document.getElementById('cliente-whatsapp').value;
-    const endereco = document.getElementById('cliente-endereco').value;
-    const referencia = document.getElementById('cliente-referencia').value;
-    const bairroSelect = document.getElementById('cliente-bairro');
-    const bairro = bairroSelect.value;
-    const taxa = parseFloat(bairroSelect.options[bairroSelect.selectedIndex]?.getAttribute('data-taxa')) || 0;
-    const formaPagamento = document.getElementById('forma-pagamento').value;
-    let informacaoPagamento = "";
-
-    if (!nome || !whatsapp || !endereco || !referencia || !bairro) {
-        alert('Por favor, preencha todos os dados de entrega (Nome, WhatsApp, Endereço, Referência e Bairro)!');
-        return;
-    }
-
-    const subtotalCarrinho = carrinho.reduce((acc, item) => acc + item.preco, 0);
-    const totalCarrinho = subtotalCarrinho + taxa;
-
-    // Gera o código aleatório de 4 dígitos para o pedido
-    const codigoPedido = Math.floor(1000 + Math.random() * 9000);
-
-    // Validação se for Dinheiro
-    if (formaPagamento === 'Dinheiro') {
-        const valorDinheiroInput = document.getElementById('valor-troco').value;
-        if (!valorDinheiroInput) {
-            alert('Por favor, informe o valor em dinheiro para o troco!');
-            return;
-        }
-        const valorDinheiro = parseFloat(valorDinheiroInput);
-        if (valorDinheiro < totalCarrinho) {
-            alert('O valor em dinheiro não pode ser menor que o total do pedido!');
-            return;
-        }
-        const trocoCalculado = valorDinheiro - totalCarrinho;
-        informacaoPagamento = `Dinheiro (Vai pagar com R$ ${valorDinheiro.toFixed(2)} | Troco: R$ ${trocoCalculado.toFixed(2)})`;
-    } 
-    // Se for Cartão
-    else if (formaPagamento.includes('Cartão') || formaPagamento.includes('Cartao')) {
-        informacaoPagamento = `Cartão na Entrega (Maquininha Motoca)`;
-    }
-
-    dadosPedidoGlobal = {
-        codigo: codigoPedido,
-        nome,
-        whatsapp,
-        endereco,
-        referencia,
-        bairro,
-        taxa,
-        formaPagamento: informacaoPagamento || formaPagamento,
-        itens: [...carrinho],
-        total: totalCarrinho,
-        status: 'Aguardando o pedido ficar pronto ⏳'
-    };
-
-    // Mudar para a tela de pagamento
-    document.getElementById('app-container').classList.add('hidden');
-    document.getElementById('pagamento-container').classList.remove('hidden');
-
-    const containerPagamento = document.getElementById('pagamento-container');
-
-    // SE FOR DINHEIRO OU CARTÃO (Vai direto sem gerar Pix)
-    if (formaPagamento === 'Dinheiro' || formaPagamento.includes('Cartão') || formaPagamento.includes('Cartao')) {
-        containerPagamento.innerHTML = `
-            <h2>💳 Pedido Realizado com Sucesso!</h2>
-            <p style="font-size: 18px; color: #f1c40f; margin: 20px 0;">Código do Pedido: <b>#${codigoPedido}</b></p>
-            <p style="font-size: 16px; color: #fff; margin: 10px 0;">Forma de Pagamento: <b>${informacaoPagamento}</b></p>
-            <p>Registrando seu pedido na cozinha...</p>
-        `;
-        
-        tocarSomSucesso();
-        await registrarPedidoFinal();
-        
-        setTimeout(() => {
-            document.getElementById('pagamento-container').classList.add('hidden');
-            document.getElementById('sucesso-container').classList.remove('hidden');
-            document.getElementById('codigo-pedido-exibido').innerText = `Seu Código de Pedido: #${codigoPedido}`;
-        }, 1500);
-        return;
-    }
-
-    // SE FOR PIX (Gera QR Code do Mercado Pago)
-    containerPagamento.innerHTML = `
-        <h2>💳 Pagamento via Pix</h2>
-        <p>Gerando QR Code do Mercado Pago...</p>
-    `;
-
+// Rota para criar o Pix no Mercado Pago
+app.post('/api/criar-pagamento', async (req, res) => {
     try {
-        const resposta = await fetch('/api/criar-pagamento', {
+        const dados = req.body;
+        const respostaMP = await fetch('https://api.mercadopago.com/v1/payments', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(dadosPedidoGlobal)
-        });
-        const resultado = await resposta.json();
-
-        if (resultado.qr_code_base64) {
-            containerPagamento.innerHTML = `
-                <h2>💳 Pagamento via Pix</h2>
-                <p>Escaneie o QR Code abaixo com o app do seu banco:</p>
-                <div style="margin: 15px;">
-                    <img src="data:image/jpeg;base64,${resultado.qr_code_base64}" alt="QR Code Pix" style="max-width: 200px; border-radius: 8px;">
-                </div>
-                
-                <div class="pix-copia-cola-box" style="background: rgba(0, 0, 0, 0.5); padding: 12px; border-radius: 6px; margin-bottom: 15px; border: 1px solid #d4af37;">
-                    <p style="margin: 0 0 8px 0; font-size: 14px; color: #f1c40f; font-weight: bold;">Pix Copia e Cola:</p>
-                    <input type="text" id="texto-pix-copia" value="${resultado.qr_code}" readonly style="font-size: 12px; text-align: center; margin-bottom: 5px; width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #ccc;">
-                    <button onclick="copiarCodigoPix()" class="btn-copiar-pix" style="background-color: #27ae60; color: white; border: none; padding: 6px 14px; font-size: 13px; font-weight: bold; border-radius: 4px; cursor: pointer; margin-top: 5px;">📋 Copiar Código Pix</button>
-                </div>
-
-                <p style="font-size: 16px; color: #f1c40f;">Código do Pedido: <b>#${codigoPedido}</b></p>
-                <p id="status-pagamento-pix" style="font-weight: bold; color: #f1c40f; margin-top: 15px;">
-                    ⏳ Aguardando a aprovação do pagamento...
-                </p>
-            `;
-
-            iniciarVerificacaoPagamentoMP(resultado.id_pagamento, codigoPedido);
-        } else {
-            containerPagamento.innerHTML = `<h2 style="color:red;">Erro ao gerar Pix. Tente novamente.</h2>`;
-        }
-    } catch (e) {
-        containerPagamento.innerHTML = `<h2 style="color:red;">Erro de conexão com o servidor.</h2>`;
-    }
-}
-
-function copiarCodigoPix() {
-    const inputPix = document.getElementById('texto-pix-copia');
-    inputPix.select();
-    inputPix.setSelectionRange(0, 99999); 
-    
-    navigator.clipboard.writeText(inputPix.value).then(() => {
-        alert('Código Pix copiado com sucesso!');
-    }).catch(err => {
-        console.error('Erro ao copiar o código Pix: ', err);
-    });
-}
-
-function tocarSomSucesso() {
-    try {
-        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        
-        const osc1 = audioCtx.createOscillator();
-        const gain1 = audioCtx.createGain();
-        osc1.type = 'sine';
-        osc1.frequency.setValueAtTime(440, audioCtx.currentTime);
-        gain1.gain.setValueAtTime(0.3, audioCtx.currentTime);
-        gain1.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
-        osc1.connect(gain1);
-        gain1.connect(audioCtx.destination);
-        osc1.start();
-        osc1.stop(audioCtx.currentTime + 0.15);
-
-        setTimeout(() => {
-            const osc2 = audioCtx.createOscillator();
-            const gain2 = audioCtx.createGain();
-            osc2.type = 'sine';
-            osc2.frequency.setValueAtTime(587.33, audioCtx.currentTime);
-            gain2.gain.setValueAtTime(0.3, audioCtx.currentTime);
-            gain2.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
-            osc2.connect(gain2);
-            gain2.connect(audioCtx.destination);
-            osc2.start();
-            osc2.stop(audioCtx.currentTime + 0.2);
-        }, 150);
-    } catch (e) {
-        console.log("Áudio bloqueado pelo navegador.");
-    }
-}
-
-function iniciarVerificacaoPagamentoMP(idPagamento, codigoPedido) {
-    intervaloVerificacao = setInterval(async () => {
-        try {
-            const res = await fetch(`/api/verificar-pagamento/${idPagamento}`);
-            const dados = await res.json();
-
-            if (dados.status === "approved") {
-                clearInterval(intervaloVerificacao);
-                tocarSomSucesso();
-                await registrarPedidoFinal();
-
-                document.getElementById('pagamento-container').classList.add('hidden');
-                document.getElementById('sucesso-container').classList.remove('hidden');
-                document.getElementById('codigo-pedido-exibido').innerText = `Seu Código de Pedido: #${codigoPedido}`;
-            }
-        } catch (e) {
-            console.log("Aguardando confirmação...");
-        }
-    }, 4000);
-}
-
-async function registrarPedidoFinal() {
-    try {
-        const response = await fetch('/api/pedidos', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(dadosPedidoGlobal)
-        });
-        const resultado = await response.json();
-        if (resultado.success) {
-            verificarStatusPedido(resultado.pedido.id);
-        }
-    } catch (e) {}
-}
-
-async function verificarStatusPedido(idPedido) {
-    setInterval(async () => {
-        try {
-            const res = await fetch('/api/pedidos');
-            const pedidos = await res.json();
-            const meuPedido = pedidos.find(p => p.id === idPedido || p.codigo === dadosPedidoGlobal.codigo);
-            if (meuPedido) {
-                const textoStatus = document.getElementById('status-pedido-texto');
-                if (textoStatus) textoStatus.innerText = meuPedido.status;
-            }
-        } catch(e) {}
-    }, 3000);
-}
-
-// Sincronizar esgotados do cardápio visualmente na página principal ao carregar
-async function verificarCardapioEsgotado() {
-    try {
-        const res = await fetch('/api/cardapio');
-        const itens = await res.json();
-        
-        itens.forEach(item => {
-            // Se você tiver elementos mapeados por ID na página
-            const elementoItem = document.getElementById(item.id);
-            if (elementoItem && item.esgotado) {
-                elementoItem.classList.add('esgotado');
-                const btn = elementoItem.querySelector('button');
-                if (btn) {
-                    btn.disabled = true;
-                    btn.innerText = 'ESGOTADO';
-                    btn.style.background = '#555';
+            headers: {
+                'Authorization': `Bearer ${MERCADO_PAGO_TOKEN}`,
+                'Content-Type': 'application/json',
+                'X-Idempotency-Key': Date.now().toString()
+            },
+            body: JSON.stringify({
+                transaction_amount: Number(dados.total),
+                description: `Pedido de ${dados.nome} - Gonçalves Lanches`,
+                payment_method_id: 'pix',
+                payer: {
+                    email: 'cliente@goncalves.com',
+                    first_name: dados.nome
                 }
+            })
+        });
+
+        const resultado = await respostaMP.json();
+
+        if (resultado.status === 'pending' || resultado.id) {
+            res.json({
+                id_pagamento: resultado.id,
+                qr_code: resultado.point_of_interaction.transaction_data.qr_code,
+                qr_code_base64: resultado.point_of_interaction.transaction_data.qr_code_base64
+            });
+        } else {
+            res.status(400).json({ error: 'Erro ao gerar Pix no Mercado Pago', detalhes: resultado });
+        }
+    } catch (e) {
+        res.status(500).json({ error: 'Erro interno ao conectar com Mercado Pago' });
+    }
+});
+
+// Rota para checar se o pagamento foi aprovado
+app.get('/api/verificar-pagamento/:id', async (req, res) => {
+    try {
+        const idPagamento = req.params.id;
+        const respostaMP = await fetch(`https://api.mercadopago.com/v1/payments/${idPagamento}`, {
+            headers: {
+                'Authorization': `Bearer ${MERCADO_PAGO_TOKEN}`
             }
         });
+        const resultado = await respostaMP.json();
+        res.json({ status: resultado.status }); 
     } catch (e) {
-        console.error("Erro ao verificar itens esgotados", e);
+        res.status(500).json({ error: 'Erro ao verificar status' });
     }
-}
+});
 
-document.addEventListener("DOMContentLoaded", () => {
-    verificarCardapioEsgotado();
-    setInterval(verificarCardapioEsgotado, 5000);
+// Armazenamento em memória para os pedidos do painel/motoboy
+let pedidos = [];
+
+app.get('/api/pedidos', (req, res) => {
+    res.json(pedidos);
+});
+
+app.post('/api/pedidos', (req, res) => {
+    const novoPedido = {
+        id: Date.now(),
+        ...req.body,
+        status: req.body.status || "⏳ Aguardando preparo na cozinha"
+    };
+    pedidos.push(novoPedido);
+    res.json({ success: true, pedido: novoPedido });
+});
+
+app.put('/api/pedidos/:id', (req, res) => {
+    const idPedido = Number(req.params.id);
+    const novoStatus = req.body.status;
+    
+    const pedido = pedidos.find(p => p.id === idPedido);
+    if (pedido) {
+        pedido.status = novoStatus;
+        res.json({ success: true, pedido });
+    } else {
+        res.status(404).json({ error: 'Pedido não encontrado' });
+    }
+});
+
+app.delete('/api/pedidos', (req, res) => {
+    pedidos = [];
+    res.json({ success: true, message: 'Histórico limpo com sucesso!' });
+});
+
+// Armazenamento em memória para o Cardápio (Almoço e Lanches separados por tipo)
+let cardapio = [
+    { id: 'p_dia_1', tipo: 'almoco', categoria: 'Prato do Dia', nome: 'Frango Milanesa c/ Creme de Milho', preco: 16.00, esgotado: false, acompanhamento: '' },
+    { id: 'm_eco_1', tipo: 'almoco', categoria: 'Marmitas Econômicas', nome: 'Calabresa Acebolada', preco: 10.00, esgotado: false, acompanhamento: '' },
+    { id: 'm_eco_2', tipo: 'almoco', categoria: 'Marmitas Econômicas', nome: 'Frango Milanesa', preco: 10.00, esgotado: false, acompanhamento: '' },
+    { id: 'm_eco_3', tipo: 'almoco', categoria: 'Marmitas Econômicas', nome: 'Toscana', preco: 10.00, esgotado: false, acompanhamento: '' },
+    { id: 'm_eco_4', tipo: 'almoco', categoria: 'Marmitas Econômicas', nome: 'Fígado Acebolado', preco: 10.00, esgotado: false, acompanhamento: '' },
+    { id: 'm_eco_5', tipo: 'almoco', categoria: 'Marmitas Econômicas', nome: 'Nuggets', preco: 10.00, esgotado: false, acompanhamento: '' },
+    { id: 'm_eco_6', tipo: 'almoco', categoria: 'Marmitas Econômicas', nome: 'Omelete Simples', preco: 10.00, esgotado: false, acompanhamento: '' },
+    { id: 'm_comp_1', tipo: 'almoco', categoria: 'Marmitas Completas G', nome: 'Filé Grelhado', preco: 14.00, esgotado: false, acompanhamento: '' },
+    { id: 'm_comp_2', tipo: 'almoco', categoria: 'Marmitas Completas G', nome: 'Frango a Milanesa', preco: 16.00, esgotado: false, acompanhamento: '' },
+    { id: 'm_comp_3', tipo: 'almoco', categoria: 'Marmitas Completas G', nome: 'Calabresa Acebolada', preco: 15.00, esgotado: false, acompanhamento: '' },
+    { id: 'm_comp_4', tipo: 'almoco', categoria: 'Marmitas Completas G', nome: 'Toscana Acebolada', preco: 15.00, esgotado: false, acompanhamento: '' },
+    { id: 'm_comp_5', tipo: 'almoco', categoria: 'Marmitas Completas G', nome: 'Bisteca com Ovo', preco: 15.00, esgotado: false, acompanhamento: '' },
+    { id: 'm_comp_6', tipo: 'almoco', categoria: 'Marmitas Completas G', nome: 'Fígado Acebolado', preco: 15.00, esgotado: false, acompanhamento: '' },
+    { id: 'm_comp_7', tipo: 'almoco', categoria: 'Marmitas Completas G', nome: 'Omelete Recheado', preco: 16.00, esgotado: false, acompanhamento: '' },
+    { id: 'm_comp_8', tipo: 'almoco', categoria: 'Marmitas Completas G', nome: 'Frango Parmegiana', preco: 20.00, esgotado: false, acompanhamento: '' },
+    { id: 'm_comp_9', tipo: 'almoco', categoria: 'Marmitas Completas G', nome: 'Contra Filé Acebolado', preco: 23.00, esgotado: false, acompanhamento: '' },
+    { id: 'm_comp_10', tipo: 'almoco', categoria: 'Marmitas Completas G', nome: 'Contra Filé Parmegiana', preco: 25.00, esgotado: false, acompanhamento: '' },
+    { id: 'm_comp_11', tipo: 'almoco', categoria: 'Marmitas Completas G', nome: 'Contra Filé com Ovo', preco: 25.00, esgotado: false, acompanhamento: '' },
+    { id: 'ad_1', tipo: 'almoco', categoria: 'Adicionais', nome: 'Porção Batata Frita', preco: 4.00, esgotado: false, acompanhamento: '' },
+    { id: 'ad_2', tipo: 'almoco', categoria: 'Adicionais', nome: 'Ovo Extra', preco: 4.00, esgotado: false, acompanhamento: '' },
+    { id: 'ad_3', tipo: 'almoco', categoria: 'Adicionais', nome: 'Mistura Extra', preco: 9.00, esgotado: false, acompanhamento: '' },
+    { id: 'beb_1', tipo: 'almoco', categoria: 'Bebidas (Sucos e Refrigerantes)', nome: 'Coca-Cola Lata', preco: 6.00, esgotado: false, acompanhamento: '' },
+    { id: 'beb_2', tipo: 'almoco', categoria: 'Bebidas (Sucos e Refrigerantes)', nome: 'Guaraná Lata', preco: 6.00, esgotado: false, acompanhamento: '' },
+    { id: 'beb_3', tipo: 'almoco', categoria: 'Bebidas (Sucos e Refrigerantes)', nome: 'Fanta Lata', preco: 6.00, esgotado: false, acompanhamento: '' },
+    { id: 'beb_4', tipo: 'almoco', categoria: 'Bebidas (Sucos e Refrigerantes)', nome: 'Suco Natural (Laranja/Outros)', preco: 8.00, esgotado: false, acompanhamento: '' },
+    // Exemplo inicial de Lanches
+    { id: 'lanche_1', tipo: 'lanches', categoria: 'Lanches Especiais', nome: 'X-Salada Especial', preco: 18.00, esgotado: false, acompanhamento: '' }
+];
+
+// Rota para buscar o cardápio
+app.get('/api/cardapio', (req, res) => {
+    res.json(cardapio);
+});
+
+// Rota para alternar esgotado/disponível
+app.post('/api/cardapio/:id/toggle', (req, res) => {
+    const idItem = req.params.id;
+    const item = cardapio.find(i => i.id === idItem);
+    
+    if (item) {
+        item.esgotado = !item.esgotado;
+        res.json({ success: true, item });
+    } else {
+        res.status(404).json({ error: 'Item não encontrado' });
+    }
+});
+
+// Rota para atualizar nome, preço e acompanhamento
+app.put('/api/cardapio/:id', (req, res) => {
+    const idItem = req.params.id;
+    const { nome, preco, acompanhamento } = req.body;
+    const item = cardapio.find(i => i.id === idItem);
+
+    if (item) {
+        if (nome !== undefined) item.nome = nome;
+        if (preco !== undefined) item.preco = Number(preco);
+        if (acompanhamento !== undefined) item.acompanhamento = acompanhamento;
+        res.json({ success: true, item });
+    } else {
+        res.status(404).json({ error: 'Item não encontrado' });
+    }
+});
+
+// Rota para adicionar novo item ao cardápio pelo painel administrativo
+app.post('/api/cardapio', (req, res) => {
+    const { tipo, categoria, nome, preco, acompanhamento } = req.body;
+    const novoItem = {
+        id: 'item_' + Date.now(),
+        tipo: tipo || 'almoco',
+        categoria: categoria || 'Geral',
+        nome: nome || 'Novo Item',
+        preco: Number(preco) || 0.00,
+        esgotado: false,
+        acompanhamento: acompanhamento || ''
+    };
+    cardapio.push(novoItem);
+    res.json({ success: true, item: novoItem });
+});
+
+// Rota para deletar item do cardápio
+app.delete('/api/cardapio/:id', (req, res) => {
+    const idItem = req.params.id;
+    const index = cardapio.findIndex(i => i.id === idItem);
+    if (index !== -1) {
+        cardapio.splice(index, 1);
+        res.json({ success: true });
+    } else {
+        res.status(404).json({ error: 'Item não encontrado' });
+    }
+});
+
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+    console.log(`Servidor rodando na porta ${PORT}`);
 });
