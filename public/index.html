@@ -1,118 +1,70 @@
-MANUTENÇAO<!DOCTYPE html>
-<html lang="pt-BR">
+<!DOCTYPE html>
+<html lang="pt-BR" class="h-full">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gonçalves Lanches & Refeições</title>
-    <link rel="stylesheet" href="style.css">
+    <title>Catálogo em Manutenção</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome for WhatsApp Icon -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        /* Ajustes para a página inicial ocupar a tela com estilo moderno */
         body {
-            margin: 0;
-            padding: 0;
-            font-family: Arial, sans-serif;
-            background-color: #121212;
-            color: #fff;
+            font-family: 'Inter', sans-serif;
         }
-        .home-container {
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
-            text-align: center;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
         }
-        .categorias-grid {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-            margin-top: 30px;
-        }
-        .card-categoria {
-            position: relative;
-            height: 130px;
-            border-radius: 12px;
-            overflow: hidden;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-decoration: none;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-            transition: transform 0.2s, box-shadow 0.2s;
-            border: 2px solid rgba(255,255,255,0.1);
-        }
-        .card-categoria:hover {
-            transform: scale(1.02);
-            box-shadow: 0 6px 20px rgba(241,196,15,0.4);
-            border-color: #f1c40f;
-        }
-        /* Imagem de fundo com escurecimento para o texto aparecer */
-        .card-categoria::before {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.65); /* Camada escura */
-            z-index: 1;
-        }
-        .card-categoria img {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            object-fit: cover;
-            z-index: 0;
-        }
-        .card-conteudo {
-            position: relative;
-            z-index: 2;
-            color: #fff;
-            font-size: 24px;
-            font-weight: bold;
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+        .animate-float {
+            animation: float 4s ease-in-out infinite;
         }
     </style>
 </head>
-<body>
-    <div class="home-container">
-        <div style="background: rgba(0,0,0,0.7); padding: 25px; border-radius: 15px; border: 1px solid #333;">
-            <h1 style="color: #f1c40f; margin: 0 0 10px 0; font-size: 28px;">GONÇALVES LANCHES & REFEIÇÕES</h1>
-            <p style="color: #ccc; margin-bottom: 15px; font-size: 16px;">Escolha uma categoria abaixo para ver o cardápio:</p>
-            <div style="display: inline-block; background: #27ae60; color: white; padding: 6px 15px; border-radius: 20px; font-size: 14px; font-weight: bold;">
-                🛵 Delivery Ativo
+<body class="h-full bg-slate-950 text-slate-100 flex items-center justify-center p-4 relative overflow-hidden">
+
+    <div class="absolute -top-40 -left-40 w-96 h-96 bg-blue-600/20 rounded-full blur-3xl pointer-events-none"></div>
+    <div class="absolute -bottom-40 -right-40 w-96 h-96 bg-emerald-600/15 rounded-full blur-3xl pointer-events-none"></div>
+
+    <main class="w-full max-w-md bg-slate-900/80 backdrop-blur-xl border border-slate-800 rounded-3xl p-8 sm:p-10 shadow-2xl text-center relative z-10 transition-all duration-300">
+        
+        <div class="mb-6 flex justify-center">
+            <div class="w-20 h-20 bg-gradient-to-tr from-blue-600 to-indigo-500 rounded-2xl flex items-center justify-center shadow-lg shadow-blue-500/25 animate-float">
+                <i class="fa-solid fa-screwdriver-wrench text-3xl text-white"></i>
             </div>
         </div>
 
-        <div class="categorias-grid">
-            <!-- Botão Lanches -->
-            <a href="lanches/index.html" class="card-categoria">
-                <!-- Cole o link da foto de lanche que preferir no 'src' -->
-                <img src="https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=800&q=80" alt="Lanches">
-                <div class="card-conteudo">
-                    <span>🍔</span> Lanches Especiais
-                </div>
-            </a>
+        <h1 class="text-2xl sm:text-3xl font-bold tracking-tight text-white mb-3">
+            Catálogo em Manutenção
+        </h1>
+        <p class="text-slate-400 text-sm sm:text-base leading-relaxed mb-8">
+            Estamos atualizando nossa plataforma para oferecer a você uma experiência ainda melhor. Retornaremos em breve!
+        </p>
 
-            <!-- Botão Almoço / Refeições -->
-            <a href="refeicoes/index.html" class="card-categoria">
-                <!-- Foto de comida / marmita -->
-                <img src="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=800&q=80" alt="Refeições">
-                <div class="card-conteudo">
-                    <span>🍲</span> Pratos e Marmitas (Almoço)
-                </div>
+        <div class="space-y-3">
+            <a href="https://wa.me/5513920065761?text=Olá,%20gostaria%20de%20tirar%20dúvidas%20enquanto%20o%20catálogo%20está%20em%20manutenção." 
+               target="_blank" 
+               rel="noopener noreferrer"
+               class="w-full inline-flex items-center justify-center gap-3 bg-emerald-600 hover:bg-emerald-500 text-white font-medium py-3.5 px-6 rounded-xl shadow-lg shadow-emerald-600/30 transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0">
+                <i class="fa-brands fa-whatsapp text-xl"></i>
+                <span>Falar com o Suporte</span>
             </a>
-
-            <!-- Botão Bebidas -->
-            <a href="bebidas/index.html" class="card-categoria">
-                <!-- Foto de bebidas / sucos -->
-                <img src="https://images.unsplash.com/photo-1551024709-8f23befc6f87?auto=format&fit=crop&w=800&q=80" alt="Bebidas">
-                <div class="card-conteudo">
-                    <span>🥤</span> Bebidas e Sucos
-                </div>
-            </a>
+            
+            <p class="text-xs text-slate-500 pt-2">
+                Precisa de ajuda urgente? Clique no botão acima para nos chamar no WhatsApp.
+            </p>
         </div>
-    </div>
+
+        <footer class="mt-8 pt-6 border-t border-slate-800/80 text-xs text-slate-500">
+            &copy; <span id="year"></span> &bull; Todos os direitos reservados.
+        </footer>
+    </main>
+
+    <script>
+        // Set dynamic current year in footer
+        document.getElementById('year').textContent = new Date().getFullYear();
+    </script>
 </body>
 </html>
