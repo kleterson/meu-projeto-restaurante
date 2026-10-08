@@ -50,7 +50,7 @@
         </div>
     </div>
 
-    <!-- TELA DO PAINEL ADMIN (Oculta até o login) -->
+    <!-- TELA DO PAINEL ADMIN -->
     <div id="admin-panel" class="hidden flex-grow flex flex-col justify-between">
         <header class="bg-slate-900 border-b border-slate-800 sticky top-0 z-40">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
@@ -67,6 +67,9 @@
                     <a href="index.html" target="_blank" class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-4 py-2.5 rounded-xl text-sm font-semibold border border-slate-700">
                         <i class="fa-solid fa-eye mr-2"></i> Ver Cardápio
                     </a>
+                    <button onclick="openChangePasswordModal()" class="bg-slate-800 hover:bg-slate-700 text-amber-400 px-4 py-2.5 rounded-xl text-sm font-semibold border border-slate-700">
+                        <i class="fa-solid fa-key mr-2"></i> Alterar Senha
+                    </button>
                     <button onclick="logout()" class="bg-red-500/10 hover:bg-red-500/20 text-red-400 px-4 py-2.5 rounded-xl text-sm font-semibold border border-red-500/20">
                         <i class="fa-solid fa-right-from-bracket mr-2"></i> Sair
                     </button>
@@ -84,6 +87,14 @@
                     <i class="fa-solid fa-plus"></i>
                     <span>Novo Produto</span>
                 </button>
+            </div>
+
+            <!-- BARRA DE PESQUISA -->
+            <div class="mb-6 relative">
+                <span class="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none text-slate-500">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                </span>
+                <input type="text" id="search-input" oninput="renderAdminProducts()" placeholder="Pesquisar produto pelo nome..." class="w-full bg-slate-900 border border-slate-800 rounded-2xl pl-11 pr-4 py-3.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-red-500 shadow-lg">
             </div>
 
             <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
@@ -105,7 +116,7 @@
         </main>
     </div>
 
-    <!-- MODAL -->
+    <!-- MODAL DE PRODUTO -->
     <div id="product-modal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
         <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-lg p-6 shadow-2xl">
             <div class="flex justify-between items-center pb-4 border-b border-slate-800 mb-4">
@@ -148,6 +159,30 @@
         </div>
     </div>
 
+    <!-- MODAL DE ALTERAR SENHA -->
+    <div id="password-modal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-md p-6 shadow-2xl">
+            <div class="flex justify-between items-center pb-4 border-b border-slate-800 mb-4">
+                <h3 class="text-xl font-bold text-white">Alterar Senha do Admin</h3>
+                <button onclick="closePasswordModal()" class="text-slate-400 hover:text-white text-xl">&times;</button>
+            </div>
+            <form onsubmit="saveNewPassword(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-400 mb-1 uppercase tracking-wider">Nova Senha</label>
+                    <input type="password" id="new-pass" required class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-red-500" placeholder="Digite a nova senha">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-400 mb-1 uppercase tracking-wider">Confirmar Nova Senha</label>
+                    <input type="password" id="confirm-pass" required class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-red-500" placeholder="Confirme a nova senha">
+                </div>
+                <div class="flex justify-end space-x-3 pt-2">
+                    <button type="button" onclick="closePasswordModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-4 py-2.5 rounded-xl text-sm font-semibold">Cancelar</button>
+                    <button type="submit" class="bg-red-600 hover:bg-red-500 text-white font-bold px-6 py-2.5 rounded-xl shadow-lg text-sm">Salvar Senha</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <script>
         const defaultMenuItems = [
             { id: 1, name: "Burger Artesanal Supremo", category: "lanches", price: 32.90, desc: "Pão brioche, carne Angus 180g, cheddar empanado, bacon crocante e molho especial.", image: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=600&q=80" },
@@ -172,11 +207,13 @@
             const u = document.getElementById('user').value;
             const p = document.getElementById('pass').value;
 
-            if(u === 'admin' && p === '123456') {
+            const correctPass = localStorage.getItem('admin_custom_pass') || '123456';
+
+            if(u === 'admin' && p === correctPass) {
                 localStorage.setItem('admin_logged', 'true');
                 showAdminPanel();
             } else {
-                alert('Usuário ou senha incorretos! (Padrão: admin / 123456)');
+                alert('Usuário ou senha incorretos!');
             }
         }
 
@@ -206,11 +243,18 @@
         }
 
         function renderAdminProducts() {
-            const products = getMenuItems();
+            let products = getMenuItems();
+            const searchVal = document.getElementById('search-input').value.toLowerCase().trim();
+
+            // Filtra os produtos com base no que foi digitado na barra de pesquisa
+            if(searchVal !== '') {
+                products = products.filter(item => item.name.toLowerCase().includes(searchVal));
+            }
+
             const tbody = document.getElementById('admin-products-list');
 
             if(products.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-slate-500">Nenhum produto cadastrado.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-slate-500">Nenhum produto encontrado.</td></tr>`;
                 return;
             }
 
@@ -285,6 +329,32 @@
                 saveMenuItems(products);
                 renderAdminProducts();
             }
+        }
+
+        // Funções do Modal de Alterar Senha
+        function openChangePasswordModal() {
+            document.getElementById('password-modal').classList.remove('hidden');
+            document.getElementById('new-pass').value = '';
+            document.getElementById('confirm-pass').value = '';
+        }
+
+        function closePasswordModal() {
+            document.getElementById('password-modal').classList.add('hidden');
+        }
+
+        function saveNewPassword(e) {
+            e.preventDefault();
+            const p1 = document.getElementById('new-pass').value;
+            const p2 = document.getElementById('confirm-pass').value;
+
+            if (p1 !== p2) {
+                alert('As senhas não coincidem!');
+                return;
+            }
+
+            localStorage.setItem('admin_custom_pass', p1);
+            closePasswordModal();
+            alert('Senha alterada com sucesso!');
         }
     </script>
 </body>
