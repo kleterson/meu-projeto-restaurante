@@ -220,17 +220,24 @@
         }
 
         // Dados do Cardápio
-        const menuItems = [
-            { id: 1, name: "Burger Artesanal Supremo", category: "lanches", price: 32.90, desc: "Pão brioche, carne Angus 180g, cheddar empanado, bacon crocante e molho especial.", image: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=600&q=80" },
-            { id: 2, name: "Double Smash Bacon", category: "lanches", price: 28.90, desc: "Pão tostado na manteiga, dois burgers de 90g, duplo cheddar e bacon em tiras.", image: "https://images.unsplash.com/photo-1586190848861-99aa4a171e90?auto=format&fit=crop&w=600&q=80" },
-            { id: 3, name: "X-Salada da Casa", category: "lanches", price: 22.00, desc: "Pão tradicional, hambúrguer suculento, queijo prato, alface fresca e tomate.", image: "https://images.unsplash.com/photo-1572802419362-74b0d5cac0f6?auto=format&fit=crop&w=600&q=80" },
-            { id: 4, name: "Prato Executivo de Contrafilé", category: "almoco", price: 39.90, desc: "Contrafilé grelhado, arroz branco soltinho, feijão carioca, fritas e salada.", image: "https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=600&q=80" },
-            { id: 5, name: "Frango Grelhado com Legumes", category: "almoco", price: 32.50, desc: "Filé de frango suculento acompanhado de mix de legumes na manteiga e arroz integral.", image: "https://images.unsplash.com/photo-1604908176997-125f2596f378?auto=format&fit=crop&w=600&q=80" },
-            { id: 6, name: "Parmegiana de Frango (Individual)", category: "almoco", price: 36.90, desc: "Filé empanado coberto com molho de tomate artesanal, muito queijo e arroz com fritas.", image: "https://images.unsplash.com/photo-1633964913295-ceb43826e7c9?auto=format&fit=crop&w=600&q=80" },
-            { id: 7, name: "Coca-Cola Original 350ml", category: "bebidas", price: 6.50, desc: "Lata gelada trincando para acompanhar sua refeição.", image: "https://images.unsplash.com/photo-1622483767028-3f66f32aef97?auto=format&fit=crop&w=600&q=80" },
-            { id: 8, name: "Coca-Cola Zero 2 Litros", category: "bebidas", price: 14.00, desc: "Ideal para compartilhar com a família ou amigos.", image: "https://images.unsplash.com/photo-1554866585-cd94860890b7?auto=format&fit=crop&w=600&q=80" },
-            { id: 9, name: "Suco Natural de Laranja 500ml", category: "bebidas", price: 9.00, desc: "Feito com frutas frescas espreitadas na hora.", image: "https://images.unsplash.com/photo-1613478223719-2ab802602423?auto=format&fit=crop&w=600&q=80" }
-        ];
+        // Carrega os produtos salvos no Admin ou usa os padrão se estiver vazio
+const defaultMenuItems = [
+    { id: 1, name: "Burger Artesanal Supremo", category: "lanches", price: 32.90, desc: "Pão brioche, carne Angus 180g, cheddar empanado, bacon crocante e molho especial.", image: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=600&q=80" },
+    { id: 2, name: "Double Smash Bacon", category: "lanches", price: 28.90, desc: "Pão tostado na manteiga, dois burgers de 90g, duplo cheddar e bacon em tiras.", image: "https://images.unsplash.com/photo-1586190848861-99aa4a171e90?auto=format&fit=crop&w=600&q=80" },
+    { id: 3, name: "X-Salada da Casa", category: "lanches", price: 22.00, desc: "Pão tradicional, hambúrguer suculento, queijo prato, alface fresca e tomate.", image: "https://images.unsplash.com/photo-1572802419362-74b0d5cac0f6?auto=format&fit=crop&w=600&q=80" },
+    { id: 4, name: "Prato Executivo de Contrafilé", category: "almoco", price: 39.90, desc: "Contrafilé grelhado, arroz branco soltinho, feijão carioca, fritas e salada.", image: "https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=600&q=80" },
+    { id: 5, name: "Frango Grelhado com Legumes", category: "almoco", price: 32.50, desc: "Filé de frango suculento acompanhado de mix de legumes na manteiga e arroz integral.", image: "https://images.unsplash.com/photo-1604908176997-125f2596f378?auto=format&fit=crop&w=600&q=80" },
+    { id: 6, name: "Parmegiana de Frango (Individual)", category: "almoco", price: 36.90, desc: "Filé empanado coberto com molho de tomate artesanal, muito queijo e arroz com fritas.", image: "https://images.unsplash.com/photo-1633964913295-ceb43826e7c9?auto=format&fit=crop&w=600&q=80" },
+    { id: 7, name: "Coca-Cola Original 350ml", category: "bebidas", price: 6.50, desc: "Lata gelada trincando para acompanhar sua refeição.", image: "https://images.unsplash.com/photo-1622483767028-3f66f32aef97?auto=format&fit=crop&w=600&q=80" },
+    { id: 8, name: "Coca-Cola Zero 2 Litros", category: "bebidas", price: 14.00, desc: "Ideal para compartilhar com a família ou amigos.", image: "https://images.unsplash.com/photo-1554866585-cd94860890b7?auto=format&fit=crop&w=600&q=80" },
+    { id: 9, name: "Suco Natural de Laranja 500ml", category: "bebidas", price: 9.00, desc: "Feito com frutas frescas espreitadas na hora.", image: "https://images.unsplash.com/photo-1613478223719-2ab802602423?auto=format&fit=crop&w=600&q=80" }
+];
+
+let menuItems = JSON.parse(localStorage.getItem('burger_menu_items'));
+if(!menuItems) {
+    menuItems = defaultMenuItems;
+    localStorage.setItem('burger_menu_items', JSON.stringify(menuItems));
+}
 
         // Carrega o carrinho salvo no navegador (localStorage) ao abrir a página
         let cart = JSON.parse(localStorage.getItem('burger_cart')) || [];
