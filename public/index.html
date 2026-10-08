@@ -251,18 +251,19 @@
         let cart = JSON.parse(localStorage.getItem('burger_cart')) || [];
         updateCartUI();
 
-        // Busca produtos diretamente do servidor / Supabase (sem depender de cache local)
+        
         async function loadProducts() {
-            try {
-                const response = await fetch('/api/produtos');
-                const data = await response.json();
-                if(Array.isArray(data)) {
-                    menuItems = data;
-                }
-            } catch (err) {
-                console.error('Erro ao carregar produtos do servidor:', err);
-            }
+    try {
+        // Usando o caminho absoluto para garantir que o Render encontre a API corretamente
+        const response = await fetch(window.location.origin + '/api/produtos');
+        const data = await response.json();
+        if(Array.isArray(data)) {
+            menuItems = data;
         }
+    } catch (err) {
+        console.error('Erro ao carregar produtos do servidor:', err);
+    }
+}
 
         window.selectCategory = async function(category) {
             // Consulta o servidor na hora do clique para garantir dados 100% atualizados
