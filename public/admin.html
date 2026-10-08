@@ -5,8 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Painel Admin | Configurações</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Script do Supabase -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
         tailwind.config = {
             darkMode: 'class',
@@ -150,8 +148,8 @@
     </div>
 
     <!-- MODAL DE PRODUTO -->
-    <div id="product-modal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
-        <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-lg p-6 shadow-2xl">
+    <div id="product-modal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center p-4 overflow-y-auto">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-lg p-6 shadow-2xl my-8 max-h-[90vh] overflow-y-auto">
             <div class="flex justify-between items-center pb-4 border-b border-slate-800 mb-4">
                 <h3 id="modal-title" class="text-xl font-bold text-white">Novo Produto</h3>
                 <button onclick="closeProductModal()" class="text-slate-400 hover:text-white text-xl">&times;</button>
@@ -242,11 +240,6 @@
     </div>
 
     <script>
-        // CONFIGURAÇÃO DO SUPABASE (Insira suas chaves aqui)
-        const SUPABASE_URL = 'SUA_URL_DO_SUPABASE';
-        const SUPABASE_ANON_KEY = 'SUA_CHAVE_ANON_SUPABASE';
-        const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
         window.addEventListener('DOMContentLoaded', () => {
             loadBrandConfig();
             if(localStorage.getItem('admin_logged') === 'true') {
@@ -319,14 +312,17 @@
             renderAdminProducts();
         }
 
-        // FUNÇÕES INTEGRADAS COM O SUPABASE
+        // COMUNICAÇÃO COM O SERVER.JS (/api/produtos)
         async function getMenuItems() {
-            const { data, error } = await _supabase.from('produtos').select('*').order('id', { ascending: true });
-            if (error) {
-                console.error('Erro ao buscar produtos:', error);
+            try {
+                const response = await fetch('/api/produtos');
+                if (!response.ok) throw new Error('Erro ao buscar produtos');
+                const data = await response.json();
+                return data || [];
+            } catch (error) {
+                console.error('Erro:', error);
                 return [];
             }
-            return data || [];
         }
 
         async function renderAdminProducts() {
@@ -395,47 +391,47 @@
             const image = document.getElementById('prod-image').value;
             const desc = document.getElementById('prod-desc').value;
             
-            // Defina o store_id da sua loja (se usar fixo, ex: 1, ou pegue de alguma variável/localStorage)
-            const storeId = 1; // Substitua pelo ID da loja correspondente, se necessário
+            const productData = { name, category, price, image, desc };
 
-            if(id) {
-                // Atualizar produto existente
-                const { error } = await _supabase
-                    .from('produtos')
-                    .update({ name, category, price, image, desc })
-                    .eq('id', id);
-
-                if(error) {
-                    alert('Erro ao atualizar produto.');
-                    console.error(error);
-                    return;
+            try {
+                let response;
+                if(id) {
+                    response = await fetch(`/api/produtos/${id}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(productData)
+                    });
+                } else {
+                    response = await fetch('/api/produtos', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(productData)
+                    });
                 }
-            } else {
-                // Inserir novo produto incluindo o store_id
-                const { error } = await _supabase
-                    .from('produtos')
-                    .insert([{ store_id: storeId, name, category, price, image, desc }]);
 
-                if(error) {
-                    alert('Erro ao cadastrar produto.');
-                    console.error(error);
-                    return;
-                }
+                if(!response.ok) throw new Error('Erro ao salvar no servidor');
+
+                closeProductModal();
+                renderAdminProducts();
+                alert('Produto salvo com sucesso!');
+            } catch (error) {
+                console.error(error);
+                alert('Erro ao salvar produto.');
             }
-
-            closeProductModal();
-            renderAdminProducts();
-            alert('Produto salvo com sucesso!');
         }
+
         async function deleteProduct(id) {
             if(confirm('Tem certeza que deseja excluir este produto?')) {
-                const { error } = await _supabase.from('produtos').delete().eq('id', id);
-                if(error) {
-                    alert('Erro ao excluir produto.');
+                try {
+                    const response = await fetch(`/api/produtos/${id}`, {
+                        method: 'DELETE'
+                    });
+                    if(!response.ok) throw new Error('Erro ao excluir');
+                    renderAdminProducts();
+                } catch (error) {
                     console.error(error);
-                    return;
+                    alert('Erro ao excluir produto.');
                 }
-                renderAdminProducts();
             }
         }
 
