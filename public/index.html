@@ -192,7 +192,7 @@
         </div>
     </div>
 
-    <!-- Script de Slideshow e Produtos -->
+    <!-- Script de Slideshow, Produtos e Carrinho Persistente -->
     <script>
         // Slideshow automático a cada 3 segundos
         let currentSlideIndex = 0;
@@ -232,13 +232,13 @@
             { id: 9, name: "Suco Natural de Laranja 500ml", category: "bebidas", price: 9.00, desc: "Feito com frutas frescas espreitadas na hora.", image: "https://images.unsplash.com/photo-1613478223719-2ab802602423?auto=format&fit=crop&w=600&q=80" }
         ];
 
-        let cart = [];
+        // Carrega o carrinho salvo no navegador (localStorage) ao abrir a página
+        let cart = JSON.parse(localStorage.getItem('burger_cart')) || [];
+        updateCartUI(); // Atualiza o contador logo no início
 
         window.selectCategory = function(category) {
-            // Oculta o banner de slideshow e as categorias
             document.getElementById('hero-banner').classList.add('hidden');
             document.getElementById('view-categories').classList.add('hidden');
-            // Mostra os produtos
             document.getElementById('view-products').classList.remove('hidden');
             
             const titles = { lanches: 'Nossos Lanches Artesanais', almoco: 'Opções de Almoço', bebidas: 'Bebidas Geladas' };
@@ -270,7 +270,6 @@
         }
 
         window.backToCategories = function() {
-            // Mostra novamente o banner e as categorias, e oculta os produtos
             document.getElementById('hero-banner').classList.remove('hidden');
             document.getElementById('view-products').classList.add('hidden');
             document.getElementById('view-categories').classList.remove('hidden');
@@ -282,13 +281,20 @@
             const existing = cart.find(i => i.id === id);
             if(existing) existing.qty++;
             else cart.push({ ...item, qty: 1 });
+            
+            saveCart();
             updateCartUI();
-            openCart();
+            // Nota: O carrinho NÃO abre mais automaticamente aqui, apenas atualiza o contador no topo.
         }
 
         window.removeFromCart = function(id) {
             cart = cart.filter(i => i.id !== id);
+            saveCart();
             updateCartUI();
+        }
+
+        function saveCart() {
+            localStorage.setItem('burger_cart', JSON.stringify(cart));
         }
 
         function updateCartUI() {
@@ -335,6 +341,12 @@
             message += `%0A*Total:* R$ ${total.toFixed(2)}`;
             
             window.open(`https://wa.me/5599999999999?text=${message}`, '_blank');
+
+            // Limpa o carrinho e o armazenamento após finalizar o pedido
+            cart = [];
+            saveCart();
+            updateCartUI();
+            closeCart();
         }
     </script>
 </body>
