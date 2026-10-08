@@ -51,7 +51,7 @@
         </div>
     </header>
 
-    <!-- Banner Cinematográfico com Slideshow Automático (Aparece apenas na escolha de categorias) -->
+    <!-- Banner Cinematográfico com Slideshow Automático -->
     <section id="hero-banner" class="relative h-[320px] sm:h-[400px] overflow-hidden bg-slate-950 border-b border-slate-800">
         <!-- Slide 1: Lanche Gourmet -->
         <div class="hero-slide active flex items-center justify-center relative">
@@ -108,7 +108,7 @@
             <!-- Cards das 3 Categorias -->
             <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
                 <!-- Lanches -->
-                <div onclick="selectCategory('lanches')" class="group relative h-80 rounded-2xl overflow-hidden cursor-pointer shadow-2xl border border-slate-700/50 hover:border-red-500 transition-all duration-300">
+                <div onclick="selectCategory('Lanches')" class="group relative h-80 rounded-2xl overflow-hidden cursor-pointer shadow-2xl border border-slate-700/50 hover:border-red-500 transition-all duration-300">
                     <img src="https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=800&q=80" alt="Lanches" class="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
                     <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent"></div>
                     <div class="absolute bottom-0 left-0 right-0 p-6 flex flex-col justify-end">
@@ -121,7 +121,7 @@
                 </div>
 
                 <!-- Almoço -->
-                <div onclick="selectCategory('almoco')" class="group relative h-80 rounded-2xl overflow-hidden cursor-pointer shadow-2xl border border-slate-700/50 hover:border-amber-500 transition-all duration-300">
+                <div onclick="selectCategory('Almoço')" class="group relative h-80 rounded-2xl overflow-hidden cursor-pointer shadow-2xl border border-slate-700/50 hover:border-amber-500 transition-all duration-300">
                     <img src="https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=800&q=80" alt="Almoço" class="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
                     <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent"></div>
                     <div class="absolute bottom-0 left-0 right-0 p-6 flex flex-col justify-end">
@@ -134,7 +134,7 @@
                 </div>
 
                 <!-- Bebidas -->
-                <div onclick="selectCategory('bebidas')" class="group relative h-80 rounded-2xl overflow-hidden cursor-pointer shadow-2xl border border-slate-700/50 hover:border-emerald-500 transition-all duration-300">
+                <div onclick="selectCategory('Bebidas')" class="group relative h-80 rounded-2xl overflow-hidden cursor-pointer shadow-2xl border border-slate-700/50 hover:border-emerald-500 transition-all duration-300">
                     <img src="https://images.unsplash.com/photo-1622483767028-3f66f32aef97?auto=format&fit=crop&w=800&q=80" alt="Bebidas" class="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
                     <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent"></div>
                     <div class="absolute bottom-0 left-0 right-0 p-6 flex flex-col justify-end">
@@ -194,7 +194,7 @@
         </div>
     </div>
 
-    <!-- Script de Slideshow, Produtos e Carrinho Persistente -->
+    <!-- Script de Slideshow, Busca na API e Carrinho -->
     <script>
         // Carrega configurações de Nome e Logo da Loja ao iniciar
         window.addEventListener('DOMContentLoaded', () => {
@@ -218,6 +218,8 @@
                 if(iconEl) iconEl.classList.add('hidden');
                 if(containerEl) containerEl.classList.remove('bg-gradient-to-tr', 'from-red-600', 'to-amber-500');
             }
+
+            loadProducts();
         });
 
         // Slideshow automático a cada 3 segundos
@@ -245,49 +247,54 @@
             showSlide(index);
         }
 
-        // Dados do Cardápio
-        const defaultMenuItems = [
-            { id: 1, name: "Burger Artesanal Supremo", category: "lanches", price: 32.90, desc: "Pão brioche, carne Angus 180g, cheddar empanado, bacon crocante e molho especial.", image: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=600&q=80" },
-            { id: 2, name: "Double Smash Bacon", category: "lanches", price: 28.90, desc: "Pão tostado na manteiga, dois burgers de 90g, duplo cheddar e bacon em tiras.", image: "https://images.unsplash.com/photo-1586190848861-99aa4a171e90?auto=format&fit=crop&w=600&q=80" },
-            { id: 3, name: "X-Salada da Casa", category: "lanches", price: 22.00, desc: "Pão tradicional, hambúrguer suculento, queijo prato, alface fresca e tomate.", image: "https://images.unsplash.com/photo-1572802419362-74b0d5cac0f6?auto=format&fit=crop&w=600&q=80" },
-            { id: 4, name: "Prato Executivo de Contrafilé", category: "almoco", price: 39.90, desc: "Contrafilé grelhado, arroz branco soltinho, feijão carioca, fritas e salada.", image: "https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=600&q=80" },
-            { id: 5, name: "Frango Grelhado com Legumes", category: "almoco", price: 32.50, desc: "Filé de frango suculento acompanhado de mix de legumes na manteiga e arroz integral.", image: "https://images.unsplash.com/photo-1604908176997-125f2596f378?auto=format&fit=crop&w=600&q=80" },
-            { id: 6, name: "Parmegiana de Frango (Individual)", category: "almoco", price: 36.90, desc: "Filé empanado coberto com molho de tomate artesanal, muito queijo e arroz com fritas.", image: "https://images.unsplash.com/photo-1633964913295-ceb43826e7c9?auto=format&fit=crop&w=600&q=80" },
-            { id: 7, name: "Coca-Cola Original 350ml", category: "bebidas", price: 6.50, desc: "Lata gelada trincando para acompanhar sua refeição.", image: "https://images.unsplash.com/photo-1622483767028-3f66f32aef97?auto=format&fit=crop&w=600&q=80" },
-            { id: 8, name: "Coca-Cola Zero 2 Litros", category: "bebidas", price: 14.00, desc: "Ideal para compartilhar com a família ou amigos.", image: "https://images.unsplash.com/photo-1554866585-cd94860890b7?auto=format&fit=crop&w=600&q=80" },
-            { id: 9, name: "Suco Natural de Laranja 500ml", category: "bebidas", price: 9.00, desc: "Feito com frutas frescas espreitadas na hora.", image: "https://images.unsplash.com/photo-1613478223719-2ab802602423?auto=format&fit=crop&w=600&q=80" }
-        ];
-
-        let menuItems = JSON.parse(localStorage.getItem('burger_menu_items'));
-        if(!menuItems) {
-            menuItems = defaultMenuItems;
-            localStorage.setItem('burger_menu_items', JSON.stringify(menuItems));
-        }
-
+        let menuItems = [];
         let cart = JSON.parse(localStorage.getItem('burger_cart')) || [];
         updateCartUI();
 
-        window.selectCategory = function(category) {
+        // Busca produtos diretamente do servidor / Supabase
+        async function loadProducts() {
+            try {
+                const response = await fetch('/api/produtos');
+                const data = await response.json();
+                if(Array.isArray(data)) {
+                    menuItems = data;
+                }
+            } catch (err) {
+                console.error('Erro ao carregar produtos do servidor:', err);
+            }
+        }
+
+        window.selectCategory = async function(category) {
+            // Garante que pega os dados mais recentes do servidor antes de filtrar
+            await loadProducts();
+
             document.getElementById('hero-banner').classList.add('hidden');
             document.getElementById('view-categories').classList.add('hidden');
             document.getElementById('view-products').classList.remove('hidden');
             
-            const titles = { lanches: 'Nossos Lanches Artesanais', almoco: 'Opções de Almoço', bebidas: 'Bebidas Geladas' };
+            const titles = { Lanches: 'Nossos Lanches Artesanais', Almoço: 'Opções de Almoço', Bebidas: 'Bebidas Geladas' };
             document.getElementById('category-title').textContent = titles[category] || category;
 
             const grid = document.getElementById('products-grid');
-            const filtered = menuItems.filter(i => i.category === category);
+            // Compara ignorando maiúsculas/minúsculas para maior compatibilidade
+            const filtered = menuItems.filter(i => i.category && i.category.toLowerCase() === category.toLowerCase());
+
+            if(filtered.length === 0) {
+                grid.innerHTML = `<p class="text-slate-400 col-span-full text-center py-10">Nenhum produto cadastrado nesta categoria ainda.</p>`;
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                return;
+            }
 
             grid.innerHTML = filtered.map(item => `
                 <div class="bg-slate-800/60 border border-slate-700/60 rounded-2xl overflow-hidden shadow-xl flex flex-col justify-between group">
-                    <div class="relative h-48 overflow-hidden">
-                        <img src="${item.image}" alt="${item.name}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
-                        <span class="absolute top-3 right-3 bg-slate-900/80 text-white font-bold px-3 py-1 rounded-full text-sm border border-slate-700">R$ ${item.price.toFixed(2).replace('.', ',')}</span>
+                    <div class="relative h-48 overflow-hidden bg-slate-900">
+                        <img src="${item.image || 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=600&q=80'}" alt="${item.name}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                        <span class="absolute top-3 right-3 bg-slate-900/80 text-white font-bold px-3 py-1 rounded-full text-sm border border-slate-700">R$ ${Number(item.price || 0).toFixed(2).replace('.', ',')}</span>
                     </div>
                     <div class="p-6 flex flex-col flex-grow justify-between">
                         <div>
                             <h3 class="text-lg font-bold text-white mb-2">${item.name}</h3>
-                            <p class="text-slate-400 text-sm mb-4">${item.desc}</p>
+                            <p class="text-slate-400 text-sm mb-4">${item.desc || ''}</p>
                         </div>
                         <button onclick="addToCart(${item.id})" class="w-full bg-slate-700 hover:bg-red-600 text-white font-semibold py-2.5 rounded-xl transition-colors flex items-center justify-center space-x-2">
                             <i class="fa-solid fa-plus text-xs"></i>
@@ -308,17 +315,18 @@
         }
 
         window.addToCart = function(id) {
-            const item = menuItems.find(i => i.id === id);
-            const existing = cart.find(i => i.id === id);
+            const item = menuItems.find(i => i.id == id);
+            if(!item) return;
+            const existing = cart.find(i => i.id == id);
             if(existing) existing.qty++;
-            else cart.push({ ...item, qty: 1 });
+            else cart.push({ ...item, price: Number(item.price || 0), qty: 1 });
             
             saveCart();
             updateCartUI();
         }
 
         window.removeFromCart = function(id) {
-            cart = cart.filter(i => i.id !== id);
+            cart = cart.filter(i => i.id != id);
             saveCart();
             updateCartUI();
         }
@@ -342,7 +350,8 @@
 
             let total = 0;
             itemsEl.innerHTML = cart.map(item => {
-                total += item.price * item.qty;
+                let itemTotal = item.price * item.qty;
+                total += itemTotal;
                 return `
                     <div class="flex items-center justify-between bg-slate-800/40 p-3 rounded-xl border border-slate-700/50">
                         <div>
