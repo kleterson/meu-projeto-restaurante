@@ -194,7 +194,7 @@
         </div>
     </div>
 
-    <!-- Script de Slideshow, Busca na API e Carrinho -->
+    <!-- Script de Slideshow, Busca Direta na API e Carrinho -->
     <script>
         // Carrega configurações de Nome e Logo da Loja ao iniciar
         window.addEventListener('DOMContentLoaded', () => {
@@ -251,7 +251,7 @@
         let cart = JSON.parse(localStorage.getItem('burger_cart')) || [];
         updateCartUI();
 
-        // Busca produtos diretamente do servidor / Supabase
+        // Busca produtos diretamente do servidor / Supabase (sem depender de cache local)
         async function loadProducts() {
             try {
                 const response = await fetch('/api/produtos');
@@ -265,7 +265,7 @@
         }
 
         window.selectCategory = async function(category) {
-            // Garante que pega os dados mais recentes do servidor antes de filtrar
+            // Consulta o servidor na hora do clique para garantir dados 100% atualizados
             await loadProducts();
 
             document.getElementById('hero-banner').classList.add('hidden');
@@ -276,7 +276,6 @@
             document.getElementById('category-title').textContent = titles[category] || category;
 
             const grid = document.getElementById('products-grid');
-            // Compara ignorando maiúsculas/minúsculas para maior compatibilidade
             const filtered = menuItems.filter(i => i.category && i.category.toLowerCase() === category.toLowerCase());
 
             if(filtered.length === 0) {
