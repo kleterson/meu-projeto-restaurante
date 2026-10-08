@@ -42,13 +42,16 @@ app.post('/api/pedidos', async (req, res) => {
     }
 });
 
-// Rota principal servindo o index.html dentro da pasta 'public'
-app.get(/.*/, (req, res) => {
+// Serve todos os arquivos da pasta 'public' automaticamente (incluindo admin.html)
+app.use(express.static(path.join(__dirname, 'public')));
+
+// Rota padrão caso acesse a raiz
+app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-app.get(/.*/, (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'cardapio.html'));
+app.listen(PORT, () => {
+    console.log(`Servidor rodando na porta ${PORT}`);
 });
 
 
