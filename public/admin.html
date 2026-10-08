@@ -31,7 +31,7 @@
                 <h2 class="text-2xl font-black text-white">Painel Administrativo</h2>
                 <p class="text-slate-400 text-sm mt-1">Entre com suas credenciais para gerenciar o cardápio</p>
             </div>
-            <form onsubmit="handleLogin(event)" class="space-y-4">
+            <form onsubmit="saveProduct(event); return false;" class="space-y-4">
                 <div>
                     <label class="block text-xs font-semibold text-slate-400 mb-1 uppercase tracking-wider">Usuário</label>
                     <input type="text" id="user" required class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-red-500" placeholder="admin">

@@ -25,19 +25,36 @@ app.use(express.static(path.join(__dirname)));
 /**
  * STREAMING_CHUNK:Defining backend routes for orders and menu management...
  */
+// Rota para buscar todos os produtos cadastrados
+app.get('/api/produtos', async (req, res) => {
+    try {
+        const { data, error } = await supabase
+            .from('products')
+            .select('*')
+            .order('id', { ascending: false });
+
+        if (error) {
+            console.error('Erro ao buscar produtos no Supabase:', error.message);
+            return res.status(400).json({ success: false, error: error.message });
+        }
+
+        res.status(200).json(data || []);
+    } catch (err) {
+        res.status(500).json({ success: false, error: 'Erro interno no servidor' });
+    }
+});
+
 // Rota para salvar pedidos enviados pelo site no Supabase
 app.post('/api/pedidos', async (req, res) => {
     try {
         const { cliente, itens, total } = req.body;
         
-        // Exemplo de inserção na tabela 'pedidos' do Supabase
         const { data, error } = await supabase
             .from('pedidos')
             .insert([{ cliente, itens, total, status: 'pendente' }]);
 
         if (error) {
             console.error('Erro ao salvar no Supabase:', error.message);
-            // Retorna sucesso simulado para demonstração caso a tabela não esteja criada ainda
             return res.status(200).json({ success: true, message: 'Pedido registrado com sucesso (Modo Local/Simulado)' });
         }
 
@@ -47,14 +64,14 @@ app.post('/api/pedidos', async (req, res) => {
     }
 });
 
-// Rota para salvar produtos diretamente na tabela 'products' do Supabase
+// Rota para salvar produtos diretamente na tabela 'products' do Supabase (Com todos os campos)
 app.post('/api/produtos', async (req, res) => {
     try {
-        const { store_id, name, category } = req.body;
+        const { store_id, name, category, price, image, desc } = req.body;
         
         const { data, error } = await supabase
             .from('products')
-            .insert([{ store_id, name, category }]);
+            .insert([{ store_id, name, category, price, image, desc }]);
 
         if (error) {
             console.error('Erro ao salvar produto no Supabase:', error.message);
@@ -62,6 +79,49 @@ app.post('/api/produtos', async (req, res) => {
         }
 
         res.status(200).json({ success: true, data });
+    } catch (err) {
+        res.status(500).json({ success: false, error: 'Erro interno no servidor' });
+    }
+});
+
+// Rota para atualizar produtos existentes
+app.put('/api/produtos/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { name, category, price, image, desc } = req.body;
+
+        const { data, error } = await supabase
+            .from('products')
+            .update({ name, category, price, image, desc })
+            .eq('id', id);
+
+        if (error) {
+            console.error('Erro ao atualizar produto:', error.message);
+            return res.status(400).json({ success: false, error: error.message });
+        }
+
+        res.status(200).json({ success: true, data });
+    } catch (err) {
+        res.status(500).json({ success: false, error: 'Erro interno no servidor' });
+    }
+});
+
+// Rota para excluir produtos
+app.delete('/api/produtos/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const { error } = await supabase
+            .from('products')
+            .delete()
+            .eq('id', id);
+
+        if (error) {
+            console.error('Erro ao excluir produto:', error.message);
+            return res.status(400).json({ success: false, error: error.message });
+        }
+
+        res.status(200).json({ success: true });
     } catch (err) {
         res.status(500).json({ success: false, error: 'Erro interno no servidor' });
     }
