@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Painel Admin | Configurações</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Script do Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
         tailwind.config = {
             darkMode: 'class',
@@ -56,7 +58,6 @@
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
                 <div class="flex items-center space-x-3">
                     <div id="header-logo-container" class="w-11 h-11 rounded-xl overflow-hidden flex items-center justify-center bg-gradient-to-tr from-red-600 to-amber-500 shadow-md">
-                        <!-- Ícone ou Imagem dinâmica -->
                         <i id="header-logo-icon" class="fa-solid fa-utensils text-xl text-white"></i>
                         <img id="header-logo-img" src="" alt="" class="w-full h-full object-cover hidden">
                     </div>
@@ -65,7 +66,8 @@
                         <span class="block text-xs text-red-400">Painel de Controle</span>
                     </div>
                 </div>
-                <div class="flex items-center space-x-3">
+
+                <div class="hidden md:flex items-center space-x-3">
                     <a href="index.html" target="_blank" class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-4 py-2.5 rounded-xl text-sm font-semibold border border-slate-700">
                         <i class="fa-solid fa-eye mr-2"></i> Ver Cardápio
                     </a>
@@ -78,6 +80,33 @@
                     <button onclick="logout()" class="bg-red-500/10 hover:bg-red-500/20 text-red-400 px-4 py-2.5 rounded-xl text-sm font-semibold border border-red-500/20">
                         <i class="fa-solid fa-right-from-bracket mr-2"></i> Sair
                     </button>
+                </div>
+
+                <div class="md:hidden relative">
+                    <button onclick="toggleMobileMenu()" class="bg-slate-800 hover:bg-slate-700 text-white px-4 py-2.5 rounded-xl text-sm font-semibold border border-slate-700 flex items-center space-x-2">
+                        <i class="fa-solid fa-bars text-red-500 text-lg"></i>
+                        <span>Menu</span>
+                    </button>
+                    
+                    <div id="mobile-dropdown-menu" class="hidden absolute right-0 mt-2 w-56 bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl py-2 z-50">
+                        <a href="index.html" target="_blank" class="flex items-center space-x-3 px-4 py-3 text-sm text-slate-300 hover:bg-slate-800 transition-colors">
+                            <i class="fa-solid fa-eye text-slate-400 w-5"></i>
+                            <span>Ver Cardápio</span>
+                        </a>
+                        <button onclick="openConfigModal(); toggleMobileMenu();" class="w-full flex items-center space-x-3 px-4 py-3 text-sm text-cyan-400 hover:bg-slate-800 transition-colors text-left">
+                            <i class="fa-solid fa-gear w-5"></i>
+                            <span>Configurações</span>
+                        </button>
+                        <button onclick="openChangePasswordModal(); toggleMobileMenu();" class="w-full flex items-center space-x-3 px-4 py-3 text-sm text-amber-400 hover:bg-slate-800 transition-colors text-left">
+                            <i class="fa-solid fa-key w-5"></i>
+                            <span>Alterar Senha</span>
+                        </button>
+                        <div class="border-t border-slate-800 my-1"></div>
+                        <button onclick="logout()" class="w-full flex items-center space-x-3 px-4 py-3 text-sm text-red-400 hover:bg-red-500/10 transition-colors text-left">
+                            <i class="fa-solid fa-right-from-bracket w-5"></i>
+                            <span>Sair</span>
+                        </button>
+                    </div>
                 </div>
             </div>
         </header>
@@ -94,7 +123,6 @@
                 </button>
             </div>
 
-            <!-- BARRA DE PESQUISA -->
             <div class="mb-6 relative">
                 <span class="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none text-slate-500">
                     <i class="fa-solid fa-magnifying-glass"></i>
@@ -164,7 +192,7 @@
         </div>
     </div>
 
-    <!-- MODAL DE CONFIGURAÇÕES (LOGO E NOME) -->
+    <!-- MODAL DE CONFIGURAÇÕES -->
     <div id="config-modal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
         <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-md p-6 shadow-2xl">
             <div class="flex justify-between items-center pb-4 border-b border-slate-800 mb-4">
@@ -214,17 +242,10 @@
     </div>
 
     <script>
-        const defaultMenuItems = [
-            { id: 1, name: "Burger Artesanal Supremo", category: "lanches", price: 32.90, desc: "Pão brioche, carne Angus 180g, cheddar empanado, bacon crocante e molho especial.", image: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=600&q=80" },
-            { id: 2, name: "Double Smash Bacon", category: "lanches", price: 28.90, desc: "Pão tostado na manteiga, dois burgers de 90g, duplo cheddar e bacon em tiras.", image: "https://images.unsplash.com/photo-1586190848861-99aa4a171e90?auto=format&fit=crop&w=600&q=80" },
-            { id: 3, name: "X-Salada da Casa", category: "lanches", price: 22.00, desc: "Pão tradicional, hambúrguer suculento, queijo prato, alface fresca e tomate.", image: "https://images.unsplash.com/photo-1572802419362-74b0d5cac0f6?auto=format&fit=crop&w=600&q=80" },
-            { id: 4, name: "Prato Executivo de Contrafilé", category: "almoco", price: 39.90, desc: "Contrafilé grelhado, arroz branco soltinho, feijão carioca, fritas e salada.", image: "https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=600&q=80" },
-            { id: 5, name: "Frango Grelhado com Legumes", category: "almoco", price: 32.50, desc: "Filé de frango suculento acompanhado de mix de legumes na manteiga e arroz integral.", image: "https://images.unsplash.com/photo-1604908176997-125f2596f378?auto=format&fit=crop&w=600&q=80" },
-            { id: 6, name: "Parmegiana de Frango (Individual)", category: "almoco", price: 36.90, desc: "Filé empanado coberto com molho de tomate artesanal, muito queijo e arroz com fritas.", image: "https://images.unsplash.com/photo-1633964913295-ceb43826e7c9?auto=format&fit=crop&w=600&q=80" },
-            { id: 7, name: "Coca-Cola Original 350ml", category: "bebidas", price: 6.50, desc: "Lata gelada trincando para acompanhar sua refeição.", image: "https://images.unsplash.com/photo-1622483767028-3f66f32aef97?auto=format&fit=crop&w=600&q=80" },
-            { id: 8, name: "Coca-Cola Zero 2 Litros", category: "bebidas", price: 14.00, desc: "Ideal para compartilhar com a família ou amigos.", image: "https://images.unsplash.com/photo-1554866585-cd94860890b7?auto=format&fit=crop&w=600&q=80" },
-            { id: 9, name: "Suco Natural de Laranja 500ml", category: "bebidas", price: 9.00, desc: "Feito com frutas frescas espreitadas na hora.", image: "https://images.unsplash.com/photo-1613478223719-2ab802602423?auto=format&fit=crop&w=600&q=80" }
-        ];
+        // CONFIGURAÇÃO DO SUPABASE (Insira suas chaves aqui)
+        const SUPABASE_URL = 'SUA_URL_DO_SUPABASE';
+        const SUPABASE_ANON_KEY = 'SUA_CHAVE_ANON_SUPABASE';
+        const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         window.addEventListener('DOMContentLoaded', () => {
             loadBrandConfig();
@@ -233,11 +254,23 @@
             }
         });
 
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobile-dropdown-menu');
+            menu.classList.toggle('hidden');
+        }
+
+        window.addEventListener('click', function(e) {
+            const menu = document.getElementById('mobile-dropdown-menu');
+            const button = document.querySelector('.md\\:hidden.relative button');
+            if (menu && button && !menu.contains(e.target) && !button.contains(e.target)) {
+                menu.classList.add('hidden');
+            }
+        });
+
         function loadBrandConfig() {
             const storeName = localStorage.getItem('store_name') || 'Burger & Cia';
             const storeLogo = localStorage.getItem('store_logo') || '';
 
-            // Atualiza o painel atual
             const brandEl = document.getElementById('header-brand-name');
             if(brandEl) brandEl.textContent = storeName;
 
@@ -286,21 +319,18 @@
             renderAdminProducts();
         }
 
-        function getMenuItems() {
-            let items = localStorage.getItem('burger_menu_items');
-            if(!items) {
-                items = JSON.stringify(defaultMenuItems);
-                localStorage.setItem('burger_menu_items', items);
+        // FUNÇÕES INTEGRADAS COM O SUPABASE
+        async function getMenuItems() {
+            const { data, error } = await _supabase.from('produtos').select('*').order('id', { ascending: true });
+            if (error) {
+                console.error('Erro ao buscar produtos:', error);
+                return [];
             }
-            return JSON.parse(items);
+            return data || [];
         }
 
-        function saveMenuItems(items) {
-            localStorage.setItem('burger_menu_items', JSON.stringify(items));
-        }
-
-        function renderAdminProducts() {
-            let products = getMenuItems();
+        async function renderAdminProducts() {
+            let products = await getMenuItems();
             const searchVal = document.getElementById('search-input').value.toLowerCase().trim();
 
             if(searchVal !== '') {
@@ -321,7 +351,7 @@
                         <span class="font-bold text-white">${item.name}</span>
                     </td>
                     <td class="p-4 capitalize text-slate-300"><span class="bg-slate-800 px-2.5 py-1 rounded-lg text-xs border border-slate-700">${item.category}</span></td>
-                    <td class="p-4 font-semibold text-emerald-400">R$ ${item.price.toFixed(2).replace('.', ',')}</td>
+                    <td class="p-4 font-semibold text-emerald-400">R$ ${Number(item.price).toFixed(2).replace('.', ',')}</td>
                     <td class="p-4 text-slate-400 max-w-xs truncate">${item.desc}</td>
                     <td class="p-4 text-right space-x-2">
                         <button onclick="openProductModal(${item.id})" class="bg-slate-800 hover:bg-slate-700 text-amber-400 p-2 rounded-xl border border-slate-700"><i class="fa-solid fa-pen text-xs"></i></button>
@@ -331,18 +361,20 @@
             `).join('');
         }
 
-        function openProductModal(id = null) {
+        async function openProductModal(id = null) {
             document.getElementById('product-modal').classList.remove('hidden');
             if(id) {
                 document.getElementById('modal-title').textContent = 'Editar Produto';
-                const products = getMenuItems();
+                const products = await getMenuItems();
                 const p = products.find(i => i.id === id);
-                document.getElementById('prod-id').value = p.id;
-                document.getElementById('prod-name').value = p.name;
-                document.getElementById('prod-category').value = p.category;
-                document.getElementById('prod-price').value = p.price;
-                document.getElementById('prod-image').value = p.image;
-                document.getElementById('prod-desc').value = p.desc;
+                if(p) {
+                    document.getElementById('prod-id').value = p.id;
+                    document.getElementById('prod-name').value = p.name;
+                    document.getElementById('prod-category').value = p.category;
+                    document.getElementById('prod-price').value = p.price;
+                    document.getElementById('prod-image').value = p.image;
+                    document.getElementById('prod-desc').value = p.desc;
+                }
             } else {
                 document.getElementById('modal-title').textContent = 'Novo Produto';
                 document.getElementById('prod-id').value = '';
@@ -354,7 +386,7 @@
             document.getElementById('product-modal').classList.add('hidden');
         }
 
-        function saveProduct(e) {
+        async function saveProduct(e) {
             e.preventDefault();
             const id = document.getElementById('prod-id').value;
             const name = document.getElementById('prod-name').value;
@@ -362,32 +394,51 @@
             const price = parseFloat(document.getElementById('prod-price').value);
             const image = document.getElementById('prod-image').value;
             const desc = document.getElementById('prod-desc').value;
-
-            let products = getMenuItems();
+            
+            // Defina o store_id da sua loja (se usar fixo, ex: 1, ou pegue de alguma variável/localStorage)
+            const storeId = 1; // Substitua pelo ID da loja correspondente, se necessário
 
             if(id) {
-                products = products.map(i => i.id == id ? { id: Number(id), name, category, price, image, desc } : i);
+                // Atualizar produto existente
+                const { error } = await _supabase
+                    .from('produtos')
+                    .update({ name, category, price, image, desc })
+                    .eq('id', id);
+
+                if(error) {
+                    alert('Erro ao atualizar produto.');
+                    console.error(error);
+                    return;
+                }
             } else {
-                const newId = products.length > 0 ? Math.max(...products.map(i => i.id)) + 1 : 1;
-                products.push({ id: newId, name, category, price, image, desc });
+                // Inserir novo produto incluindo o store_id
+                const { error } = await _supabase
+                    .from('produtos')
+                    .insert([{ store_id: storeId, name, category, price, image, desc }]);
+
+                if(error) {
+                    alert('Erro ao cadastrar produto.');
+                    console.error(error);
+                    return;
+                }
             }
 
-            saveMenuItems(products);
             closeProductModal();
             renderAdminProducts();
             alert('Produto salvo com sucesso!');
         }
-
-        function deleteProduct(id) {
+        async function deleteProduct(id) {
             if(confirm('Tem certeza que deseja excluir este produto?')) {
-                let products = getMenuItems();
-                products = products.filter(i => i.id !== id);
-                saveMenuItems(products);
+                const { error } = await _supabase.from('produtos').delete().eq('id', id);
+                if(error) {
+                    alert('Erro ao excluir produto.');
+                    console.error(error);
+                    return;
+                }
                 renderAdminProducts();
             }
         }
 
-        // Configurações de Nome e Logo da Loja
         function openConfigModal() {
             document.getElementById('config-modal').classList.remove('hidden');
             document.getElementById('config-name').value = localStorage.getItem('store_name') || 'Burger & Cia';
@@ -411,7 +462,6 @@
             alert('Configurações salvas com sucesso!');
         }
 
-        // Funções do Modal de Alterar Senha
         function openChangePasswordModal() {
             document.getElementById('password-modal').classList.remove('hidden');
             document.getElementById('new-pass').value = '';
