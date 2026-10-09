@@ -220,6 +220,39 @@ app.delete('/api/bairros/:id', async (req, res) => {
     }
 });
 
+// --- ROTAS DE ADICIONAIS (SUPABASE) ---
+app.get('/api/adicionais', async (req, res) => {
+    try {
+        const { data, error } = await supabase.from('adicionais').select('*').order('id', { ascending: true });
+        if (error) throw error;
+        res.json(data || []);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+app.post('/api/adicionais', async (req, res) => {
+    try {
+        const { nome, preco, categoria } = req.body;
+        const { data, error } = await supabase.from('adicionais').insert([{ nome, preco, categoria }]).select();
+        if (error) throw error;
+        res.json(data[0]);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+app.delete('/api/adicionais/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { error } = await supabase.from('adicionais').delete().eq('id', id);
+        if (error) throw error;
+        res.json({ success: true });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
 // --- ROTAS DE CONFIGURAÇÕES (WHATSAPP / NOME / LOGO) ---
 app.get('/api/configuracoes', async (req, res) => {
     try {

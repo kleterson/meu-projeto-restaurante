@@ -65,6 +65,7 @@
                     </div>
                 </div>
 
+                <!-- Menu Desktop -->
                 <div class="hidden md:flex items-center space-x-3">
                     <a href="index.html" target="_blank" class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-4 py-2.5 rounded-xl text-sm font-semibold border border-slate-700">
                         <i class="fa-solid fa-eye mr-2"></i> Ver Cardápio
@@ -75,9 +76,11 @@
                     <button onclick="openViewCategoriesModal()" class="bg-slate-800 hover:bg-slate-700 text-emerald-400 px-4 py-2.5 rounded-xl text-sm font-semibold border border-slate-700">
                         <i class="fa-solid fa-folder-open mr-2"></i> Categorias
                     </button>
-                    <!-- Botão de Bairros -->
                     <button onclick="openBairrosModal()" class="bg-slate-800 hover:bg-slate-700 text-amber-500 px-4 py-2.5 rounded-xl text-sm font-semibold border border-slate-700">
                         <i class="fa-solid fa-map-location-dot mr-2"></i> Bairros
+                    </button>
+                    <button onclick="openAdicionaisModal()" class="bg-slate-800 hover:bg-slate-700 text-rose-400 px-4 py-2.5 rounded-xl text-sm font-semibold border border-slate-700">
+                        <i class="fa-solid fa-plus-circle mr-2"></i> Adicionais
                     </button>
                     <button onclick="openConfigModal()" class="bg-slate-800 hover:bg-slate-700 text-cyan-400 px-4 py-2.5 rounded-xl text-sm font-semibold border border-slate-700">
                         <i class="fa-solid fa-gear mr-2"></i> Configurações
@@ -90,46 +93,69 @@
                     </button>
                 </div>
 
-                <div class="md:hidden relative">
-                    <button onclick="toggleMobileMenu()" class="bg-slate-800 hover:bg-slate-700 text-white px-4 py-2.5 rounded-xl text-sm font-semibold border border-slate-700 flex items-center space-x-2">
-                        <i class="fa-solid fa-bars text-red-500 text-lg"></i>
-                        <span>Menu</span>
+                <!-- Botão Menu Mobile -->
+                <div class="md:hidden">
+                    <button onclick="toggleMobileMenu()" class="bg-slate-800 hover:bg-slate-700 text-white p-3 rounded-xl text-sm font-semibold border border-slate-700 flex items-center justify-center">
+                        <i class="fa-solid fa-bars text-red-500 text-xl"></i>
                     </button>
-                    
-                    <div id="mobile-dropdown-menu" class="hidden absolute right-0 mt-2 w-56 bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl py-2 z-50">
-                        <a href="index.html" target="_blank" class="flex items-center space-x-3 px-4 py-3 text-sm text-slate-300 hover:bg-slate-800 transition-colors">
-                            <i class="fa-solid fa-eye text-slate-400 w-5"></i>
-                            <span>Ver Cardápio</span>
-                        </a>
-                        <button onclick="openBannerModal(); toggleMobileMenu();" class="w-full flex items-center space-x-3 px-4 py-3 text-sm text-purple-400 hover:bg-slate-800 transition-colors text-left">
-                            <i class="fa-solid fa-images w-5"></i>
-                            <span>Banners</span>
-                        </button>
-                        <button onclick="openViewCategoriesModal(); toggleMobileMenu();" class="w-full flex items-center space-x-3 px-4 py-3 text-sm text-emerald-400 hover:bg-slate-800 transition-colors text-left">
-                            <i class="fa-solid fa-folder-open w-5"></i>
-                            <span>Categorias</span>
-                        </button>
-                        <button onclick="openBairrosModal(); toggleMobileMenu();" class="w-full flex items-center space-x-3 px-4 py-3 text-sm text-amber-500 hover:bg-slate-800 transition-colors text-left">
-                            <i class="fa-solid fa-map-location-dot w-5"></i>
-                            <span>Bairros</span>
-                        </button>
-                        <button onclick="openConfigModal(); toggleMobileMenu();" class="w-full flex items-center space-x-3 px-4 py-3 text-sm text-cyan-400 hover:bg-slate-800 transition-colors text-left">
-                            <i class="fa-solid fa-gear w-5"></i>
-                            <span>Configurações</span>
-                        </button>
-                        <button onclick="openChangePasswordModal(); toggleMobileMenu();" class="w-full flex items-center space-x-3 px-4 py-3 text-sm text-amber-400 hover:bg-slate-800 transition-colors text-left">
-                            <i class="fa-solid fa-key w-5"></i>
-                            <span>Alterar Senha</span>
-                        </button>
-                        <div class="border-t border-slate-800 my-1"></div>
-                        <button onclick="logout()" class="w-full flex items-center space-x-3 px-4 py-3 text-sm text-red-400 hover:bg-red-500/10 transition-colors text-left">
-                            <i class="fa-solid fa-right-from-bracket w-5"></i>
-                            <span>Sair</span>
-                        </button>
-                    </div>
                 </div>
             </div>
         </header>
+
+        <!-- Menu Lateral Esquerdo (Sidebar Mobile Drawer) -->
+        <div id="mobile-sidebar" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden transition-all duration-300">
+            <div id="mobile-sidebar-content" class="absolute top-0 left-0 bottom-0 w-72 bg-slate-900 border-r border-slate-800 p-6 flex flex-col justify-between shadow-2xl transform -translate-x-full transition-transform duration-300">
+                <div>
+                    <div class="flex items-center justify-between pb-4 border-b border-slate-800 mb-6">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-9 h-9 rounded-xl overflow-hidden flex items-center justify-center bg-gradient-to-tr from-red-600 to-amber-500 shadow-md">
+                                <i class="fa-solid fa-utensils text-white text-sm"></i>
+                            </div>
+                            <span class="text-base font-extrabold text-white">Menu Admin</span>
+                        </div>
+                        <button onclick="toggleMobileMenu()" class="text-slate-400 hover:text-white text-2xl">&times;</button>
+                    </div>
+
+                    <div class="space-y-2">
+                        <a href="index.html" target="_blank" class="flex items-center space-x-3 px-4 py-3 rounded-xl text-sm text-slate-300 hover:bg-slate-800 transition-colors">
+                            <i class="fa-solid fa-eye text-slate-400 w-5"></i>
+                            <span>Ver Cardápio</span>
+                        </a>
+                        <button onclick="openBannerModal(); toggleMobileMenu();" class="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm text-purple-400 hover:bg-slate-800 transition-colors text-left">
+                            <i class="fa-solid fa-images w-5"></i>
+                            <span>Banners</span>
+                        </button>
+                        <button onclick="openViewCategoriesModal(); toggleMobileMenu();" class="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm text-emerald-400 hover:bg-slate-800 transition-colors text-left">
+                            <i class="fa-solid fa-folder-open w-5"></i>
+                            <span>Categorias</span>
+                        </button>
+                        <button onclick="openBairrosModal(); toggleMobileMenu();" class="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm text-amber-500 hover:bg-slate-800 transition-colors text-left">
+                            <i class="fa-solid fa-map-location-dot w-5"></i>
+                            <span>Bairros</span>
+                        </button>
+                        <button onclick="openAdicionaisModal(); toggleMobileMenu();" class="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm text-rose-400 hover:bg-slate-800 transition-colors text-left">
+                            <i class="fa-solid fa-plus-circle w-5"></i>
+                            <span>Adicionais</span>
+                        </button>
+                        <button onclick="openConfigModal(); toggleMobileMenu();" class="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm text-cyan-400 hover:bg-slate-800 transition-colors text-left">
+                            <i class="fa-solid fa-gear w-5"></i>
+                            <span>Configurações</span>
+                        </button>
+                        <button onclick="openChangePasswordModal(); toggleMobileMenu();" class="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm text-amber-400 hover:bg-slate-800 transition-colors text-left">
+                            <i class="fa-solid fa-key w-5"></i>
+                            <span>Alterar Senha</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="pt-4 border-t border-slate-800">
+                    <button onclick="logout()" class="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm text-red-400 bg-red-500/10 hover:bg-red-500/20 transition-colors text-left">
+                        <i class="fa-solid fa-right-from-bracket w-5"></i>
+                        <span>Sair do Painel</span>
+                    </button>
+                </div>
+            </div>
+        </div>
 
         <main class="py-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full flex-grow">
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4 pb-6 border-b border-slate-800">
@@ -298,6 +324,46 @@
         </div>
     </div>
 
+    <!-- MODAL DE GERENCIAR ADICIONAIS POR CATEGORIA (SUPABASE) -->
+    <div id="adicionais-modal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center p-4 overflow-y-auto">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-lg p-6 shadow-2xl my-8 max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center pb-4 border-b border-slate-800 mb-4">
+                <h3 id="adicional-modal-title" class="text-xl font-bold text-white">Gerenciar Adicionais / Opcionais</h3>
+                <button onclick="closeAdicionaisModal()" class="text-slate-400 hover:text-white text-xl">&times;</button>
+            </div>
+            
+            <form onsubmit="saveAdicional(event)" class="space-y-4 mb-6 bg-slate-800/50 p-4 rounded-xl border border-slate-700">
+                <input type="hidden" id="adicional-id" value="">
+                <h4 id="adicional-form-heading" class="text-sm font-bold text-rose-400 uppercase tracking-wider">Adicionar Novo Adicional</h4>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-400 mb-1">Nome do Adicional</label>
+                    <input type="text" id="adicional-nome" required class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white" placeholder="Ex: Bacon Extra, Cheddar">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-400 mb-1">Preço Adicional (R$)</label>
+                    <input type="number" step="0.01" id="adicional-preco" required class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white" placeholder="Ex: 4.00">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-400 mb-1">Categoria Alvo</label>
+                    <select id="adicional-categoria" required class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white capitalize">
+                        <!-- Preenchido dinamicamente via JS -->
+                    </select>
+                </div>
+                <div class="flex space-x-2">
+                    <button type="submit" id="adicional-submit-btn" class="flex-1 bg-rose-600 hover:bg-rose-500 text-white font-bold py-2.5 rounded-xl shadow-lg text-sm transition-all">
+                        Salvar Adicional
+                    </button>
+                    <button type="button" id="adicional-cancel-edit" onclick="resetAdicionalForm()" class="hidden bg-slate-700 hover:bg-slate-600 text-slate-200 font-semibold px-4 py-2.5 rounded-xl text-sm">
+                        Cancelar
+                    </button>
+                </div>
+            </form>
+
+            <h4 class="text-sm font-bold text-slate-300 mb-3 uppercase tracking-wider">Adicionais Cadastrados</h4>
+            <div id="adicionais-list" class="space-y-3 max-h-60 overflow-y-auto"></div>
+        </div>
+    </div>
+
     <!-- MODAL DE CONFIGURAÇÕES -->
     <div id="config-modal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
         <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-md p-6 shadow-2xl">
@@ -430,17 +496,21 @@
         });
 
         function toggleMobileMenu() {
-            const menu = document.getElementById('mobile-dropdown-menu');
-            menu.classList.toggle('hidden');
-        }
-
-        window.addEventListener('click', function(e) {
-            const menu = document.getElementById('mobile-dropdown-menu');
-            const button = document.querySelector('.md\\:hidden.relative button');
-            if (menu && button && !menu.contains(e.target) && !button.contains(e.target)) {
-                menu.classList.add('hidden');
+            const sidebar = document.getElementById('mobile-sidebar');
+            const content = document.getElementById('mobile-sidebar-content');
+            
+            if (sidebar.classList.contains('hidden')) {
+                sidebar.classList.remove('hidden');
+                setTimeout(() => {
+                    content.classList.remove('-translate-x-full');
+                }, 10);
+            } else {
+                content.classList.add('-translate-x-full');
+                setTimeout(() => {
+                    sidebar.classList.add('hidden');
+                }, 300);
             }
-        });
+        }
 
         async function loadBrandConfig() {
             try {
@@ -923,6 +993,111 @@
         }
         // ==========================================
 
+        // ==========================================
+        // GERENCIAMENTO DE ADICIONAIS POR CATEGORIA (SUPABASE)
+        // ==========================================
+        async function openAdicionaisModal() {
+            document.getElementById('adicionais-modal').classList.remove('hidden');
+            resetAdicionalForm();
+            await loadCategoriasParaSelectAdicional();
+            loadAdminAdicionais();
+        }
+
+        function closeAdicionaisModal() {
+            document.getElementById('adicionais-modal').classList.add('hidden');
+        }
+
+        function resetAdicionalForm() {
+            document.getElementById('adicional-id').value = '';
+            document.getElementById('adicional-nome').value = '';
+            document.getElementById('adicional-preco').value = '';
+            document.getElementById('adicional-form-heading').textContent = 'Adicionar Novo Adicional';
+            document.getElementById('adicional-submit-btn').textContent = 'Salvar Adicional';
+            document.getElementById('adicional-cancel-edit').classList.add('hidden');
+        }
+
+        async function loadCategoriasParaSelectAdicional() {
+            try {
+                const res = await fetch(window.location.origin + '/api/categorias');
+                const categorias = await res.json();
+                const select = document.getElementById('adicional-categoria');
+                if(select && Array.isArray(categorias)) {
+                    select.innerHTML = `<option value="" disabled selected>Selecione a Categoria</option>` + 
+                        categorias.map(cat => `<option value="${cat.nome}">${cat.nome}</option>`).join('');
+                }
+            } catch(e) {
+                console.error('Erro ao carregar categorias para adicionais', e);
+            }
+        }
+
+        async function loadAdminAdicionais() {
+            try {
+                const res = await fetch(window.location.origin + '/api/adicionais');
+                const adicionais = await res.json();
+                const listEl = document.getElementById('adicionais-list');
+                
+                if(!Array.isArray(adicionais) || adicionais.length === 0) {
+                    listEl.innerHTML = `<p class="text-slate-500 text-xs text-center py-4">Nenhum adicional cadastrado.</p>`;
+                    return;
+                }
+
+                listEl.innerHTML = adicionais.map(ad => `
+                    <div class="flex items-center justify-between bg-slate-800 p-3 rounded-xl border border-slate-700">
+                        <div>
+                            <h5 class="text-xs font-bold text-white">${ad.nome} <span class="text-xs text-emerald-400 font-normal">(${ad.categoria || 'Geral'})</span></h5>
+                            <span class="text-[11px] text-rose-400 font-semibold">+ R$ ${Number(ad.preco).toFixed(2).replace('.', ',')}</span>
+                        </div>
+                        <button onclick="deleteAdicional(${ad.id})" class="bg-red-500/15 hover:bg-red-500/30 text-red-400 p-2 rounded-lg border border-red-500/20 text-xs transition-colors">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    </div>
+                `).join('');
+            } catch (err) {
+                console.error('Erro ao carregar adicionais:', err);
+            }
+        }
+
+        async function saveAdicional(e) {
+            e.preventDefault();
+            const nome = document.getElementById('adicional-nome').value.trim();
+            const preco = parseFloat(document.getElementById('adicional-preco').value) || 0;
+            const categoriaSelect = document.getElementById('adicional-categoria');
+            const categoria = categoriaSelect.value.trim();
+
+            if(!nome || !categoria) return alert('Preencha o nome e selecione a categoria.');
+
+            try {
+                const res = await fetch(window.location.origin + '/api/adicionais', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ nome, preco, categoria })
+                });
+
+                if(res.ok) {
+                    alert('Adicional salvo com sucesso!');
+                    resetAdicionalForm();
+                    loadAdminAdicionais();
+                } else {
+                    alert('Erro ao salvar adicional.');
+                }
+            } catch (err) {
+                console.error(err);
+                alert('Erro de conexão ao salvar adicional.');
+            }
+        }
+
+        async function deleteAdicional(id) {
+            if(confirm('Tem certeza que deseja excluir este adicional?')) {
+                try {
+                    await fetch(window.location.origin + `/api/adicionais/${id}`, { method: 'DELETE' });
+                    loadAdminAdicionais();
+                } catch (err) {
+                    console.error('Erro ao excluir adicional:', err);
+                }
+            }
+        }
+        // ==========================================
+
         async function openConfigModal() {
             document.getElementById('config-modal').classList.remove('hidden');
             try {
@@ -944,13 +1119,17 @@
 
         async function saveConfig(e) {
             e.preventDefault();
-            const nome_loja = document.getElementById('config-name').value;
-            const logo_url = document.getElementById('config-logo-base64').value;
-            const whatsapp = document.getElementById('config-whatsapp').value;
+            let nome_loja = document.getElementById('config-name').value;
+            let logo_url = document.getElementById('config-logo-base64').value;
+            let whatsapp = document.getElementById('config-whatsapp').value;
 
             try {
                 const res = await fetch(window.location.origin + '/api/configuracoes');
                 const config = await res.json() || {};
+
+                if (!logo_url || logo_url.trim() === '') {
+                    logo_url = config.logo_url || '';
+                }
 
                 await fetch(window.location.origin + '/api/configuracoes', {
                     method: 'POST',

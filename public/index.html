@@ -45,9 +45,6 @@
                     <i class="fa-solid fa-cart-shopping text-red-500"></i>
                     <span id="cart-count" class="bg-red-500 text-white text-xs px-2 py-0.5 rounded-full font-bold">0</span>
                 </button>
-                <a href="index.html" class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-4 py-2.5 rounded-xl text-sm font-semibold border border-slate-700">
-                    <i class="fa-solid fa-arrow-left mr-2"></i> Início
-                </a>
             </div>
         </div>
     </header>
@@ -116,6 +113,28 @@
         </div>
     </main>
 
+    <!-- MODAL DE ESCOLHA DE ADICIONAIS -->
+    <div id="adicionais-modal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center p-4 overflow-y-auto">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-md p-6 shadow-2xl my-8">
+            <div class="flex justify-between items-center pb-4 border-b border-slate-800 mb-4">
+                <div>
+                    <h3 id="modal-produto-nome" class="text-lg font-bold text-white">Personalizar Lanche</h3>
+                    <span class="text-xs text-slate-400">Deseja adicionar algum opcional?</span>
+                </div>
+                <button onclick="closeAdicionaisModal()" class="text-slate-400 hover:text-white text-xl">&times;</button>
+            </div>
+            
+            <div id="lista-adicionais-opcoes" class="space-y-3 max-h-60 overflow-y-auto my-4 pr-1">
+                <!-- Carregado via JavaScript -->
+            </div>
+
+            <div class="flex space-x-3 pt-2">
+                <button type="button" onclick="closeAdicionaisModal()" class="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-300 py-2.5 rounded-xl text-sm font-semibold">Cancelar</button>
+                <button type="button" onclick="confirmarAdicaoComAdicionais()" class="flex-1 bg-gradient-to-r from-red-600 to-amber-500 text-white font-bold py-2.5 rounded-xl shadow-lg text-sm">Adicionar ao Carrinho</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Carrinho Lateral -->
     <div id="cart-modal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden flex justify-end">
         <div class="bg-slate-900 w-full max-w-md h-full flex flex-col justify-between p-6 border-l border-slate-800 shadow-2xl">
@@ -172,16 +191,20 @@
         let slideInterval;
         let menuItems = [];
         let currentFilteredProducts = [];
+        let produtoSelecionadoParaAdicionais = null;
+        let listaAdicionaisGlobais = [];
         
         let cart = [];
         try {
             const savedCart = JSON.parse(localStorage.getItem('burger_cart'));
             if(Array.isArray(savedCart)) {
                 cart = savedCart.map(item => ({
+                    cartItemId: item.cartItemId || `${item.id}_${Date.now()}`,
                     id: item.id,
                     name: item.name || 'Produto',
                     price: Number(item.price) || 0,
-                    qty: Number(item.qty) > 0 ? Number(item.qty) : 1
+                    qty: Number(item.qty) > 0 ? Number(item.qty) : 1,
+                    adicionais: Array.isArray(item.adicionais) ? item.adicionais : []
                 }));
             }
         } catch(e) {
@@ -218,11 +241,24 @@
             }
 
             await loadProducts();
+            await loadAdicionaisGlobais();
             loadDynamicBanners();
             loadCategories();
             carregarBairrosNoCarrinho();
             updateCartUI();
         });
+
+        async function loadAdicionaisGlobais() {
+            try {
+                const res = await fetch(window.location.origin + '/api/adicionais');
+                const data = await res.json();
+                if(Array.isArray(data)) {
+                    listaAdicionaisGlobais = data;
+                }
+            } catch(e) {
+                console.error('Erro ao carregar adicionais:', e);
+            }
+        }
 
         async function carregarBairrosNoCarrinho() {
             const selectBairro = document.getElementById('clienteBairro');
@@ -424,29 +460,118 @@
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
-        window.addToCartByIndex = function(index) {
+        window.addToCartByIndex = async function(index) {
             const item = currentFilteredProducts[index];
             if(!item) return;
 
-            const existing = cart.find(i => String(i.id) === String(item.id));
+            produtoSelecionadoParaAdicionais = item;
+            await loadAdicionaisGlobais();
+
+            // Filtra os adicionais para exibir APENAS os da categoria do produto atual
+            const adicionaisFiltrados = listaAdicionaisGlobais.filter(ad => 
+                ad.categoria && item.category && ad.categoria.toLowerCase() === item.category.toLowerCase()
+            );
+
+            const listaEl = document.getElementById('lista-adicionais-opcoes');
+            document.getElementById('modal-produto-nome').textContent = `Personalizar: ${item.name}`;
+
+            if(adicionaisFiltrados.length === 0) {
+                listaEl.innerHTML = `<p class="text-xs text-slate-400 text-center py-4">Nenhum adicional disponível para esta categoria. Clique em prosseguir.</p>`;
+            } else {
+                listaEl.innerHTML = adicionaisFiltrados.map((ad, idx) => `
+                    <div class="flex items-center justify-between bg-slate-800 p-3 rounded-xl border border-slate-700">
+                        <div class="flex items-center space-x-3">
+                            <input type="checkbox" id="ad_check_${idx}" value="${ad.id}" data-nome="${ad.nome}" data-preco="${ad.preco}" onchange="toggleQuantidadeAdicional(${idx})" class="w-4 h-4 rounded text-red-600 focus:ring-red-500 bg-slate-700 border-slate-600 cursor-pointer">
+                            <div>
+                                <span class="text-sm font-semibold text-white block">${ad.nome}</span>
+                                <span class="text-xs text-amber-400 font-bold">+ R$ ${Number(ad.preco).toFixed(2).replace('.', ',')}</span>
+                            </div>
+                        </div>
+                        <div id="ad_qtd_container_${idx}" class="hidden flex items-center space-x-2 bg-slate-900 px-2 py-1 rounded-lg border border-slate-700">
+                            <button type="button" onclick="alterarQtdAdicional(${idx}, -1)" class="text-slate-400 hover:text-white px-1.5 py-0.5 text-xs font-bold"><i class="fa-solid fa-minus"></i></button>
+                            <span id="ad_qtd_val_${idx}" class="text-xs font-bold text-white w-4 text-center">1</span>
+                            <button type="button" onclick="alterarQtdAdicional(${idx}, 1)" class="text-slate-400 hover:text-white px-1.5 py-0.5 text-xs font-bold"><i class="fa-solid fa-plus"></i></button>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            document.getElementById('adicionais-modal').classList.remove('hidden');
+        }
+
+        window.toggleQuantidadeAdicional = function(idx) {
+            const checkbox = document.getElementById(`ad_check_${idx}`);
+            const qtdContainer = document.getElementById(`ad_qtd_container_${idx}`);
+            if(checkbox.checked) {
+                qtdContainer.classList.remove('hidden');
+            } else {
+                qtdContainer.classList.add('hidden');
+                document.getElementById(`ad_qtd_val_${idx}`).textContent = '1';
+            }
+        }
+
+        window.alterarQtdAdicional = function(idx, delta) {
+            const spanQtd = document.getElementById(`ad_qtd_val_${idx}`);
+            let qtdAtual = parseInt(spanQtd.textContent) || 1;
+            qtdAtual += delta;
+            if(qtdAtual < 1) qtdAtual = 1;
+            spanQtd.textContent = qtdAtual;
+        }
+
+        window.closeAdicionaisModal = function() {
+            document.getElementById('adicionais-modal').classList.add('hidden');
+            produtoSelecionadoParaAdicionais = null;
+        }
+
+        window.confirmarAdicaoComAdicionais = function() {
+            if(!produtoSelecionadoParaAdicionais) return;
+
+            let adicionaisEscolhidos = [];
+            let precoAdicionaisTotal = 0;
+
+            document.querySelectorAll('input[id^="ad_check_"]').forEach((cb, idx) => {
+                if(cb.checked) {
+                    const nome = cb.getAttribute('data-nome');
+                    const precoUnitario = Number(cb.getAttribute('data-preco')) || 0;
+                    const qtd = parseInt(document.getElementById(`ad_qtd_val_${idx}`).textContent) || 1;
+                    
+                    for(let i = 0; i < qtd; i++) {
+                        adicionaisEscolhidos.push({
+                            nome: nome,
+                            preco: precoUnitario
+                        });
+                    }
+                    precoAdicionaisTotal += (precoUnitario * qtd);
+                }
+            });
+
+            let precoFinalUnitario = Number(produtoSelecionadoParaAdicionais.price || 0) + precoAdicionaisTotal;
+
+            let chaveAdicionais = adicionaisEscolhidos.map(a => a.nome).sort().join(',');
+            let cartItemId = `${produtoSelecionadoParaAdicionais.id}_${chaveAdicionais}`;
+
+            const existing = cart.find(i => i.cartItemId === cartItemId);
             if(existing) {
                 existing.qty = Number(existing.qty) + 1;
             } else {
                 cart.push({ 
-                    id: item.id, 
-                    name: item.name, 
-                    price: Number(item.price || 0), 
-                    qty: 1 
+                    cartItemId: cartItemId,
+                    id: produtoSelecionadoParaAdicionais.id, 
+                    name: produtoSelecionadoParaAdicionais.name, 
+                    price: precoFinalUnitario, 
+                    qty: 1,
+                    adicionais: adicionaisEscolhidos
                 });
             }
             
             saveCart();
             updateCartUI();
+            closeAdicionaisModal();
             openCart();
         }
 
-        window.removeFromCart = function(id) {
-            cart = cart.filter(i => String(i.id) !== String(id));
+        window.removeFromCart = function(cartItemId) {
+            cart = cart.filter(i => i.cartItemId !== cartItemId);
             saveCart();
             updateCartUI();
         }
@@ -486,13 +611,30 @@
                 let itemQty = Number(item.qty) || 1;
                 let itemTotal = itemPrice * itemQty;
                 subtotal += itemTotal;
+
+                let adicionaisHtml = '';
+                if(Array.isArray(item.adicionais) && item.adicionais.length > 0) {
+                    // Agrupa a contagem dos adicionais para exibição limpa (ex: Copo (x2))
+                    let contagemAdicionais = {};
+                    item.adicionais.forEach(a => {
+                        contagemAdicionais[a.nome] = (contagemAdicionais[a.nome] || 0) + 1;
+                    });
+                    let listaFormatada = Object.entries(contagemAdicionais).map(([nome, qtd]) => {
+                        let adObj = item.adicionais.find(a => a.nome === nome);
+                        let precoUnit = adObj ? adObj.preco : 0;
+                        return `${nome} ${qtd > 1 ? '(x' + qtd + ')' : ''} (+R$ ${(precoUnit * qtd).toFixed(2).replace('.', ',')})`;
+                    });
+                    adicionaisHtml = `<div class="text-[11px] text-amber-400 mt-0.5">Adicionais: ` + listaFormatada.join(', ') + `</div>`;
+                }
+
                 return `
                     <div class="flex items-center justify-between bg-slate-800/40 p-3 rounded-xl border border-slate-700/50">
                         <div>
                             <h4 class="text-sm font-bold text-white">${item.name}</h4>
+                            ${adicionaisHtml}
                             <span class="text-xs text-slate-400">R$ ${itemPrice.toFixed(2).replace('.', ',')} x ${itemQty}</span>
                         </div>
-                        <button onclick="removeFromCart('${item.id}')" class="text-red-400 p-2"><i class="fa-solid fa-trash text-sm"></i></button>
+                        <button onclick="removeFromCart('${item.cartItemId}')" class="text-red-400 p-2 hover:text-red-300 transition-colors"><i class="fa-solid fa-trash text-sm"></i></button>
                     </div>
                 `;
             }).join('');
@@ -575,7 +717,16 @@
 
             message += `%0A*Itens do Pedido:*%0A`;
             cart.forEach(i => { 
-                message += `- ${i.qty}x ${i.name} (R$ ${(i.price * i.qty).toFixed(2).replace('.', ',')})%0A`; 
+                message += `- ${i.qty}x ${i.name} (R$ ${(i.price * i.qty).toFixed(2).replace('.', ',')})`;
+                if(Array.isArray(i.adicionais) && i.adicionais.length > 0) {
+                    let contagemAdicionais = {};
+                    i.adicionais.forEach(a => {
+                        contagemAdicionais[a.nome] = (contagemAdicionais[a.nome] || 0) + 1;
+                    });
+                    let listaMsg = Object.entries(contagemAdicionais).map(([nome, qtd]) => `${nome}${qtd > 1 ? ' (x' + qtd + ')' : ''}`).join(', ');
+                    message += `%0A  *Adicionais:* ` + listaMsg;
+                }
+                message += `%0A`;
             });
 
             if(taxaEntrega > 0) {
@@ -586,7 +737,6 @@
             
             window.open(`https://wa.me/${storeWhatsApp}?text=${message}`, '_blank');
 
-            // --- ZERA O CARRINHO E LIMPA OS CAMPOS APÓS ENVIAR ---
             cart = [];
             saveCart();
             updateCartUI();
