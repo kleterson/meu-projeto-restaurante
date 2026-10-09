@@ -9,6 +9,10 @@ require('dotenv').config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Configuração de limites grandes para aceitar imagens em Base64 vindas do admin
+app.use(express.json({ limit: '15mb' }));
+app.use(express.urlencoded({ limit: '15mb', extended: true }));
+
 // Configuração do Supabase (Variáveis de Ambiente fornecidas no Render)
 const supabaseUrl = process.env.SUPABASE_URL || 'https://vfxaiknoawzoenodwqjf.supabase.co';
 const supabaseKey = process.env.SUPABASE_ANON_KEY || 'sb_publishable_aDGXBwvkdk5t-9KxgJYQ9Q_VnyMst8a';
@@ -19,7 +23,6 @@ if (supabase) {
     console.log('🚀 Conectado com o Supabase com sucesso!');
 }
 
-app.use(express.json());
 app.use(express.static(path.join(__dirname)));
 
 /**
@@ -140,10 +143,33 @@ app.get('/api/categorias', async (req, res) => {
 
 app.post('/api/categorias', async (req, res) => {
     try {
-        const { nome } = req.body;
-        const { data, error } = await supabase.from('categorias').insert([{ nome }]).select();
+        const { nome, imagem } = req.body;
+        const { data, error } = await supabase.from('categorias').insert([{ nome, imagem }]).select();
         if (error) throw error;
         res.json(data[0]);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+app.put('/api/categorias/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const updateData = req.body;
+        const { data, error } = await supabase.from('categorias').update(updateData).eq('id', id).select();
+        if (error) throw error;
+        res.json(data[0]);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+app.delete('/api/categorias/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { error } = await supabase.from('categorias').delete().eq('id', id);
+        if (error) throw error;
+        res.json({ success: true });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
@@ -225,7 +251,6 @@ app.delete('/api/banners/:id', async (req, res) => {
 
 // Serve todos os arquivos da pasta 'public' automaticamente
 app.use(express.static(path.join(__dirname)));
-// Serve todos os arquivos da pasta 'public' automaticamente
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Rota padrão caso acesse a raiz

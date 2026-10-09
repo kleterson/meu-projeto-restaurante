@@ -19,8 +19,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style> 
         body { font-family: 'Inter', sans-serif; } 
-        .hero-slide { opacity: 0; transition: opacity 1s ease-in-out; position: absolute; inset: 0; pointer-events: none; }
-        .hero-slide.active { opacity: 1; pointer-events: auto; }
+        .hero-slide { opacity: 0; transition: opacity 1s ease-in-out; position: absolute; inset: 0; display: flex; align-items: center; pointer-events: none; z-index: 10; }
+        .hero-slide.active { opacity: 1; pointer-events: auto; z-index: 20; }
     </style>
 </head>
 <body class="bg-darkBg text-slate-100 min-h-screen flex flex-col justify-between">
@@ -169,9 +169,9 @@
 
                 if(!Array.isArray(banners) || banners.length === 0) {
                     container.innerHTML = `
-                        <div class="hero-slide active flex items-center justify-center relative h-full w-full">
+                        <div class="hero-slide active">
                             <div class="absolute inset-0 bg-gradient-to-r from-slate-950 via-slate-950/70 to-transparent z-10"></div>
-                            <img src="https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=1600&q=80" class="absolute inset-0 w-full h-full object-cover opacity-40">
+                            <img src="https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=1600&q=80" class="absolute inset-0 w-full h-full object-cover opacity-60">
                             <div class="relative z-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full text-center sm:text-left">
                                 <h1 class="text-3xl sm:text-5xl font-black text-white">Bem-vindo ao Cardápio</h1>
                             </div>
@@ -181,9 +181,9 @@
                 }
 
                 container.innerHTML = banners.map((b, i) => `
-                    <div class="hero-slide ${i === 0 ? 'active' : ''} flex items-center justify-center relative h-full w-full absolute inset-0 transition-opacity duration-1000">
+                    <div class="hero-slide ${i === 0 ? 'active' : ''}">
                         <div class="absolute inset-0 bg-gradient-to-r from-slate-950 via-slate-950/70 to-transparent z-10"></div>
-                        <img src="${b.imagem}" class="absolute inset-0 w-full h-full object-cover object-center opacity-40">
+                        <img src="${b.imagem}" class="absolute inset-0 w-full h-full object-cover object-center opacity-60">
                         <div class="relative z-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full text-center sm:text-left">
                             ${b.tag ? `<span class="bg-red-500/20 text-red-400 text-xs sm:text-sm font-bold px-3.5 py-1.5 rounded-full border border-red-500/30 uppercase tracking-wider">${b.tag}</span>` : ''}
                             <h1 class="text-3xl sm:text-5xl font-black mt-4 mb-2 tracking-tight text-white">${b.titulo}</h1>
@@ -197,12 +197,15 @@
                 `).join('');
 
                 if(slideInterval) clearInterval(slideInterval);
-                slideInterval = setInterval(() => {
-                    const slides = document.querySelectorAll('.hero-slide');
-                    if(slides.length === 0) return;
-                    currentSlideIndex = (currentSlideIndex + 1) % slides.length;
-                    showSlide(currentSlideIndex);
-                }, 3000);
+                
+                if(banners.length > 1) {
+                    slideInterval = setInterval(() => {
+                        const slides = document.querySelectorAll('.hero-slide');
+                        if(slides.length === 0) return;
+                        currentSlideIndex = (currentSlideIndex + 1) % slides.length;
+                        showSlide(currentSlideIndex);
+                    }, 4000);
+                }
 
             } catch (err) {
                 console.error('Erro ao carregar banners dinâmicos:', err);
@@ -242,9 +245,10 @@
 
                 grid.innerHTML = categorias.map((cat, index) => {
                     const estilo = cores[index % cores.length];
+                    const imagemCat = cat.imagem && cat.imagem.trim() !== '' ? cat.imagem : 'https://images.unsplash.com/photo-1550547660-d9450f859349?auto=format&fit=crop&w=800&q=80';
                     return `
                         <div onclick="selectCategory('${cat.nome}')" class="group relative h-80 rounded-2xl overflow-hidden cursor-pointer shadow-2xl border border-slate-700/50 ${estilo.border} transition-all duration-300">
-                            <img src="https://images.unsplash.com/photo-1550547660-d9450f859349?auto=format&fit=crop&w=800&q=80" alt="${cat.nome}" class="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
+                            <img src="${imagemCat}" alt="${cat.nome}" class="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
                             <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent"></div>
                             <div class="absolute bottom-0 left-0 right-0 p-6 flex flex-col justify-end">
                                 <div class="${estilo.bg} w-12 h-12 rounded-xl flex items-center justify-center mb-3 shadow-lg ${estilo.shadow}">

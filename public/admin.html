@@ -72,6 +72,9 @@
                     <button onclick="openBannerModal()" class="bg-slate-800 hover:bg-slate-700 text-purple-400 px-4 py-2.5 rounded-xl text-sm font-semibold border border-slate-700">
                         <i class="fa-solid fa-images mr-2"></i> Banners
                     </button>
+                    <button onclick="openViewCategoriesModal()" class="bg-slate-800 hover:bg-slate-700 text-emerald-400 px-4 py-2.5 rounded-xl text-sm font-semibold border border-slate-700">
+                        <i class="fa-solid fa-folder-open mr-2"></i> Categorias
+                    </button>
                     <button onclick="openConfigModal()" class="bg-slate-800 hover:bg-slate-700 text-cyan-400 px-4 py-2.5 rounded-xl text-sm font-semibold border border-slate-700">
                         <i class="fa-solid fa-gear mr-2"></i> Configurações
                     </button>
@@ -97,6 +100,10 @@
                         <button onclick="openBannerModal(); toggleMobileMenu();" class="w-full flex items-center space-x-3 px-4 py-3 text-sm text-purple-400 hover:bg-slate-800 transition-colors text-left">
                             <i class="fa-solid fa-images w-5"></i>
                             <span>Banners</span>
+                        </button>
+                        <button onclick="openViewCategoriesModal(); toggleMobileMenu();" class="w-full flex items-center space-x-3 px-4 py-3 text-sm text-emerald-400 hover:bg-slate-800 transition-colors text-left">
+                            <i class="fa-solid fa-folder-open w-5"></i>
+                            <span>Categorias</span>
                         </button>
                         <button onclick="openConfigModal(); toggleMobileMenu();" class="w-full flex items-center space-x-3 px-4 py-3 text-sm text-cyan-400 hover:bg-slate-800 transition-colors text-left">
                             <i class="fa-solid fa-gear w-5"></i>
@@ -125,7 +132,7 @@
                 <div class="flex flex-wrap items-center gap-3">
                     <button onclick="openCategoryModal()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-4 py-3 rounded-xl shadow-lg flex items-center space-x-2 text-sm">
                         <i class="fa-solid fa-folder-plus"></i>
-                        <span>Nova Categoria</span>
+                        <span>Gerenciar Categorias</span>
                     </button>
                     <button onclick="openProductModal()" class="bg-gradient-to-r from-red-600 to-amber-500 text-white font-bold px-5 py-3 rounded-xl shadow-lg flex items-center space-x-2 text-sm">
                         <i class="fa-solid fa-plus"></i>
@@ -169,6 +176,7 @@
             </div>
             <form onsubmit="saveProduct(event)" class="space-y-4">
                 <input type="hidden" id="prod-id">
+                <input type="hidden" id="prod-image-base64">
                 <div>
                     <label class="block text-xs font-semibold text-slate-400 mb-1 uppercase tracking-wider">Nome do Produto</label>
                     <input type="text" id="prod-name" required class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-red-500">
@@ -185,8 +193,8 @@
                     </div>
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold text-slate-400 mb-1 uppercase tracking-wider">Link da Imagem (URL)</label>
-                    <input type="url" id="prod-image" required class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-red-500">
+                    <label class="block text-xs font-semibold text-slate-400 mb-1 uppercase tracking-wider">Foto do Produto (Arquivo)</label>
+                    <input type="file" id="prod-file" accept="image/*" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 text-sm text-white file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-red-600 file:text-white hover:file:bg-red-500 cursor-pointer" onchange="compressImage(this, 'prod-image-base64', 600)">
                 </div>
                 <div>
                     <label class="block text-xs font-semibold text-slate-400 mb-1 uppercase tracking-wider">Descrição</label>
@@ -200,23 +208,51 @@
         </div>
     </div>
 
-    <!-- MODAL DE NOVA CATEGORIA -->
-    <div id="category-modal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
-        <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-md p-6 shadow-2xl">
+    <!-- MODAL DE VISUALIZAR APENAS AS CATEGORIAS -->
+    <div id="view-categories-modal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center p-4 overflow-y-auto">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-lg p-6 shadow-2xl my-8 max-h-[90vh] overflow-y-auto">
             <div class="flex justify-between items-center pb-4 border-b border-slate-800 mb-4">
-                <h3 class="text-xl font-bold text-white">Criar Nova Categoria</h3>
+                <h3 class="text-xl font-bold text-white">Categorias Cadastradas no Sistema</h3>
+                <button onclick="closeViewCategoriesModal()" class="text-slate-400 hover:text-white text-xl">&times;</button>
+            </div>
+            <div id="view-categories-list" class="space-y-3 max-h-96 overflow-y-auto"></div>
+            <div class="mt-6 text-right">
+                <button onclick="closeViewCategoriesModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-5 py-2.5 rounded-xl text-sm font-semibold">Fechar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DE GERENCIAR CATEGORIAS (ADICIONAR/EDITAR/EXCLUIR) -->
+    <div id="category-modal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center p-4 overflow-y-auto">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-lg p-6 shadow-2xl my-8 max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center pb-4 border-b border-slate-800 mb-4">
+                <h3 id="category-modal-title" class="text-xl font-bold text-white">Gerenciar Categorias</h3>
                 <button onclick="closeCategoryModal()" class="text-slate-400 hover:text-white text-xl">&times;</button>
             </div>
-            <form onsubmit="saveCategory(event)" class="space-y-4">
+            
+            <form onsubmit="saveCategory(event)" class="space-y-4 mb-6 bg-slate-800/50 p-4 rounded-xl border border-slate-700">
+                <input type="hidden" id="cat-id">
+                <h4 id="category-form-heading" class="text-sm font-bold text-emerald-400 uppercase tracking-wider">Adicionar Nova Categoria</h4>
                 <div>
-                    <label class="block text-xs font-semibold text-slate-400 mb-1 uppercase tracking-wider">Nome da Categoria</label>
-                    <input type="text" id="cat-name" required class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500" placeholder="Ex: Porções, Sobremesas">
+                    <label class="block text-xs font-semibold text-slate-400 mb-1">Nome da Categoria</label>
+                    <input type="text" id="cat-name" required class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white" placeholder="Ex: Lanches, Porções">
                 </div>
-                <div class="flex justify-end space-x-3 pt-2">
-                    <button type="button" onclick="closeCategoryModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-4 py-2.5 rounded-xl text-sm font-semibold">Cancelar</button>
-                    <button type="submit" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-6 py-2.5 rounded-xl shadow-lg text-sm">Salvar Categoria</button>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-400 mb-1">Foto / Banner da Categoria (Arquivo)</label>
+                    <input type="file" id="cat-file" accept="image/*" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 text-sm text-white file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-emerald-600 file:text-white hover:file:bg-emerald-500 cursor-pointer">
+                </div>
+                <div class="flex space-x-2">
+                    <button type="submit" id="cat-submit-btn" class="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 rounded-xl shadow-lg text-sm transition-all">
+                        Salvar Categoria
+                    </button>
+                    <button type="button" id="cat-cancel-edit" onclick="resetCategoryForm()" class="hidden bg-slate-700 hover:bg-slate-600 text-slate-200 font-semibold px-4 py-2.5 rounded-xl text-sm">
+                        Cancelar
+                    </button>
                 </div>
             </form>
+
+            <h4 class="text-sm font-bold text-slate-300 mb-3 uppercase tracking-wider">Categorias Cadastradas</h4>
+            <div id="categories-list" class="space-y-3 max-h-60 overflow-y-auto"></div>
         </div>
     </div>
 
@@ -228,13 +264,14 @@
                 <button onclick="closeConfigModal()" class="text-slate-400 hover:text-white text-xl">&times;</button>
             </div>
             <form onsubmit="saveConfig(event)" class="space-y-4">
+                <input type="hidden" id="config-logo-base64">
                 <div>
                     <label class="block text-xs font-semibold text-slate-400 mb-1 uppercase tracking-wider">Nome da Loja / Empresa</label>
                     <input type="text" id="config-name" required class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-cyan-500" placeholder="Ex: Burger & Cia">
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold text-slate-400 mb-1 uppercase tracking-wider">Link da Foto de Perfil / Logo (URL)</label>
-                    <input type="url" id="config-logo" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-cyan-500" placeholder="Cole o link direto da imagem">
+                    <label class="block text-xs font-semibold text-slate-400 mb-1 uppercase tracking-wider">Foto do Logo da Loja (Arquivo)</label>
+                    <input type="file" id="config-logo-file" accept="image/*" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 text-sm text-white file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-cyan-600 file:text-white hover:file:bg-cyan-500 cursor-pointer" onchange="compressImage(this, 'config-logo-base64', 300)">
                 </div>
                 <div>
                     <label class="block text-xs font-semibold text-slate-400 mb-1 uppercase tracking-wider">Número do WhatsApp</label>
@@ -283,9 +320,8 @@
             <form onsubmit="saveBanner(event)" class="space-y-4 mb-6 bg-slate-800/50 p-4 rounded-xl border border-slate-700">
                 <h4 class="text-sm font-bold text-purple-400 uppercase tracking-wider">Adicionar Novo Banner</h4>
                 <div>
-                    <label class="block text-xs font-semibold text-slate-400 mb-1">Link da Imagem do Banner (URL)</label>
-                    <input type="url" id="banner-image" required placeholder="Cole o link da imagem (ex: https://images.unsplash.com/...)" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-purple-500">
-                    <p class="text-xs text-slate-500 mt-1">Dica: Você pode usar imagens do Unsplash ou copiar o link de uma imagem da web.</p>
+                    <label class="block text-xs font-semibold text-slate-400 mb-1">Selecionar Foto do Banner (Arquivo)</label>
+                    <input type="file" id="banner-file" accept="image/*" required class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 text-sm text-white file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-purple-600 file:text-white hover:file:bg-purple-500 cursor-pointer">
                 </div>
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
@@ -312,6 +348,37 @@
     </div>
 
     <script>
+        function compressImage(inputElement, targetHiddenId, maxWidth = 800) {
+            const file = inputElement.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                const img = new Image();
+                img.onload = function () {
+                    const canvas = document.createElement('canvas');
+                    let width = img.width;
+                    let height = img.height;
+
+                    if (width > maxWidth) {
+                        height = Math.round((height * maxWidth) / width);
+                        width = maxWidth;
+                    }
+
+                    canvas.width = width;
+                    canvas.height = height;
+
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+
+                    const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.8);
+                    document.getElementById(targetHiddenId).value = compressedDataUrl;
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
         window.addEventListener('DOMContentLoaded', () => {
             loadBrandConfig();
             loadCategoriesSelect();
@@ -338,8 +405,8 @@
                 const res = await fetch(window.location.origin + '/api/configuracoes');
                 const config = await res.json();
                 if(config) {
-                    const storeName = config.nome_loja || localStorage.getItem('store_name') || 'Burger & Cia';
-                    const storeLogo = config.logo_url || localStorage.getItem('store_logo') || '';
+                    const storeName = config.nome_loja || 'Burger & Cia';
+                    const storeLogo = config.logo_url || '';
 
                     const brandEl = document.getElementById('header-brand-name');
                     if(brandEl) brandEl.textContent = storeName;
@@ -365,17 +432,25 @@
             }
         }
 
-        function handleLogin(e) {
+        async function handleLogin(e) {
             e.preventDefault();
             const u = document.getElementById('user').value;
             const p = document.getElementById('pass').value;
-            const correctPass = localStorage.getItem('admin_custom_pass') || '123456';
 
-            if(u === 'admin' && p === correctPass) {
-                localStorage.setItem('admin_logged', 'true');
-                showAdminPanel();
-            } else {
-                alert('Usuário ou senha incorretos!');
+            try {
+                const res = await fetch(window.location.origin + '/api/configuracoes');
+                const config = await res.json();
+                const correctPass = (config && config.admin_pass) ? config.admin_pass : '123456';
+
+                if(u === 'admin' && p === correctPass) {
+                    localStorage.setItem('admin_logged', 'true');
+                    showAdminPanel();
+                } else {
+                    alert('Usuário ou senha incorretos!');
+                }
+            } catch (err) {
+                console.error('Erro ao autenticar:', err);
+                alert('Erro ao conectar com o servidor.');
             }
         }
 
@@ -464,12 +539,13 @@
                     document.getElementById('prod-name').value = p.name;
                     await loadCategoriesSelect(p.category);
                     document.getElementById('prod-price').value = p.price;
-                    document.getElementById('prod-image').value = p.image;
+                    document.getElementById('prod-image-base64').value = p.image;
                     document.getElementById('prod-desc').value = p.desc;
                 }
             } else {
                 document.getElementById('modal-title').textContent = 'Novo Produto';
                 document.getElementById('prod-id').value = '';
+                document.getElementById('prod-image-base64').value = '';
                 document.querySelector('#product-modal form').reset();
             }
         }
@@ -484,9 +560,11 @@
             const name = document.getElementById('prod-name').value;
             const category = document.getElementById('prod-category').value;
             const price = parseFloat(document.getElementById('prod-price').value);
-            const image = document.getElementById('prod-image').value;
+            const image = document.getElementById('prod-image-base64').value;
             const desc = document.getElementById('prod-desc').value;
             
+            if(!image) return alert('Por favor, selecione uma foto para o produto.');
+
             const productData = { name, category, price, image, desc };
 
             try {
@@ -531,35 +609,168 @@
             }
         }
 
+        // FUNÇÃO APENAS PARA VISUALIZAR AS CATEGORIAS (BOTÃO DO TOPO)
+        async function openViewCategoriesModal() {
+            document.getElementById('view-categories-modal').classList.remove('hidden');
+            try {
+                const res = await fetch(window.location.origin + '/api/categorias');
+                const categories = await res.json();
+                const listEl = document.getElementById('view-categories-list');
+                
+                if(!Array.isArray(categories) || categories.length === 0) {
+                    listEl.innerHTML = `<p class="text-slate-500 text-xs text-center py-4">Nenhuma categoria cadastrada.</p>`;
+                    return;
+                }
+
+                listEl.innerHTML = categories.map(cat => `
+                    <div class="flex items-center space-x-3 bg-slate-800 p-3 rounded-xl border border-slate-700">
+                        <img src="${cat.imagem || 'https://images.unsplash.com/photo-1550547660-d9450f859349?auto=format&fit=crop&w=200&q=80'}" class="w-12 h-12 rounded-lg object-cover border border-slate-600">
+                        <div>
+                            <h5 class="text-sm font-bold text-white capitalize">${cat.nome}</h5>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (err) {
+                console.error('Erro ao carregar categorias:', err);
+            }
+        }
+
+        function closeViewCategoriesModal() {
+            document.getElementById('view-categories-modal').classList.add('hidden');
+        }
+
+        // FUNÇÕES PARA GERENCIAR CATEGORIAS (ADICIONAR/EDITAR/EXCLUIR)
         function openCategoryModal() {
             document.getElementById('category-modal').classList.remove('hidden');
-            document.getElementById('cat-name').value = '';
+            resetCategoryForm();
+            loadAdminCategories();
         }
 
         function closeCategoryModal() {
             document.getElementById('category-modal').classList.add('hidden');
         }
 
+        function resetCategoryForm() {
+            document.getElementById('cat-id').value = '';
+            document.getElementById('cat-name').value = '';
+            document.getElementById('cat-file').value = '';
+            document.getElementById('category-form-heading').textContent = 'Adicionar Nova Categoria';
+            document.getElementById('cat-submit-btn').textContent = 'Salvar Categoria';
+            document.getElementById('cat-cancel-edit').classList.add('hidden');
+        }
+
+        async function loadAdminCategories() {
+            try {
+                const res = await fetch(window.location.origin + '/api/categorias');
+                const categories = await res.json();
+                const listEl = document.getElementById('categories-list');
+                
+                if(!Array.isArray(categories) || categories.length === 0) {
+                    listEl.innerHTML = `<p class="text-slate-500 text-xs text-center py-4">Nenhuma categoria cadastrada.</p>`;
+                    return;
+                }
+
+                listEl.innerHTML = categories.map(cat => `
+                    <div class="flex items-center justify-between bg-slate-800 p-3 rounded-xl border border-slate-700">
+                        <div class="flex items-center space-x-3">
+                            <img src="${cat.imagem || 'https://images.unsplash.com/photo-1550547660-d9450f859349?auto=format&fit=crop&w=200&q=80'}" class="w-12 h-12 rounded-lg object-cover border border-slate-600">
+                            <div>
+                                <h5 class="text-xs font-bold text-white capitalize">${cat.nome}</h5>
+                            </div>
+                        </div>
+                        <div class="space-x-1">
+                            <button onclick="editCategory(${cat.id}, '${cat.nome}')" class="bg-amber-500/15 hover:bg-amber-500/30 text-amber-400 p-2 rounded-lg border border-amber-500/20 text-xs transition-colors">
+                                <i class="fa-solid fa-pen"></i>
+                            </button>
+                            <button onclick="deleteCategory(${cat.id})" class="bg-red-500/15 hover:bg-red-500/30 text-red-400 p-2 rounded-lg border border-red-500/20 text-xs transition-colors">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (err) {
+                console.error('Erro ao carregar categorias:', err);
+            }
+        }
+
+        function editCategory(id, nome) {
+            document.getElementById('cat-id').value = id;
+            document.getElementById('cat-name').value = nome;
+            document.getElementById('category-form-heading').textContent = 'Editar Categoria';
+            document.getElementById('cat-submit-btn').textContent = 'Atualizar Categoria';
+            document.getElementById('cat-cancel-edit').classList.remove('hidden');
+        }
+
         async function saveCategory(e) {
             e.preventDefault();
+            const id = document.getElementById('cat-id').value;
             const nome = document.getElementById('cat-name').value.trim();
+            const fileInput = document.getElementById('cat-file');
+
             if(!nome) return alert('Digite o nome da categoria.');
 
-            try {
-                const response = await fetch(window.location.origin + '/api/categorias', {
-                    method: 'POST',
+            const proceedWithImage = (imagemBase64 = null) => {
+                const payload = { nome, imagem: imagemBase64 };
+                const url = id ? `${window.location.origin}/api/categorias/${id}` : `${window.location.origin}/api/categorias`;
+                const method = id ? 'PUT' : 'POST';
+
+                fetch(url, {
+                    method: method,
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ nome })
+                    body: JSON.stringify(payload)
+                }).then(res => {
+                    if(res.ok) {
+                        alert(id ? 'Categoria atualizada com sucesso!' : 'Categoria criada com sucesso!');
+                        resetCategoryForm();
+                        loadAdminCategories();
+                        loadCategoriesSelect();
+                    } else {
+                        alert('Erro ao salvar categoria.');
+                    }
+                }).catch(err => {
+                    console.error(err);
+                    alert('Erro de conexão ao salvar categoria.');
                 });
+            };
 
-                if(!response.ok) throw new Error('Erro ao criar categoria');
+            if (fileInput.files && fileInput.files[0]) {
+                const file = fileInput.files[0];
+                const reader = new FileReader();
+                reader.onload = function(uploadEvent) {
+                    const img = new Image();
+                    img.onload = function() {
+                        const canvas = document.createElement('canvas');
+                        let width = img.width;
+                        let height = img.height;
+                        const maxWidth = 800;
+                        if (width > maxWidth) {
+                            height = Math.round((height * maxWidth) / width);
+                            width = maxWidth;
+                        }
+                        canvas.width = width;
+                        canvas.height = height;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
+                        const compressedBase64 = canvas.toDataURL('image/jpeg', 0.75);
+                        proceedWithImage(compressedBase64);
+                    };
+                    img.src = uploadEvent.target.result;
+                };
+                reader.readAsDataURL(file);
+            } else {
+                proceedWithImage(null);
+            }
+        }
 
-                closeCategoryModal();
-                loadCategoriesSelect();
-                alert('Categoria criada com sucesso!');
-            } catch (error) {
-                console.error(error);
-                alert('Erro ao criar categoria.');
+        async function deleteCategory(id) {
+            if(confirm('Tem certeza que deseja excluir esta categoria?')) {
+                try {
+                    await fetch(window.location.origin + `/api/categorias/${id}`, { method: 'DELETE' });
+                    loadAdminCategories();
+                    loadCategoriesSelect();
+                } catch (err) {
+                    console.error('Erro ao excluir categoria:', err);
+                }
             }
         }
 
@@ -570,7 +781,7 @@
                 const config = await res.json();
                 if(config) {
                     document.getElementById('config-name').value = config.nome_loja || '';
-                    document.getElementById('config-logo').value = config.logo_url || '';
+                    document.getElementById('config-logo-base64').value = config.logo_url || '';
                     document.getElementById('config-whatsapp').value = config.whatsapp || '';
                 }
             } catch(err) {
@@ -585,14 +796,22 @@
         async function saveConfig(e) {
             e.preventDefault();
             const nome_loja = document.getElementById('config-name').value;
-            const logo_url = document.getElementById('config-logo').value;
+            const logo_url = document.getElementById('config-logo-base64').value;
             const whatsapp = document.getElementById('config-whatsapp').value;
 
             try {
+                const res = await fetch(window.location.origin + '/api/configuracoes');
+                const config = await res.json() || {};
+
                 await fetch(window.location.origin + '/api/configuracoes', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ nome_loja, logo_url, whatsapp })
+                    body: JSON.stringify({ 
+                        nome_loja, 
+                        logo_url, 
+                        whatsapp,
+                        admin_pass: config.admin_pass || '123456' 
+                    })
                 });
             } catch (err) {
                 console.error('Erro ao salvar no servidor:', err);
@@ -613,7 +832,7 @@
             document.getElementById('password-modal').classList.add('hidden');
         }
 
-        function saveNewPassword(e) {
+        async function saveNewPassword(e) {
             e.preventDefault();
             const p1 = document.getElementById('new-pass').value;
             const p2 = document.getElementById('confirm-pass').value;
@@ -623,12 +842,33 @@
                 return;
             }
 
-            localStorage.setItem('admin_custom_pass', p1);
-            closePasswordModal();
-            alert('Senha alterada com sucesso!');
+            try {
+                const res = await fetch(window.location.origin + '/api/configuracoes');
+                const config = await res.json() || {};
+
+                const response = await fetch(window.location.origin + '/api/configuracoes', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        nome_loja: config.nome_loja || 'Burger & Cia',
+                        logo_url: config.logo_url || '',
+                        whatsapp: config.whatsapp || '5599999999999',
+                        admin_pass: p1
+                    })
+                });
+
+                if(response.ok) {
+                    closePasswordModal();
+                    alert('Senha alterada com sucesso!');
+                } else {
+                    alert('Erro ao salvar nova senha.');
+                }
+            } catch (err) {
+                console.error('Erro ao alterar senha:', err);
+                alert('Erro de conexão ao salvar senha.');
+            }
         }
 
-        // FUNÇÕES PARA GERENCIAR BANNERS
         function openBannerModal() {
             document.getElementById('banner-modal').classList.remove('hidden');
             loadAdminBanners();
@@ -658,7 +898,7 @@
                                 <p class="text-[10px] text-slate-400">${b.subtitulo || ''}</p>
                             </div>
                         </div>
-                        <button onclick="deleteBanner(${b.id})" class="bg-red-500/10 hover:bg-red-500/20 text-red-400 p-2 rounded-lg border border-red-500/20 text-xs">
+                        <button onclick="deleteBanner(${b.id})" class="bg-red-500/15 hover:bg-red-500/30 text-red-400 p-2 rounded-lg border border-red-500/20 text-xs transition-colors">
                             <i class="fa-solid fa-trash"></i>
                         </button>
                     </div>
@@ -670,29 +910,61 @@
 
         async function saveBanner(e) {
             e.preventDefault();
-            const imagem = document.getElementById('banner-image').value.trim();
+            const fileInput = document.getElementById('banner-file');
             const tag = document.getElementById('banner-tag').value.trim();
             const titulo = document.getElementById('banner-titulo').value.trim();
             const subtitulo = document.getElementById('banner-sub').value.trim();
 
-            try {
-                const res = await fetch(window.location.origin + '/api/banners', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ imagem, titulo, subtitulo, tag })
-                });
-
-                if(res.ok) {
-                    alert('Banner adicionado com sucesso!');
-                    document.querySelector('#banner-modal form').reset();
-                    loadAdminBanners();
-                } else {
-                    alert('Erro ao salvar banner.');
-                }
-            } catch (err) {
-                console.error(err);
-                alert('Erro de conexão ao salvar banner.');
+            if (!fileInput.files || !fileInput.files[0]) {
+                return alert('Por favor, selecione uma foto para o banner.');
             }
+
+            const file = fileInput.files[0];
+            const reader = new FileReader();
+
+            reader.onload = function(uploadEvent) {
+                const img = new Image();
+                img.onload = async function() {
+                    const canvas = document.createElement('canvas');
+                    let width = img.width;
+                    let height = img.height;
+                    const maxWidth = 1000;
+
+                    if (width > maxWidth) {
+                        height = Math.round((height * maxWidth) / width);
+                        width = maxWidth;
+                    }
+
+                    canvas.width = width;
+                    canvas.height = height;
+
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+
+                    const imagemBase64 = canvas.toDataURL('image/jpeg', 0.75);
+
+                    try {
+                        const res = await fetch(window.location.origin + '/api/banners', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ imagem: imagemBase64, titulo, subtitulo, tag })
+                        });
+
+                        if(res.ok) {
+                            alert('Banner adicionado com sucesso!');
+                            document.querySelector('#banner-modal form').reset();
+                            loadAdminBanners();
+                        } else {
+                            alert('Erro ao salvar banner.');
+                        }
+                    } catch (err) {
+                        console.error(err);
+                        alert('Erro de conexão ao salvar banner.');
+                    }
+                };
+                img.src = uploadEvent.target.result;
+            };
+            reader.readAsDataURL(file);
         }
 
         async function deleteBanner(id) {
