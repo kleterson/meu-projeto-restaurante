@@ -175,6 +175,51 @@ app.delete('/api/categorias/:id', async (req, res) => {
     }
 });
 
+// --- ROTAS DE BAIRROS (SUPABASE) ---
+app.get('/api/bairros', async (req, res) => {
+    try {
+        const { data, error } = await supabase.from('bairros').select('*').order('id', { ascending: true });
+        if (error) throw error;
+        res.json(data || []);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+app.post('/api/bairros', async (req, res) => {
+    try {
+        const { nome, taxa } = req.body;
+        const { data, error } = await supabase.from('bairros').insert([{ nome, taxa }]).select();
+        if (error) throw error;
+        res.json(data[0]);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+app.put('/api/bairros/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { nome, taxa } = req.body;
+        const { data, error } = await supabase.from('bairros').update({ nome, taxa }).eq('id', id).select();
+        if (error) throw error;
+        res.json(data[0]);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+app.delete('/api/bairros/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { error } = await supabase.from('bairros').delete().eq('id', id);
+        if (error) throw error;
+        res.json({ success: true });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
 // --- ROTAS DE CONFIGURAÇÕES (WHATSAPP / NOME / LOGO) ---
 app.get('/api/configuracoes', async (req, res) => {
     try {
@@ -188,21 +233,24 @@ app.get('/api/configuracoes', async (req, res) => {
 
 app.post('/api/configuracoes', async (req, res) => {
     try {
-        const { nome_loja, logo_url, whatsapp } = req.body;
+        const { nome_loja, logo_url, whatsapp, admin_pass } = req.body;
         
         const { data: existing } = await supabase.from('configuracoes').select('id').limit(1).maybeSingle();
 
         let result;
+        const payload = { nome_loja, logo_url, whatsapp };
+        if (admin_pass) payload.admin_pass = admin_pass;
+
         if (existing && existing.id) {
             result = await supabase
                 .from('configuracoes')
-                .update({ nome_loja, logo_url, whatsapp })
+                .update(payload)
                 .eq('id', existing.id)
                 .select();
         } else {
             result = await supabase
                 .from('configuracoes')
-                .insert([{ nome_loja, logo_url, whatsapp }])
+                .insert([payload])
                 .select();
         }
 

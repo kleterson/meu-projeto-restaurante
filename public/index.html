@@ -21,6 +21,8 @@
         body { font-family: 'Inter', sans-serif; } 
         .hero-slide { opacity: 0; transition: opacity 1s ease-in-out; position: absolute; inset: 0; display: flex; align-items: center; pointer-events: none; z-index: 10; }
         .hero-slide.active { opacity: 1; pointer-events: auto; z-index: 20; }
+        @keyframes pulse-slow { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.03); } }
+        .promo-highlight { animation: pulse-slow 2.5s infinite; }
     </style>
 </head>
 <body class="bg-darkBg text-slate-100 min-h-screen flex flex-col justify-between">
@@ -64,6 +66,29 @@
 
         <!-- TELA 1: Escolha de Categorias Dinâmicas -->
         <div id="view-categories">
+            
+            <!-- Botão de Destaque para Promoções -->
+            <div id="promo-banner-btn" class="hidden mb-10">
+                <div onclick="selectCategory('Promoções')" class="promo-highlight cursor-pointer bg-gradient-to-r from-red-600 via-rose-600 to-amber-500 p-1 rounded-2xl shadow-2xl">
+                    <div class="bg-slate-900 rounded-xl p-6 flex items-center justify-between">
+                        <div class="flex items-center space-x-4">
+                            <div class="bg-red-500/20 text-red-400 p-4 rounded-xl border border-red-500/30 text-2xl">
+                                <i class="fa-solid fa-fire animate-bounce"></i>
+                            </div>
+                            <div>
+                                <span class="bg-red-500 text-white text-xs font-bold px-2.5 py-1 rounded-full uppercase tracking-wider">Imperdível</span>
+                                <h3 class="text-2xl font-black text-white mt-1">Ver Produtos em Promoção</h3>
+                                <p class="text-slate-300 text-sm">Aproveite os melhores descontos do cardápio hoje!</p>
+                            </div>
+                        </div>
+                        <div class="hidden sm:flex items-center space-x-2 text-amber-400 font-bold">
+                            <span>Ver Ofertas</span>
+                            <i class="fa-solid fa-arrow-right"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <div class="text-center max-w-2xl mx-auto mb-10">
                 <span class="bg-red-500/20 text-red-400 text-xs sm:text-sm font-bold px-3.5 py-1.5 rounded-full border border-red-500/30 uppercase tracking-wider">Nosso Cardápio</span>
                 <h2 class="text-3xl sm:text-4xl font-black text-white mt-3">O que você deseja pedir hoje?</h2>
@@ -102,18 +127,39 @@
                     </h3>
                     <button onclick="closeCart()" class="text-slate-400 hover:text-white p-2 text-xl">&times;</button>
                 </div>
-                <div id="cart-items" class="py-6 space-y-4 overflow-y-auto max-h-[50vh]">
+                <div id="cart-items" class="py-6 space-y-4 overflow-y-auto max-h-[40vh]">
                     <p class="text-slate-500 text-center py-8">Seu carrinho está vazio.</p>
                 </div>
             </div>
+            
             <div class="border-t border-slate-800 pt-4 space-y-3">
-                <input type="text" id="clienteNome" placeholder="Seu Nome Completo" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-red-500">
-                <input type="text" id="clienteEndereco" placeholder="Endereço de Entrega" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-red-500">
+                <input type="text" id="clienteNome" placeholder="Seu Nome Completo" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus:border-red-500">
+                <input type="text" id="clienteEndereco" placeholder="Endereço de Entrega (Rua, Número)" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus:border-red-500">
+                
+                <!-- Bairro dinâmico carregado do Supabase via Servidor -->
+                <select id="clienteBairro" onchange="updateCartUI()" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus:border-red-500">
+                    <option value="" disabled selected>Selecione o Bairro</option>
+                </select>
+
+                <!-- Forma de Pagamento -->
+                <select id="formaPagamento" onchange="verificarPagamento()" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus:border-red-500">
+                    <option value="" disabled selected>Forma de Pagamento</option>
+                    <option value="Pix">Pix</option>
+                    <option value="Cartao">Cartão (Maquininha)</option>
+                    <option value="Dinheiro">Dinheiro</option>
+                </select>
+
+                <!-- Campo de Troco Dinâmico -->
+                <div id="div-troco" class="hidden space-y-1">
+                    <input type="number" id="valor-troco" placeholder="Troco para quanto? (Ex: 50)" oninput="calcularTroco()" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus:border-red-500">
+                    <span id="texto-troco" class="text-xs text-amber-400 font-semibold block"></span>
+                </div>
+
                 <div class="flex justify-between items-center pt-2">
-                    <span class="text-slate-400">Total:</span>
+                    <span class="text-slate-400">Total Geral:</span>
                     <span id="cart-total" class="text-2xl font-extrabold text-white">R$ 0,00</span>
                 </div>
-                <button onclick="checkout()" class="w-full bg-gradient-to-r from-red-600 to-amber-500 text-white font-bold py-3.5 rounded-xl shadow-lg transition-all text-center block">
+                <button onclick="checkout()" class="w-full bg-gradient-to-r from-red-600 to-amber-500 text-white font-bold py-3 rounded-xl shadow-lg transition-all text-center block">
                     <i class="fa-brands fa-whatsapp mr-2"></i> Enviar Pedido no WhatsApp
                 </button>
             </div>
@@ -124,7 +170,24 @@
         let storeWhatsApp = "5599999999999"; 
         let currentSlideIndex = 0;
         let slideInterval;
-
+        let menuItems = [];
+        let currentFilteredProducts = [];
+        
+        let cart = [];
+        try {
+            const savedCart = JSON.parse(localStorage.getItem('burger_cart'));
+            if(Array.isArray(savedCart)) {
+                cart = savedCart.map(item => ({
+                    id: item.id,
+                    name: item.name || 'Produto',
+                    price: Number(item.price) || 0,
+                    qty: Number(item.qty) > 0 ? Number(item.qty) : 1
+                }));
+            }
+        } catch(e) {
+            cart = [];
+        }
+        
         window.addEventListener('DOMContentLoaded', async () => {
             try {
                 const res = await fetch(window.location.origin + '/api/configuracoes');
@@ -154,10 +217,32 @@
                 console.error('Erro ao carregar configurações da loja:', err);
             }
 
+            await loadProducts();
             loadDynamicBanners();
             loadCategories();
-            loadProducts();
+            carregarBairrosNoCarrinho();
+            updateCartUI();
         });
+
+        async function carregarBairrosNoCarrinho() {
+            const selectBairro = document.getElementById('clienteBairro');
+            if(!selectBairro) return;
+
+            try {
+                const res = await fetch(window.location.origin + '/api/bairros');
+                const bairros = await res.json();
+
+                if(Array.isArray(bairros) && bairros.length > 0) {
+                    selectBairro.innerHTML = `<option value="" disabled selected>Selecione o Bairro</option>` + 
+                        bairros.map(b => `<option value="${b.nome}" data-taxa="${b.taxa}">${b.nome} (Taxa: R$ ${Number(b.taxa).toFixed(2).replace('.', ',')})</option>`).join('');
+                    return;
+                }
+            } catch(e) {
+                console.error('Erro ao carregar bairros do servidor:', e);
+            }
+
+            selectBairro.innerHTML = `<option value="" disabled selected>Nenhum bairro cadastrado</option>`;
+        }
 
         async function loadDynamicBanners() {
             try {
@@ -235,7 +320,17 @@
                 const categorias = await response.json();
                 
                 const grid = document.getElementById('categories-grid');
+                const promoBanner = document.getElementById('promo-banner-btn');
                 if(!grid || !Array.isArray(categorias)) return;
+
+                const hasPromo = categorias.some(c => c.nome.toLowerCase().includes('promoç') || c.nome.toLowerCase().includes('promocao'));
+                if(hasPromo) {
+                    promoBanner.classList.remove('hidden');
+                } else {
+                    promoBanner.classList.add('hidden');
+                }
+
+                const categoriasFiltradas = categorias.filter(cat => !cat.nome.toLowerCase().includes('promoç') && !cat.nome.toLowerCase().includes('promocao'));
 
                 const cores = [
                     { border: 'hover:border-red-500', bg: 'bg-red-600', shadow: 'shadow-red-600/50', icon: 'fa-burger' },
@@ -243,7 +338,7 @@
                     { border: 'hover:border-emerald-500', bg: 'bg-emerald-500', shadow: 'shadow-emerald-500/50', icon: 'fa-bottle-water' }
                 ];
 
-                grid.innerHTML = categorias.map((cat, index) => {
+                grid.innerHTML = categoriasFiltradas.map((cat, index) => {
                     const estilo = cores[index % cores.length];
                     const imagemCat = cat.imagem && cat.imagem.trim() !== '' ? cat.imagem : 'https://images.unsplash.com/photo-1550547660-d9450f859349?auto=format&fit=crop&w=800&q=80';
                     return `
@@ -264,10 +359,6 @@
                 console.error('Erro ao carregar categorias no site:', err);
             }
         }
-
-        let menuItems = [];
-        let cart = JSON.parse(localStorage.getItem('burger_cart')) || [];
-        updateCartUI();
 
         async function loadProducts() {
             try {
@@ -291,15 +382,20 @@
             document.getElementById('category-title').textContent = category;
 
             const grid = document.getElementById('products-grid');
-            const filtered = menuItems.filter(i => i.category && i.category.toLowerCase() === category.toLowerCase());
+            
+            if(category.toLowerCase().includes('promoç') || category.toLowerCase().includes('promocao')) {
+                currentFilteredProducts = menuItems.filter(i => i.category && (i.category.toLowerCase().includes('promoç') || i.category.toLowerCase().includes('promocao')));
+            } else {
+                currentFilteredProducts = menuItems.filter(i => i.category && i.category.toLowerCase() === category.toLowerCase());
+            }
 
-            if(filtered.length === 0) {
+            if(currentFilteredProducts.length === 0) {
                 grid.innerHTML = `<p class="text-slate-400 col-span-full text-center py-10">Nenhum produto cadastrado nesta categoria ainda.</p>`;
                 window.scrollTo({ top: 0, behavior: 'smooth' });
                 return;
             }
 
-            grid.innerHTML = filtered.map(item => `
+            grid.innerHTML = currentFilteredProducts.map((item, index) => `
                 <div class="bg-slate-800/60 border border-slate-700/60 rounded-xl overflow-hidden shadow-lg flex flex-col justify-between group">
                     <div class="relative h-32 sm:h-40 overflow-hidden bg-slate-900">
                         <img src="${item.image || 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=600&q=80'}" alt="${item.name}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
@@ -310,7 +406,7 @@
                             <h3 class="text-sm sm:text-base font-bold text-white mb-1 leading-tight">${item.name}</h3>
                             <p class="text-slate-400 text-xs mb-3 line-clamp-2">${item.desc || ''}</p>
                         </div>
-                        <button onclick="addToCart(${item.id})" class="w-full bg-slate-700 hover:bg-red-600 text-white font-semibold py-2 rounded-lg transition-colors flex items-center justify-center space-x-1.5 text-xs sm:text-sm">
+                        <button onclick="addToCartByIndex(${index})" class="w-full bg-slate-700 hover:bg-red-600 text-white font-semibold py-2 rounded-lg transition-colors flex items-center justify-center space-x-1.5 text-xs sm:text-sm">
                             <i class="fa-solid fa-plus text-[10px]"></i>
                             <span>Adicionar</span>
                         </button>
@@ -328,19 +424,29 @@
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
-        window.addToCart = function(id) {
-            const item = menuItems.find(i => i.id == id);
+        window.addToCartByIndex = function(index) {
+            const item = currentFilteredProducts[index];
             if(!item) return;
-            const existing = cart.find(i => i.id == id);
-            if(existing) existing.qty++;
-            else cart.push({ ...item, price: Number(item.price || 0), qty: 1 });
+
+            const existing = cart.find(i => String(i.id) === String(item.id));
+            if(existing) {
+                existing.qty = Number(existing.qty) + 1;
+            } else {
+                cart.push({ 
+                    id: item.id, 
+                    name: item.name, 
+                    price: Number(item.price || 0), 
+                    qty: 1 
+                });
+            }
             
             saveCart();
             updateCartUI();
+            openCart();
         }
 
         window.removeFromCart = function(id) {
-            cart = cart.filter(i => i.id != id);
+            cart = cart.filter(i => String(i.id) !== String(id));
             saveCart();
             updateCartUI();
         }
@@ -349,12 +455,24 @@
             localStorage.setItem('burger_cart', JSON.stringify(cart));
         }
 
+        function calcularTotalGeral() {
+            let subtotal = cart.reduce((sum, i) => sum + ((Number(i.price) || 0) * (Number(i.qty) || 1)), 0);
+            let taxaEntrega = 0;
+            const selectBairro = document.getElementById('clienteBairro');
+            if (selectBairro && selectBairro.selectedIndex > 0) {
+                const selectedOption = selectBairro.options[selectBairro.selectedIndex];
+                taxaEntrega = parseFloat(selectedOption.getAttribute('data-taxa')) || 0;
+            }
+            return subtotal + taxaEntrega;
+        }
+
         function updateCartUI() {
             const countEl = document.getElementById('cart-count');
             const itemsEl = document.getElementById('cart-items');
             const totalEl = document.getElementById('cart-total');
 
-            countEl.textContent = cart.reduce((sum, i) => sum + i.qty, 0);
+            const totalCount = cart.reduce((sum, i) => sum + (Number(i.qty) || 0), 0);
+            countEl.textContent = totalCount;
 
             if(cart.length === 0) {
                 itemsEl.innerHTML = `<p class="text-slate-500 text-center py-8">Seu carrinho está vazio.</p>`;
@@ -362,42 +480,125 @@
                 return;
             }
 
-            let total = 0;
+            let subtotal = 0;
             itemsEl.innerHTML = cart.map(item => {
-                let itemTotal = item.price * item.qty;
-                total += itemTotal;
+                let itemPrice = Number(item.price) || 0;
+                let itemQty = Number(item.qty) || 1;
+                let itemTotal = itemPrice * itemQty;
+                subtotal += itemTotal;
                 return `
                     <div class="flex items-center justify-between bg-slate-800/40 p-3 rounded-xl border border-slate-700/50">
                         <div>
                             <h4 class="text-sm font-bold text-white">${item.name}</h4>
-                            <span class="text-xs text-slate-400">R$ ${item.price.toFixed(2).replace('.', ',')} x ${item.qty}</span>
+                            <span class="text-xs text-slate-400">R$ ${itemPrice.toFixed(2).replace('.', ',')} x ${itemQty}</span>
                         </div>
-                        <button onclick="removeFromCart(${item.id})" class="text-red-400 p-2"><i class="fa-solid fa-trash text-sm"></i></button>
+                        <button onclick="removeFromCart('${item.id}')" class="text-red-400 p-2"><i class="fa-solid fa-trash text-sm"></i></button>
                     </div>
                 `;
             }).join('');
-            totalEl.textContent = `R$ ${total.toFixed(2).replace('.', ',')}`;
+
+            let taxaEntrega = 0;
+            const selectBairro = document.getElementById('clienteBairro');
+            if (selectBairro && selectBairro.selectedIndex > 0) {
+                const selectedOption = selectBairro.options[selectBairro.selectedIndex];
+                taxaEntrega = parseFloat(selectedOption.getAttribute('data-taxa')) || 0;
+            }
+
+            let totalGeral = subtotal + taxaEntrega;
+            totalEl.textContent = `R$ ${totalGeral.toFixed(2).replace('.', ',')}`;
+
+            if(document.getElementById('formaPagamento').value === 'Dinheiro') {
+                calcularTroco();
+            }
         }
 
-        window.openCart = () => document.getElementById('cart-modal').classList.remove('hidden');
+        function verificarPagamento() {
+            const pagamento = document.getElementById('formaPagamento').value;
+            const divTroco = document.getElementById('div-troco');
+            
+            if (pagamento === 'Dinheiro') {
+                divTroco.classList.remove('hidden');
+            } else {
+                divTroco.classList.add('hidden');
+                document.getElementById('valor-troco').value = '';
+                document.getElementById('texto-troco').innerText = '';
+            }
+        }
+
+        function calcularTroco() {
+            const valorTrocoPara = parseFloat(document.getElementById('valor-troco').value) || 0;
+            const totalGeral = calcularTotalGeral();
+            const textoTroco = document.getElementById('texto-troco');
+            
+            if (valorTrocoPara > totalGeral) {
+                let troco = valorTrocoPara - totalGeral;
+                textoTroco.innerText = `Levar troco de: R$ ${troco.toFixed(2).replace('.', ',')}`;
+            } else if (valorTrocoPara > 0) {
+                textoTroco.innerText = `O valor fornecido é menor que o total!`;
+            } else {
+                textoTroco.innerText = '';
+            }
+        }
+
+        window.openCart = function() {
+            carregarBairrosNoCarrinho();
+            document.getElementById('cart-modal').classList.remove('hidden');
+        }
+
         window.closeCart = () => document.getElementById('cart-modal').classList.add('hidden');
 
         window.checkout = function() {
             if(cart.length === 0) return alert('Seu carrinho está vazio!');
             let nome = document.getElementById('clienteNome').value.trim();
             let endereco = document.getElementById('clienteEndereco').value.trim();
-            if(!nome || !endereco) return alert('Por favor, preencha seu nome e o endereço de entrega.');
+            let selectBairro = document.getElementById('clienteBairro');
+            let bairro = selectBairro.value;
+            let formaPagamento = document.getElementById('formaPagamento').value;
+            let trocoTexto = document.getElementById('texto-troco').innerText;
 
-            let message = `*Novo Pedido - Cardápio*%0A*Cliente:* ${nome}%0A*Endereço:* ${endereco}%0A%0A*Itens:*%0A`;
-            cart.forEach(i => { message += `- ${i.qty}x ${i.name} (R$ ${(i.price * i.qty).toFixed(2)})%0A`; });
-            const total = cart.reduce((sum, i) => sum + (i.price * i.qty), 0);
-            message += `%0A*Total:* R$ ${total.toFixed(2)}`;
+            if(!nome || !endereco || !bairro || !formaPagamento) {
+                return alert('Por favor, preencha todos os campos: Nome, Endereço, Bairro e Forma de Pagamento.');
+            }
+
+            let subtotal = cart.reduce((sum, i) => sum + (Number(i.price) * Number(i.qty)), 0);
+            let taxaEntrega = parseFloat(selectBairro.options[selectBairro.selectedIndex].getAttribute('data-taxa')) || 0;
+            let totalGeral = subtotal + taxaEntrega;
+
+            let message = `*Novo Pedido - Gonçalves Lanches* 🍔%0A%0A`;
+            message += `*Cliente:* ${nome}%0A`;
+            message += `*Endereço:* ${endereco} - Bairro: ${bairro}%0A`;
+            message += `*Forma de Pagamento:* ${formaPagamento}%0A`;
+            
+            if(formaPagamento === 'Dinheiro' && trocoTexto) {
+                message += `*Troco:* ${trocoTexto}%0A`;
+            }
+
+            message += `%0A*Itens do Pedido:*%0A`;
+            cart.forEach(i => { 
+                message += `- ${i.qty}x ${i.name} (R$ ${(i.price * i.qty).toFixed(2).replace('.', ',')})%0A`; 
+            });
+
+            if(taxaEntrega > 0) {
+                message += `%0A*Taxa de Entrega:* R$ ${taxaEntrega.toFixed(2).replace('.', ',')}%0A`;
+            }
+            
+            message += `*Total Geral:* R$ ${totalGeral.toFixed(2).replace('.', ',')}`;
             
             window.open(`https://wa.me/${storeWhatsApp}?text=${message}`, '_blank');
 
+            // --- ZERA O CARRINHO E LIMPA OS CAMPOS APÓS ENVIAR ---
             cart = [];
             saveCart();
             updateCartUI();
+            
+            document.getElementById('clienteNome').value = '';
+            document.getElementById('clienteEndereco').value = '';
+            document.getElementById('clienteBairro').selectedIndex = 0;
+            document.getElementById('formaPagamento').selectedIndex = 0;
+            document.getElementById('valor-troco').value = '';
+            document.getElementById('texto-troco').innerText = '';
+            document.getElementById('div-troco').classList.add('hidden');
+            
             closeCart();
         }
     </script>
