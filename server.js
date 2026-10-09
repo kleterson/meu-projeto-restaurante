@@ -266,13 +266,12 @@ app.get('/api/configuracoes', async (req, res) => {
 
 app.post('/api/configuracoes', async (req, res) => {
     try {
-        const { nome_loja, logo_url, whatsapp, admin_pass } = req.body;
+        const { nome_loja, logo_url, whatsapp } = req.body;
         
         const { data: existing } = await supabase.from('configuracoes').select('id').limit(1).maybeSingle();
 
         let result;
         const payload = { nome_loja, logo_url, whatsapp };
-        if (admin_pass) payload.admin_pass = admin_pass;
 
         if (existing && existing.id) {
             result = await supabase
@@ -291,6 +290,58 @@ app.post('/api/configuracoes', async (req, res) => {
         res.json(result.data[0]);
     } catch (err) {
         res.status(500).json({ error: err.message });
+    }
+});
+
+// --- ROTA DE AUTENTICAÇÃO E LOGIN DO ADMIN (USUÁRIO E SENHA) ---
+app.post('/api/admin/login', async (req, res) => {
+    try {
+        const { usuario, senha } = req.body;
+        const { data, error } = await supabase.from('configuracoes').select('admin_user, admin_pass').limit(1).maybeSingle();
+        
+        const usuarioSalvo = (data && data.admin_user) ? data.admin_user : 'admin';
+        const senhaSalva = (data && data.admin_pass) ? data.admin_pass : '123456';
+
+        if (usuario === usuarioSalvo && senha === senhaSalva) {
+            res.json({ success: true });
+        } else {
+            res.status(401).json({ success: false, message: 'Usuário ou senha incorretos!' });
+        }
+    } catch (err) {
+        res.status(500).json({ success: false, error: err.message });
+    }
+});
+
+// --- ROTA PARA ALTERAR E SALVAR USUÁRIO E SENHA NO SUPABASE ---
+app.post('/api/admin/alterar-credenciais', async (req, res) => {
+    try {
+        const { novoUsuario, novaSenha } = req.body;
+        if (!novoUsuario || !novaSenha) {
+            return res.status(400).json({ success: false, message: 'Usuário ou senha não informados.' });
+        }
+
+        const { data: existing } = await supabase.from('configuracoes').select('id').limit(1).maybeSingle();
+
+        let result;
+        const payload = { admin_user: novoUsuario, admin_pass: novaSenha };
+
+        if (existing && existing.id) {
+            result = await supabase
+                .from('configuracoes')
+                .update(payload)
+                .eq('id', existing.id)
+                .select();
+        } else {
+            result = await supabase
+                .from('configuracoes')
+                .insert([payload])
+                .select();
+        }
+
+        if (result.error) throw result.error;
+        res.json({ success: true, message: 'Credenciais alteradas e salvas no Supabase com sucesso!' });
+    } catch (err) {
+        res.status(500).json({ success: false, error: err.message });
     }
 });
 
