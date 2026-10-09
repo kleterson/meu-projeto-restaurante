@@ -64,7 +64,7 @@ app.post('/api/pedidos', async (req, res) => {
     }
 });
 
-// Rota para salvar produtos diretamente na tabela 'products' do Supabase (Com todos os campos)
+// Rota para salvar produtos diretamente na tabela 'products' do Supabase
 app.post('/api/produtos', async (req, res) => {
     try {
         const { store_id, name, category, price, image, desc } = req.body;
@@ -127,7 +127,105 @@ app.delete('/api/produtos/:id', async (req, res) => {
     }
 });
 
-// Serve todos os arquivos da pasta 'public' automaticamente (incluindo admin.html)
+// --- ROTAS DE CATEGORIAS ---
+app.get('/api/categorias', async (req, res) => {
+    try {
+        const { data, error } = await supabase.from('categorias').select('*');
+        if (error) throw error;
+        res.json(data);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+app.post('/api/categorias', async (req, res) => {
+    try {
+        const { nome } = req.body;
+        const { data, error } = await supabase.from('categorias').insert([{ nome }]).select();
+        if (error) throw error;
+        res.json(data[0]);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// --- ROTAS DE CONFIGURAÇÕES (WHATSAPP / NOME / LOGO) ---
+app.get('/api/configuracoes', async (req, res) => {
+    try {
+        const { data, error } = await supabase.from('configuracoes').select('*').limit(1).maybeSingle();
+        if (error) throw error;
+        res.json(data || {});
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+app.post('/api/configuracoes', async (req, res) => {
+    try {
+        const { nome_loja, logo_url, whatsapp } = req.body;
+        
+        const { data: existing } = await supabase.from('configuracoes').select('id').limit(1).maybeSingle();
+
+        let result;
+        if (existing && existing.id) {
+            result = await supabase
+                .from('configuracoes')
+                .update({ nome_loja, logo_url, whatsapp })
+                .eq('id', existing.id)
+                .select();
+        } else {
+            result = await supabase
+                .from('configuracoes')
+                .insert([{ nome_loja, logo_url, whatsapp }])
+                .select();
+        }
+
+        if (result.error) throw result.error;
+        res.json(result.data[0]);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// --- ROTAS DE BANNERS ---
+app.get('/api/banners', async (req, res) => {
+    try {
+        const { data, error } = await supabase.from('banners').select('*').order('id', { ascending: false });
+        if (error) throw error;
+        res.json(data || []);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+app.post('/api/banners', async (req, res) => {
+    try {
+        const { imagem, titulo, subtitulo, tag } = req.body;
+        const { data, error } = await supabase
+            .from('banners')
+            .insert([{ imagem, titulo, subtitulo, tag }])
+            .select();
+        if (error) throw error;
+        res.json(data[0]);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+app.delete('/api/banners/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { error } = await supabase.from('banners').delete().eq('id', id);
+        if (error) throw error;
+        res.json({ success: true });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// Serve todos os arquivos da pasta 'public' automaticamente
+app.use(express.static(path.join(__dirname)));
+// Serve todos os arquivos da pasta 'public' automaticamente
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Rota padrão caso acesse a raiz

@@ -31,7 +31,7 @@
                 <h2 class="text-2xl font-black text-white">Painel Administrativo</h2>
                 <p class="text-slate-400 text-sm mt-1">Entre com suas credenciais para gerenciar o cardápio</p>
             </div>
-            <form onsubmit="saveProduct(event); return false;" class="space-y-4">
+            <form onsubmit="handleLogin(event); return false;" class="space-y-4">
                 <div>
                     <label class="block text-xs font-semibold text-slate-400 mb-1 uppercase tracking-wider">Usuário</label>
                     <input type="text" id="user" required class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-red-500" placeholder="admin">
@@ -69,6 +69,9 @@
                     <a href="index.html" target="_blank" class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-4 py-2.5 rounded-xl text-sm font-semibold border border-slate-700">
                         <i class="fa-solid fa-eye mr-2"></i> Ver Cardápio
                     </a>
+                    <button onclick="openBannerModal()" class="bg-slate-800 hover:bg-slate-700 text-purple-400 px-4 py-2.5 rounded-xl text-sm font-semibold border border-slate-700">
+                        <i class="fa-solid fa-images mr-2"></i> Banners
+                    </button>
                     <button onclick="openConfigModal()" class="bg-slate-800 hover:bg-slate-700 text-cyan-400 px-4 py-2.5 rounded-xl text-sm font-semibold border border-slate-700">
                         <i class="fa-solid fa-gear mr-2"></i> Configurações
                     </button>
@@ -91,6 +94,10 @@
                             <i class="fa-solid fa-eye text-slate-400 w-5"></i>
                             <span>Ver Cardápio</span>
                         </a>
+                        <button onclick="openBannerModal(); toggleMobileMenu();" class="w-full flex items-center space-x-3 px-4 py-3 text-sm text-purple-400 hover:bg-slate-800 transition-colors text-left">
+                            <i class="fa-solid fa-images w-5"></i>
+                            <span>Banners</span>
+                        </button>
                         <button onclick="openConfigModal(); toggleMobileMenu();" class="w-full flex items-center space-x-3 px-4 py-3 text-sm text-cyan-400 hover:bg-slate-800 transition-colors text-left">
                             <i class="fa-solid fa-gear w-5"></i>
                             <span>Configurações</span>
@@ -115,10 +122,16 @@
                     <h1 class="text-3xl font-black text-white">Gerenciar Produtos</h1>
                     <p class="text-slate-400 text-sm mt-1">Adicione, edite ou remova os itens exibidos no cardápio digital.</p>
                 </div>
-                <button onclick="openProductModal()" class="bg-gradient-to-r from-red-600 to-amber-500 text-white font-bold px-5 py-3 rounded-xl shadow-lg flex items-center space-x-2">
-                    <i class="fa-solid fa-plus"></i>
-                    <span>Novo Produto</span>
-                </button>
+                <div class="flex flex-wrap items-center gap-3">
+                    <button onclick="openCategoryModal()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-4 py-3 rounded-xl shadow-lg flex items-center space-x-2 text-sm">
+                        <i class="fa-solid fa-folder-plus"></i>
+                        <span>Nova Categoria</span>
+                    </button>
+                    <button onclick="openProductModal()" class="bg-gradient-to-r from-red-600 to-amber-500 text-white font-bold px-5 py-3 rounded-xl shadow-lg flex items-center space-x-2 text-sm">
+                        <i class="fa-solid fa-plus"></i>
+                        <span>Novo Produto</span>
+                    </button>
+                </div>
             </div>
 
             <div class="mb-6 relative">
@@ -163,10 +176,7 @@
                 <div class="grid grid-cols-2 gap-4">
                     <div>
                         <label class="block text-xs font-semibold text-slate-400 mb-1 uppercase tracking-wider">Categoria</label>
-                        <select id="prod-category" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-red-500">
-                            <option value="lanches">Lanches</option>
-                            <option value="almoco">Almoço</option>
-                            <option value="bebidas">Bebidas</option>
+                        <select id="prod-category" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-red-500 capitalize">
                         </select>
                     </div>
                     <div>
@@ -190,6 +200,26 @@
         </div>
     </div>
 
+    <!-- MODAL DE NOVA CATEGORIA -->
+    <div id="category-modal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-md p-6 shadow-2xl">
+            <div class="flex justify-between items-center pb-4 border-b border-slate-800 mb-4">
+                <h3 class="text-xl font-bold text-white">Criar Nova Categoria</h3>
+                <button onclick="closeCategoryModal()" class="text-slate-400 hover:text-white text-xl">&times;</button>
+            </div>
+            <form onsubmit="saveCategory(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-400 mb-1 uppercase tracking-wider">Nome da Categoria</label>
+                    <input type="text" id="cat-name" required class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500" placeholder="Ex: Porções, Sobremesas">
+                </div>
+                <div class="flex justify-end space-x-3 pt-2">
+                    <button type="button" onclick="closeCategoryModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-4 py-2.5 rounded-xl text-sm font-semibold">Cancelar</button>
+                    <button type="submit" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-6 py-2.5 rounded-xl shadow-lg text-sm">Salvar Categoria</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- MODAL DE CONFIGURAÇÕES -->
     <div id="config-modal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
         <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-md p-6 shadow-2xl">
@@ -205,7 +235,10 @@
                 <div>
                     <label class="block text-xs font-semibold text-slate-400 mb-1 uppercase tracking-wider">Link da Foto de Perfil / Logo (URL)</label>
                     <input type="url" id="config-logo" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-cyan-500" placeholder="Cole o link direto da imagem">
-                    <p class="text-xs text-slate-500 mt-1">Dica: Se deixar em branco, o sistema exibirá o ícone padrão.</p>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-400 mb-1 uppercase tracking-wider">Número do WhatsApp</label>
+                    <input type="text" id="config-whatsapp" required class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-cyan-500" placeholder="Ex: 5599999999999">
                 </div>
                 <div class="flex justify-end space-x-3 pt-2">
                     <button type="button" onclick="closeConfigModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-4 py-2.5 rounded-xl text-sm font-semibold">Cancelar</button>
@@ -238,10 +271,50 @@
             </form>
         </div>
     </div>
+    
+    <!-- MODAL DE GERENCIAR BANNERS -->
+    <div id="banner-modal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center p-4 overflow-y-auto">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-2xl p-6 shadow-2xl my-8 max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center pb-4 border-b border-slate-800 mb-4">
+                <h3 class="text-xl font-bold text-white">Gerenciar Banners do Slideshow</h3>
+                <button onclick="closeBannerModal()" class="text-slate-400 hover:text-white text-xl">&times;</button>
+            </div>
+            
+            <form onsubmit="saveBanner(event)" class="space-y-4 mb-6 bg-slate-800/50 p-4 rounded-xl border border-slate-700">
+                <h4 class="text-sm font-bold text-purple-400 uppercase tracking-wider">Adicionar Novo Banner</h4>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-400 mb-1">Link da Imagem do Banner (URL)</label>
+                    <input type="url" id="banner-image" required placeholder="Cole o link da imagem (ex: https://images.unsplash.com/...)" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-purple-500">
+                    <p class="text-xs text-slate-500 mt-1">Dica: Você pode usar imagens do Unsplash ou copiar o link de uma imagem da web.</p>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-400 mb-1">Tag / Destaque</label>
+                        <input type="text" id="banner-tag" placeholder="Ex: 🍔 Sabor Incomparável" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-400 mb-1">Título Principal</label>
+                        <input type="text" id="banner-titulo" placeholder="Ex: Burgers Na Brasa" required class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-400 mb-1">Subtítulo / Descrição</label>
+                    <input type="text" id="banner-sub" placeholder="Ex: Carne 100% Angus..." required class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white">
+                </div>
+                <button type="submit" class="w-full bg-purple-600 hover:bg-purple-500 text-white font-bold py-2.5 rounded-xl shadow-lg text-sm transition-all">
+                    Salvar e Adicionar Banner
+                </button>
+            </form>
+
+            <h4 class="text-sm font-bold text-slate-300 mb-3 uppercase tracking-wider">Banners Ativos</h4>
+            <div id="banners-list" class="space-y-3 max-h-60 overflow-y-auto"></div>
+        </div>
+    </div>
 
     <script>
         window.addEventListener('DOMContentLoaded', () => {
             loadBrandConfig();
+            loadCategoriesSelect();
             if(localStorage.getItem('admin_logged') === 'true') {
                 showAdminPanel();
             }
@@ -260,27 +333,35 @@
             }
         });
 
-        function loadBrandConfig() {
-            const storeName = localStorage.getItem('store_name') || 'Burger & Cia';
-            const storeLogo = localStorage.getItem('store_logo') || '';
+        async function loadBrandConfig() {
+            try {
+                const res = await fetch(window.location.origin + '/api/configuracoes');
+                const config = await res.json();
+                if(config) {
+                    const storeName = config.nome_loja || localStorage.getItem('store_name') || 'Burger & Cia';
+                    const storeLogo = config.logo_url || localStorage.getItem('store_logo') || '';
 
-            const brandEl = document.getElementById('header-brand-name');
-            if(brandEl) brandEl.textContent = storeName;
+                    const brandEl = document.getElementById('header-brand-name');
+                    if(brandEl) brandEl.textContent = storeName;
 
-            const iconEl = document.getElementById('header-logo-icon');
-            const imgEl = document.getElementById('header-logo-img');
-            const containerEl = document.getElementById('header-logo-container');
+                    const iconEl = document.getElementById('header-logo-icon');
+                    const imgEl = document.getElementById('header-logo-img');
+                    const containerEl = document.getElementById('header-logo-container');
 
-            if(storeLogo.trim() !== '') {
-                if(imgEl) {
-                    imgEl.src = storeLogo;
-                    imgEl.classList.remove('hidden');
+                    if(storeLogo.trim() !== '') {
+                        if(imgEl) {
+                            imgEl.src = storeLogo;
+                            imgEl.classList.remove('hidden');
+                        }
+                        if(iconEl) iconEl.classList.add('hidden');
+                        if(containerEl) containerEl.classList.remove('bg-gradient-to-tr', 'from-red-600', 'to-amber-500');
+                    } else {
+                        if(imgEl) imgEl.classList.add('hidden');
+                        if(iconEl) iconEl.classList.remove('hidden');
+                    }
                 }
-                if(iconEl) iconEl.classList.add('hidden');
-                if(containerEl) containerEl.classList.remove('bg-gradient-to-tr', 'from-red-600', 'to-amber-500');
-            } else {
-                if(imgEl) imgEl.classList.add('hidden');
-                if(iconEl) iconEl.classList.remove('hidden');
+            } catch (err) {
+                console.error('Erro ao carregar configs da marca:', err);
             }
         }
 
@@ -288,7 +369,6 @@
             e.preventDefault();
             const u = document.getElementById('user').value;
             const p = document.getElementById('pass').value;
-
             const correctPass = localStorage.getItem('admin_custom_pass') || '123456';
 
             if(u === 'admin' && p === correctPass) {
@@ -309,13 +389,28 @@
             document.getElementById('login-screen').classList.add('hidden');
             document.getElementById('admin-panel').classList.remove('hidden');
             loadBrandConfig();
+            loadCategoriesSelect();
             renderAdminProducts();
         }
 
-        // COMUNICAÇÃO COM O SERVER.JS (/api/produtos)
+        async function loadCategoriesSelect(selectedCategory = '') {
+            try {
+                const res = await fetch(window.location.origin + '/api/categorias');
+                const categorias = await res.json();
+                const select = document.getElementById('prod-category');
+                if(select && Array.isArray(categorias)) {
+                    select.innerHTML = categorias.map(cat => `
+                        <option value="${cat.nome}" ${selectedCategory.toLowerCase() === cat.nome.toLowerCase() ? 'selected' : ''}>${cat.nome}</option>
+                    `).join('');
+                }
+            } catch (err) {
+                console.error('Erro ao carregar categorias:', err);
+            }
+        }
+
         async function getMenuItems() {
             try {
-                const response = await fetch('/api/produtos');
+                const response = await fetch(window.location.origin + '/api/produtos');
                 if (!response.ok) throw new Error('Erro ao buscar produtos');
                 const data = await response.json();
                 return data || [];
@@ -358,6 +453,7 @@
         }
 
         async function openProductModal(id = null) {
+            await loadCategoriesSelect();
             document.getElementById('product-modal').classList.remove('hidden');
             if(id) {
                 document.getElementById('modal-title').textContent = 'Editar Produto';
@@ -366,7 +462,7 @@
                 if(p) {
                     document.getElementById('prod-id').value = p.id;
                     document.getElementById('prod-name').value = p.name;
-                    document.getElementById('prod-category').value = p.category;
+                    await loadCategoriesSelect(p.category);
                     document.getElementById('prod-price').value = p.price;
                     document.getElementById('prod-image').value = p.image;
                     document.getElementById('prod-desc').value = p.desc;
@@ -396,13 +492,13 @@
             try {
                 let response;
                 if(id) {
-                    response = await fetch(`/api/produtos/${id}`, {
+                    response = await fetch(window.location.origin + `/api/produtos/${id}`, {
                         method: 'PUT',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(productData)
                     });
                 } else {
-                    response = await fetch('/api/produtos', {
+                    response = await fetch(window.location.origin + '/api/produtos', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(productData)
@@ -423,7 +519,7 @@
         async function deleteProduct(id) {
             if(confirm('Tem certeza que deseja excluir este produto?')) {
                 try {
-                    const response = await fetch(`/api/produtos/${id}`, {
+                    const response = await fetch(window.location.origin + `/api/produtos/${id}`, {
                         method: 'DELETE'
                     });
                     if(!response.ok) throw new Error('Erro ao excluir');
@@ -435,23 +531,72 @@
             }
         }
 
-        function openConfigModal() {
+        function openCategoryModal() {
+            document.getElementById('category-modal').classList.remove('hidden');
+            document.getElementById('cat-name').value = '';
+        }
+
+        function closeCategoryModal() {
+            document.getElementById('category-modal').classList.add('hidden');
+        }
+
+        async function saveCategory(e) {
+            e.preventDefault();
+            const nome = document.getElementById('cat-name').value.trim();
+            if(!nome) return alert('Digite o nome da categoria.');
+
+            try {
+                const response = await fetch(window.location.origin + '/api/categorias', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ nome })
+                });
+
+                if(!response.ok) throw new Error('Erro ao criar categoria');
+
+                closeCategoryModal();
+                loadCategoriesSelect();
+                alert('Categoria criada com sucesso!');
+            } catch (error) {
+                console.error(error);
+                alert('Erro ao criar categoria.');
+            }
+        }
+
+        async function openConfigModal() {
             document.getElementById('config-modal').classList.remove('hidden');
-            document.getElementById('config-name').value = localStorage.getItem('store_name') || 'Burger & Cia';
-            document.getElementById('config-logo').value = localStorage.getItem('store_logo') || '';
+            try {
+                const res = await fetch(window.location.origin + '/api/configuracoes');
+                const config = await res.json();
+                if(config) {
+                    document.getElementById('config-name').value = config.nome_loja || '';
+                    document.getElementById('config-logo').value = config.logo_url || '';
+                    document.getElementById('config-whatsapp').value = config.whatsapp || '';
+                }
+            } catch(err) {
+                console.error(err);
+            }
         }
 
         function closeConfigModal() {
             document.getElementById('config-modal').classList.add('hidden');
         }
 
-        function saveConfig(e) {
+        async function saveConfig(e) {
             e.preventDefault();
-            const name = document.getElementById('config-name').value;
-            const logo = document.getElementById('config-logo').value;
+            const nome_loja = document.getElementById('config-name').value;
+            const logo_url = document.getElementById('config-logo').value;
+            const whatsapp = document.getElementById('config-whatsapp').value;
 
-            localStorage.setItem('store_name', name);
-            localStorage.setItem('store_logo', logo);
+            try {
+                await fetch(window.location.origin + '/api/configuracoes', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ nome_loja, logo_url, whatsapp })
+                });
+            } catch (err) {
+                console.error('Erro ao salvar no servidor:', err);
+            }
 
             loadBrandConfig();
             closeConfigModal();
@@ -481,6 +626,84 @@
             localStorage.setItem('admin_custom_pass', p1);
             closePasswordModal();
             alert('Senha alterada com sucesso!');
+        }
+
+        // FUNÇÕES PARA GERENCIAR BANNERS
+        function openBannerModal() {
+            document.getElementById('banner-modal').classList.remove('hidden');
+            loadAdminBanners();
+        }
+
+        function closeBannerModal() {
+            document.getElementById('banner-modal').classList.add('hidden');
+        }
+
+        async function loadAdminBanners() {
+            try {
+                const res = await fetch(window.location.origin + '/api/banners');
+                const banners = await res.json();
+                const listEl = document.getElementById('banners-list');
+                
+                if(!Array.isArray(banners) || banners.length === 0) {
+                    listEl.innerHTML = `<p class="text-slate-500 text-xs text-center py-4">Nenhum banner cadastrado.</p>`;
+                    return;
+                }
+
+                listEl.innerHTML = banners.map(b => `
+                    <div class="flex items-center justify-between bg-slate-800 p-3 rounded-xl border border-slate-700">
+                        <div class="flex items-center space-x-3">
+                            <img src="${b.imagem}" class="w-12 h-12 rounded-lg object-cover border border-slate-600">
+                            <div>
+                                <h5 class="text-xs font-bold text-white">${b.titulo || 'Sem Título'}</h5>
+                                <p class="text-[10px] text-slate-400">${b.subtitulo || ''}</p>
+                            </div>
+                        </div>
+                        <button onclick="deleteBanner(${b.id})" class="bg-red-500/10 hover:bg-red-500/20 text-red-400 p-2 rounded-lg border border-red-500/20 text-xs">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    </div>
+                `).join('');
+            } catch (err) {
+                console.error('Erro ao carregar banners:', err);
+            }
+        }
+
+        async function saveBanner(e) {
+            e.preventDefault();
+            const imagem = document.getElementById('banner-image').value.trim();
+            const tag = document.getElementById('banner-tag').value.trim();
+            const titulo = document.getElementById('banner-titulo').value.trim();
+            const subtitulo = document.getElementById('banner-sub').value.trim();
+
+            try {
+                const res = await fetch(window.location.origin + '/api/banners', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ imagem, titulo, subtitulo, tag })
+                });
+
+                if(res.ok) {
+                    alert('Banner adicionado com sucesso!');
+                    document.querySelector('#banner-modal form').reset();
+                    loadAdminBanners();
+                } else {
+                    alert('Erro ao salvar banner.');
+                }
+            } catch (err) {
+                console.error(err);
+                alert('Erro de conexão ao salvar banner.');
+            }
+        }
+
+        async function deleteBanner(id) {
+            if(confirm('Tem certeza que deseja excluir este banner?')) {
+                try {
+                    await fetch(window.location.origin + `/api/banners/${id}`, { method: 'DELETE' });
+                    loadAdminBanners();
+                } catch (err) {
+                    console.error('Erro ao excluir:', err);
+                }
+            }
         }
     </script>
 </body>
