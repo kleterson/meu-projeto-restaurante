@@ -429,7 +429,12 @@
                 const response = await fetch(window.location.origin + '/api/produtos');
                 const data = await response.json();
                 if(Array.isArray(data)) {
-                    menuItems = data;
+                    // Ordena os produtos com base no campo 'ordem' (menor número aparece primeiro)
+                    menuItems = data.sort((a, b) => {
+                        let ordemA = a.ordem !== undefined && a.ordem !== null ? Number(a.ordem) : 0;
+                        let ordemB = b.ordem !== undefined && b.ordem !== null ? Number(b.ordem) : 0;
+                        return ordemA - ordemB;
+                    });
                 }
             } catch (err) {
                 console.error('Erro ao carregar produtos do servidor:', err);

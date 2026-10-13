@@ -28,12 +28,13 @@ app.use(express.static(path.join(__dirname)));
 /**
  * STREAMING_CHUNK:Defining backend routes for orders and menu management...
  */
-// Rota para buscar todos os produtos cadastrados
+// Rota para buscar todos os produtos cadastrados ordenados pelo campo ordem
 app.get('/api/produtos', async (req, res) => {
     try {
         const { data, error } = await supabase
             .from('products')
             .select('*')
+            .order('ordem', { ascending: true })
             .order('id', { ascending: false });
 
         if (error) {
@@ -67,14 +68,14 @@ app.post('/api/pedidos', async (req, res) => {
     }
 });
 
-// Rota para salvar produtos diretamente na tabela 'products' do Supabase
+// Rota para salvar produtos diretamente na tabela 'products' do Supabase (com suporte a ordem)
 app.post('/api/produtos', async (req, res) => {
     try {
-        const { store_id, name, category, price, image, desc } = req.body;
+        const { store_id, name, ordem, category, price, image, desc } = req.body;
         
         const { data, error } = await supabase
             .from('products')
-            .insert([{ store_id, name, category, price, image, desc }]);
+            .insert([{ store_id, name, ordem: ordem !== undefined ? ordem : 0, category, price, image, desc }]);
 
         if (error) {
             console.error('Erro ao salvar produto no Supabase:', error.message);
@@ -87,15 +88,15 @@ app.post('/api/produtos', async (req, res) => {
     }
 });
 
-// Rota para atualizar produtos existentes
+// Rota para atualizar produtos existentes (com suporte a ordem)
 app.put('/api/produtos/:id', async (req, res) => {
     try {
         const { id } = req.params;
-        const { name, category, price, image, desc } = req.body;
+        const { name, ordem, category, price, image, desc } = req.body;
 
         const { data, error } = await supabase
             .from('products')
-            .update({ name, category, price, image, desc })
+            .update({ name, ordem: ordem !== undefined ? ordem : 0, category, price, image, desc })
             .eq('id', id);
 
         if (error) {

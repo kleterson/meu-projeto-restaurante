@@ -175,11 +175,19 @@
                 </div>
             </div>
 
-            <div class="mb-6 relative">
-                <span class="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none text-slate-500">
-                    <i class="fa-solid fa-magnifying-glass"></i>
-                </span>
-                <input type="text" id="search-input" oninput="renderAdminProducts()" placeholder="Pesquisar produto pelo nome..." class="w-full bg-slate-900 border border-slate-800 rounded-2xl pl-11 pr-4 py-3.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-red-500 shadow-lg">
+            <!-- Filtros de Pesquisa e Categoria -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                <div class="md:col-span-2 relative">
+                    <span class="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none text-slate-500">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                    </span>
+                    <input type="text" id="search-input" oninput="renderAdminProducts()" placeholder="Pesquisar produto pelo nome..." class="w-full bg-slate-900 border border-slate-800 rounded-2xl pl-11 pr-4 py-3.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-red-500 shadow-lg">
+                </div>
+                <div>
+                    <select id="filter-category" onchange="renderAdminProducts()" class="w-full bg-slate-900 border border-slate-800 rounded-2xl px-4 py-3.5 text-sm text-white focus:outline-none focus:border-red-500 shadow-lg capitalize">
+                        <option value="">Todas as Categorias</option>
+                    </select>
+                </div>
             </div>
 
             <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
@@ -187,6 +195,7 @@
                     <table class="w-full text-left border-collapse">
                         <thead>
                             <tr class="bg-slate-950/60 border-b border-slate-800 text-xs uppercase text-slate-400 font-semibold tracking-wider">
+                                <th class="p-4">Ordem</th>
                                 <th class="p-4">Produto</th>
                                 <th class="p-4">Categoria</th>
                                 <th class="p-4">Preço</th>
@@ -215,16 +224,20 @@
                     <label class="block text-xs font-semibold text-slate-400 mb-1 uppercase tracking-wider">Nome do Produto</label>
                     <input type="text" id="prod-name" required class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-red-500">
                 </div>
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
+                <div class="grid grid-cols-3 gap-4">
+                    <div class="col-span-1">
+                        <label class="block text-xs font-semibold text-slate-400 mb-1 uppercase tracking-wider">Ordem / Posição</label>
+                        <input type="number" id="prod-ordem" value="0" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-red-500" placeholder="Ex: 1">
+                    </div>
+                    <div class="col-span-2">
                         <label class="block text-xs font-semibold text-slate-400 mb-1 uppercase tracking-wider">Categoria</label>
                         <select id="prod-category" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-red-500 capitalize">
                         </select>
                     </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-400 mb-1 uppercase tracking-wider">Preço (R$)</label>
-                        <input type="number" step="0.01" id="prod-price" required class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-red-500">
-                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-400 mb-1 uppercase tracking-wider">Preço (R$)</label>
+                    <input type="number" step="0.01" id="prod-price" required class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-red-500">
                 </div>
                 <div>
                     <label class="block text-xs font-semibold text-slate-400 mb-1 uppercase tracking-wider">Foto do Produto (Arquivo)</label>
@@ -591,11 +604,23 @@
             try {
                 const res = await fetch(window.location.origin + '/api/categorias');
                 const categorias = await res.json();
-                const select = document.getElementById('prod-category');
-                if(select && Array.isArray(categorias)) {
-                    select.innerHTML = categorias.map(cat => `
+                
+                // Preenche o select do modal de produtos
+                const selectProd = document.getElementById('prod-category');
+                if(selectProd && Array.isArray(categorias)) {
+                    selectProd.innerHTML = categorias.map(cat => `
                         <option value="${cat.nome}" ${selectedCategory.toLowerCase() === cat.nome.toLowerCase() ? 'selected' : ''}>${cat.nome}</option>
                     `).join('');
+                }
+
+                // Preenche o select de filtro no topo da tabela
+                const selectFilter = document.getElementById('filter-category');
+                if(selectFilter && Array.isArray(categorias)) {
+                    const currentFilterVal = selectFilter.value;
+                    selectFilter.innerHTML = `<option value="">Todas as Categorias</option>` + 
+                        categorias.map(cat => `
+                            <option value="${cat.nome}" ${currentFilterVal.toLowerCase() === cat.nome.toLowerCase() ? 'selected' : ''}>${cat.nome}</option>
+                        `).join('');
                 }
             } catch (err) {
                 console.error('Erro ao carregar categorias:', err);
@@ -617,20 +642,26 @@
         async function renderAdminProducts() {
             let products = await getMenuItems();
             const searchVal = document.getElementById('search-input').value.toLowerCase().trim();
+            const categoryFilterVal = document.getElementById('filter-category').value.toLowerCase().trim();
 
             if(searchVal !== '') {
                 products = products.filter(item => item.name.toLowerCase().includes(searchVal));
             }
 
+            if(categoryFilterVal !== '') {
+                products = products.filter(item => item.category && item.category.toLowerCase() === categoryFilterVal);
+            }
+
             const tbody = document.getElementById('admin-products-list');
 
             if(products.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-slate-500">Nenhum produto encontrado.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-slate-500">Nenhum produto encontrado.</td></tr>`;
                 return;
             }
 
             tbody.innerHTML = products.map(item => `
                 <tr class="hover:bg-slate-800/40 transition-colors">
+                    <td class="p-4 font-bold text-amber-400">#${item.ordem !== undefined && item.ordem !== null ? item.ordem : 0}</td>
                     <td class="p-4 flex items-center space-x-3">
                         <img src="${item.image}" alt="" class="w-10 h-10 rounded-lg object-cover border border-slate-700">
                         <span class="font-bold text-white">${item.name}</span>
@@ -656,6 +687,7 @@
                 if(p) {
                     document.getElementById('prod-id').value = p.id;
                     document.getElementById('prod-name').value = p.name;
+                    document.getElementById('prod-ordem').value = p.ordem !== undefined && p.ordem !== null ? p.ordem : 0;
                     await loadCategoriesSelect(p.category);
                     document.getElementById('prod-price').value = p.price;
                     document.getElementById('prod-image-base64').value = p.image;
@@ -664,6 +696,7 @@
             } else {
                 document.getElementById('modal-title').textContent = 'Novo Produto';
                 document.getElementById('prod-id').value = '';
+                document.getElementById('prod-ordem').value = '0';
                 document.getElementById('prod-image-base64').value = '';
                 document.querySelector('#product-modal form').reset();
             }
@@ -677,6 +710,7 @@
             e.preventDefault();
             const id = document.getElementById('prod-id').value;
             const name = document.getElementById('prod-name').value;
+            const ordem = parseInt(document.getElementById('prod-ordem').value) || 0;
             const category = document.getElementById('prod-category').value;
             const price = parseFloat(document.getElementById('prod-price').value);
             const image = document.getElementById('prod-image-base64').value;
@@ -684,7 +718,7 @@
             
             if(!image) return alert('Por favor, selecione uma foto para o produto.');
 
-            const productData = { name, category, price, image, desc };
+            const productData = { name, ordem, category, price, image, desc };
 
             try {
                 let response;
@@ -1300,7 +1334,7 @@
             if(confirm('Tem certeza que deseja excluir este banner?')) {
                 try {
                     await fetch(window.location.origin + `/api/banners/${id}`, { method: 'DELETE' });
-                    loadAdminBanners();
+                    loadAdminBbanners();
                 } catch (err) {
                     console.error('Erro ao excluir:', err);
                 }
