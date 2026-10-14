@@ -139,6 +139,16 @@
         </div>
     </footer>
 
+    <!-- MODAL DE ZOOM DA FOTO DO PRODUTO -->
+    <div id="image-zoom-modal" class="fixed inset-0 z-50 bg-slate-950/90 backdrop-blur-md hidden flex items-center justify-center p-4 cursor-pointer" onclick="closeImageZoom()">
+        <div class="relative max-w-3xl w-full max-h-[90vh] flex flex-col items-center justify-center" onclick="event.stopPropagation()">
+            <button onclick="closeImageZoom()" class="absolute -top-12 right-0 text-white text-3xl font-bold bg-slate-800 hover:bg-slate-700 w-10 h-10 rounded-full flex items-center justify-center border border-slate-700 shadow-lg">&times;</button>
+            <img id="zoom-modal-img" src="" alt="Ampliada" class="max-w-full max-h-[75vh] object-contain rounded-2xl border border-slate-800 shadow-2xl">
+            <h3 id="zoom-modal-title" class="text-white font-bold text-lg mt-4 text-center"></h3>
+            <span id="zoom-modal-desc" class="text-slate-400 text-xs mt-1 text-center max-w-md"></span>
+        </div>
+    </div>
+
     <!-- MODAL DE ESCOLHA DE ADICIONAIS -->
     <div id="adicionais-modal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center p-4 overflow-y-auto">
         <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-md p-6 shadow-2xl my-8">
@@ -466,8 +476,11 @@
 
             grid.innerHTML = currentFilteredProducts.map((item, index) => `
                 <div class="bg-slate-800/60 border border-slate-700/60 rounded-xl overflow-hidden shadow-lg flex flex-col justify-between group">
-                    <div class="relative h-32 sm:h-40 overflow-hidden bg-slate-900">
+                    <div class="relative h-32 sm:h-40 overflow-hidden bg-slate-900 cursor-pointer" onclick="openImageZoom(${index})" title="Clique para ampliar a foto">
                         <img src="${item.image || 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=600&q=80'}" alt="${item.name}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                        <span class="absolute bottom-2 left-2 bg-slate-900/80 backdrop-blur-sm text-amber-400 text-[10px] font-bold px-2 py-0.5 rounded-md flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <i class="fa-solid fa-magnifying-glass-plus"></i> <span>Ampliar</span>
+                        </span>
                         <span class="absolute top-2 right-2 bg-slate-900/90 text-white font-bold px-2.5 py-0.5 rounded-full text-xs border border-slate-700">R$ ${Number(item.price || 0).toFixed(2).replace('.', ',')}</span>
                     </div>
                     <div class="p-3 sm:p-4 flex flex-col flex-grow justify-between">
@@ -484,6 +497,26 @@
             `).join('');
             
             window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        window.openImageZoom = function(index) {
+            const item = currentFilteredProducts[index];
+            if(!item) return;
+
+            const modal = document.getElementById('image-zoom-modal');
+            const imgEl = document.getElementById('zoom-modal-img');
+            const titleEl = document.getElementById('zoom-modal-title');
+            const descEl = document.getElementById('zoom-modal-desc');
+
+            imgEl.src = item.image || 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=800&q=80';
+            titleEl.textContent = item.name;
+            descEl.textContent = item.desc || '';
+
+            modal.classList.remove('hidden');
+        }
+
+        window.closeImageZoom = function() {
+            document.getElementById('image-zoom-modal').classList.add('hidden');
         }
 
         window.backToCategories = function() {
