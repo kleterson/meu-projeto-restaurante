@@ -439,7 +439,6 @@
                 const response = await fetch(window.location.origin + '/api/produtos');
                 const data = await response.json();
                 if(Array.isArray(data)) {
-                    // Ordena os produtos com base no campo 'ordem' (menor número aparece primeiro)
                     menuItems = data.sort((a, b) => {
                         let ordemA = a.ordem !== undefined && a.ordem !== null ? Number(a.ordem) : 0;
                         let ordemB = b.ordem !== undefined && b.ordem !== null ? Number(b.ordem) : 0;
@@ -533,15 +532,26 @@
             produtoSelecionadoParaAdicionais = item;
             await loadAdicionaisGlobais();
 
-            const adicionaisFiltrados = listaAdicionaisGlobais.filter(ad => 
-                ad.categoria && item.category && ad.categoria.toLowerCase() === item.category.toLowerCase()
-            );
+            // Filtragem inteligente: Verifica se o adicional pertence à categoria do produto 
+            // e se restringe a itens específicos (caso tenha produtos_especificos configurados)
+            const adicionaisFiltrados = listaAdicionaisGlobais.filter(ad => {
+                const mesmoCategoria = ad.categoria && item.category && ad.categoria.toLowerCase() === item.category.toLowerCase();
+                if (!mesmoCategoria) return false;
+
+                // Se houver produtos específicos vinculados, garante que o produto atual está na lista
+                if (Array.isArray(ad.produtos_especificos) && ad.produtos_especificos.length > 0) {
+                    return ad.produtos_especificos.includes(String(item.id));
+                }
+
+                // Se nenhum produto específico foi marcado no admin, ele vale para toda a categoria
+                return true;
+            });
 
             const listaEl = document.getElementById('lista-adicionais-opcoes');
             document.getElementById('modal-produto-nome').textContent = `Personalizar: ${item.name}`;
 
             if(adicionaisFiltrados.length === 0) {
-                listaEl.innerHTML = `<p class="text-xs text-slate-400 text-center py-4">Nenhum adicional disponível para esta categoria. Clique em prosseguir.</p>`;
+                listaEl.innerHTML = `<p class="text-xs text-slate-400 text-center py-4">Nenhum adicional disponível para este item. Clique em prosseguir.</p>`;
             } else {
                 listaEl.innerHTML = adicionaisFiltrados.map((ad, idx) => `
                     <div class="flex items-center justify-between bg-slate-800 p-3 rounded-xl border border-slate-700">

@@ -358,11 +358,21 @@
                 </div>
                 <div>
                     <label class="block text-xs font-semibold text-slate-400 mb-1">Categoria Alvo</label>
-                    <select id="adicional-categoria" required class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white capitalize">
+                    <select id="adicional-categoria" required onchange="carregarItensDaCategoria(this.value)" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white capitalize">
                         <!-- Preenchido dinamicamente via JS -->
                     </select>
                 </div>
-                <div class="flex space-x-2">
+                
+                <!-- NOVO: Container para escolher itens específicos da categoria selecionada -->
+                <div class="form-group" id="containerItensEspecificos" style="display: none; margin-top: 10px;">
+                    <label class="block text-xs font-semibold text-slate-400 mb-1">Vincular a Itens Específicos (Opcional)</label>
+                    <div style="max-height: 150px; overflow-y: auto; border: 1px solid #334155; padding: 8px; border-radius: 8px; background-color: #0f172a;" id="listaCheckboxesItens">
+                        <!-- Os produtos da categoria selecionada aparecerão aqui como checkboxes -->
+                    </div>
+                    <small style="color: #94a3b8; font-size: 11px; display: block; margin-top: 4px;">Se deixar nenhum marcado, o adicional valerá para toda a categoria.</small>
+                </div>
+
+                <div class="flex space-x-2 pt-2">
                     <button type="submit" id="adicional-submit-btn" class="flex-1 bg-rose-600 hover:bg-rose-500 text-white font-bold py-2.5 rounded-xl shadow-lg text-sm transition-all">
                         Salvar Adicional
                     </button>
@@ -1052,6 +1062,9 @@
             document.getElementById('adicional-id').value = '';
             document.getElementById('adicional-nome').value = '';
             document.getElementById('adicional-preco').value = '';
+            document.getElementById('adicional-categoria').value = '';
+            document.getElementById('containerItensEspecificos').style.display = 'none';
+            document.getElementById('listaCheckboxesItens').innerHTML = '';
             document.getElementById('adicional-form-heading').textContent = 'Adicionar Novo Adicional';
             document.getElementById('adicional-submit-btn').textContent = 'Salvar Adicional';
             document.getElementById('adicional-cancel-edit').classList.add('hidden');
@@ -1068,6 +1081,49 @@
                 }
             } catch(e) {
                 console.error('Erro ao carregar categorias para adicionais', e);
+            }
+        }
+
+        async function carregarItensDaCategoria(categoriaNome) {
+            const container = document.getElementById('containerItensEspecificos');
+            const listaDiv = document.getElementById('listaCheckboxesItens');
+            
+            listaDiv.innerHTML = '';
+
+            if (!categoriaNome) {
+                container.style.display = 'none';
+                return;
+            }
+
+            try {
+                const produtos = await getMenuItems();
+                const produtosDaCategoria = produtos.filter(p => p.category && p.category.toLowerCase() === categoriaNome.toLowerCase());
+
+                if (produtosDaCategoria.length === 0) {
+                    listaDiv.innerHTML = '<span style="color: #94a3b8; font-size: 12px;">Nenhum produto encontrado nesta categoria.</span>';
+                    container.style.display = 'block';
+                    return;
+                }
+
+                produtosDaCategoria.forEach(produto => {
+                    const label = document.createElement('label');
+                    label.style.display = 'flex';
+                    label.style.alignItems = 'center';
+                    label.style.marginBottom = '6px';
+                    label.style.cursor = 'pointer';
+                    label.style.fontSize = '12px';
+                    label.style.color = '#e2e8f0';
+                    
+                    label.innerHTML = `
+                        <input type="checkbox" name="produtosEspecificos" value="${produto.id}" style="margin-right: 8px; accent-color: #ef4444; width: 14px; height: 14px;">
+                        <span>${produto.name}</span>
+                    `;
+                    listaDiv.appendChild(label);
+                });
+
+                container.style.display = 'block';
+            } catch (err) {
+                console.error('Erro ao carregar itens da categoria:', err);
             }
         }
 
@@ -1105,13 +1161,16 @@
             const categoriaSelect = document.getElementById('adicional-categoria');
             const categoria = categoriaSelect.value.trim();
 
+            const checkboxesSelecionados = document.querySelectorAll('input[name="produtosEspecificos"]:checked');
+            const idsProdutosEspecificos = Array.from(checkboxesSelecionados).map(cb => cb.value);
+
             if(!nome || !categoria) return alert('Preencha o nome e selecione a categoria.');
 
             try {
                 const res = await fetch(window.location.origin + '/api/adicionais', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ nome, preco, categoria })
+                    body: JSON.stringify({ nome, preco, categoria, produtos_especificos: idsProdutosEspecificos })
                 });
 
                 if(res.ok) {
@@ -1334,7 +1393,7 @@
             if(confirm('Tem certeza que deseja excluir este banner?')) {
                 try {
                     await fetch(window.location.origin + `/api/banners/${id}`, { method: 'DELETE' });
-                    loadAdminBbanners();
+                    loadAdminBanners();
                 } catch (err) {
                     console.error('Erro ao excluir:', err);
                 }

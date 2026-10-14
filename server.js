@@ -234,8 +234,14 @@ app.get('/api/adicionais', async (req, res) => {
 
 app.post('/api/adicionais', async (req, res) => {
     try {
-        const { nome, preco, categoria } = req.body;
-        const { data, error } = await supabase.from('adicionais').insert([{ nome, preco, categoria }]).select();
+        const { nome, preco, categoria, produtos_especificos } = req.body;
+        const { data, error } = await supabase.from('adicionais').insert([{ 
+            nome, 
+            preco, 
+            categoria, 
+            produtos_especificos: produtos_especificos || [] 
+        }]).select();
+        
         if (error) throw error;
         res.json(data[0]);
     } catch (err) {
