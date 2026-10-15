@@ -275,8 +275,23 @@
         let produtoSelecionadoParaAdicionais = null;
         let listaAdicionaisGlobais = [];
 
-        // Exibir banner do topo e modal flutuante automaticamente para download do APK
+        // Função para verificar se a página está sendo aberta DENTRO do aplicativo instalado
+        function estaNoAplicativo() {
+            const isCapacitor = window.Capacitor !== undefined;
+            const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+            const isAppUserAgent = navigator.userAgent.includes('wv') || navigator.userAgent.includes('Capacitor');
+
+            return isCapacitor || isStandalone || isAppUserAgent;
+        }
+
+        // Exibir banner do topo e modal flutuante apenas se NÃO estiver rodando dentro do app
         window.addEventListener('DOMContentLoaded', () => {
+            if (estaNoAplicativo()) {
+                console.log('Acesso via aplicativo APK detectado. Avisos de download ocultados.');
+                return; // Encerra aqui e não exibe os avisos de download
+            }
+
+            // Exibe o banner no topo apenas em navegadores comuns
             document.getElementById('top-app-banner').classList.remove('hidden');
             
             const jaRecusou = localStorage.getItem('pwa_recusado');
