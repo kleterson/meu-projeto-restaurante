@@ -38,11 +38,42 @@
 </head>
 <body class="bg-darkBg text-slate-100 min-h-screen flex flex-col justify-between">
 
+    <!-- AVISO / BOTÃO DISCRETO NO TOPO PARA BAIXAR O APP -->
+    <div id="top-app-banner" class="hidden bg-gradient-to-r from-red-600 to-amber-500 text-white text-xs py-1.5 px-4 text-center font-bold flex items-center justify-center space-x-2 cursor-pointer shadow-md z-50" onclick="abrirModalInstalacao()">
+        <i class="fa-solid fa-mobile-screen-button"></i>
+        <span>📱 Baixe o app oficial aqui para pedidos mais rápidos!</span>
+    </div>
+
+    <!-- MODAL FLUTUANTE DE INSTALAÇÃO (POP-UP DE ENTRADA) -->
+    <div id="pwa-install-modal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-sm p-6 shadow-2xl relative text-center">
+            <button onclick="fecharModalInstalacao(true)" class="absolute top-4 right-4 text-slate-400 hover:text-white text-xl w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center transition-colors">&times;</button>
+            
+            <div class="w-16 h-16 rounded-2xl overflow-hidden mx-auto flex items-center justify-center bg-gradient-to-tr from-red-600 to-amber-500 shadow-lg mb-4 p-3">
+                <img id="pwa-modal-logo" src="" alt="Logo" class="w-full h-full object-cover rounded-xl hidden">
+                <i id="pwa-modal-icon" class="fa-solid fa-burger text-3xl text-white"></i>
+            </div>
+
+            <h3 class="text-lg font-black text-white mb-1">Baixe Nosso Aplicativo!</h3>
+            <p class="text-slate-400 text-xs mb-6">Baixe o aplicativo oficial do Gonçalves Lanches no seu celular para pedir com muito mais facilidade.</p>
+
+            <div class="space-y-2">
+                <button onclick="instalarAppPWA()" class="w-full bg-gradient-to-r from-red-600 to-amber-500 text-white font-bold py-3 rounded-xl shadow-lg transition-all text-sm flex items-center justify-center space-x-2">
+                    <i class="fa-solid fa-download"></i>
+                    <span>Baixar Aplicativo APK</span>
+                </button>
+                <button onclick="fecharModalInstalacao(true)" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold py-2.5 rounded-xl text-xs transition-colors">
+                    Agora Não
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Toast flutuante para avisos rápidos -->
     <div id="toast-container" class="fixed bottom-6 right-6 z-50 flex flex-col space-y-2 pointer-events-none"></div>
 
     <!-- Header -->
-    <header class="sticky top-0 z-50 bg-slate-900/90 backdrop-blur-md border-b border-slate-800">
+    <header class="sticky top-0 z-40 bg-slate-900/90 backdrop-blur-md border-b border-slate-800">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
             <a href="index.html" class="flex items-center space-x-3">
                 <div id="header-logo-container" class="w-11 h-11 rounded-xl overflow-hidden flex items-center justify-center bg-gradient-to-tr from-red-600 to-amber-500 shadow-md p-2.5">
@@ -243,6 +274,52 @@
         let currentFilteredProducts = [];
         let produtoSelecionadoParaAdicionais = null;
         let listaAdicionaisGlobais = [];
+
+        // Exibir banner do topo e modal flutuante automaticamente para download do APK
+        window.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('top-app-banner').classList.remove('hidden');
+            
+            const jaRecusou = localStorage.getItem('pwa_recusado');
+            if (!jaRecusou) {
+                setTimeout(() => {
+                    abrirModalInstalacao();
+                }, 1500);
+            }
+        });
+
+        function abrirModalInstalacao() {
+            const modal = document.getElementById('pwa-install-modal');
+            const modalLogo = document.getElementById('pwa-modal-logo');
+            const modalIcon = document.getElementById('pwa-modal-icon');
+
+            const headerImg = document.getElementById('header-logo-img');
+            if (headerImg && headerImg.src && !headerImg.classList.contains('hidden')) {
+                modalLogo.src = headerImg.src;
+                modalLogo.classList.remove('hidden');
+                modalIcon.classList.add('hidden');
+            }
+
+            modal.classList.remove('hidden');
+        }
+
+        function fecharModalInstalacao(salvarRecusa = false) {
+            document.getElementById('pwa-install-modal').classList.add('hidden');
+            if (salvarRecusa) {
+                localStorage.setItem('pwa_recusado', 'true');
+            }
+        }
+
+        // Função que realiza o download direto do APK real do aplicativo
+        function instalarAppPWA() {
+            const linkDownload = document.createElement('a');
+            linkDownload.href = '/goncalves.apk';
+            linkDownload.download = 'GoncalvesLanches.apk';
+            document.body.appendChild(linkDownload);
+            linkDownload.click();
+            document.body.removeChild(linkDownload);
+            
+            fecharModalInstalacao(true);
+        }
         
         let cart = [];
         try {

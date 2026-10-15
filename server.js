@@ -23,7 +23,8 @@ if (supabase) {
     console.log('🚀 Conectado com o Supabase com sucesso!');
 }
 
-app.use(express.static(path.join(__dirname)));
+// Configuração correta para servir os arquivos estáticos da pasta 'public' (incluindo o APK e imagens)
+app.use(express.static(path.join(__dirname, 'public')));
 
 /**
  * STREAMING_CHUNK:Defining backend routes for orders and menu management...
@@ -408,10 +409,6 @@ app.delete('/api/banners/:id', async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 });
-
-// Serve todos os arquivos da pasta 'public' automaticamente
-app.use(express.static(path.join(__dirname)));
-app.use(express.static(path.join(__dirname, 'public')));
 
 // Rota padrão caso acesse a raiz
 app.get('/', (req, res) => {
