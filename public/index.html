@@ -23,9 +23,23 @@
         .hero-slide.active { opacity: 1; pointer-events: auto; z-index: 20; }
         @keyframes pulse-slow { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.02); } }
         .promo-highlight { animation: pulse-slow 2.5s infinite; }
+        
+        /* Estilo para notificação flutuante de alerta (Toast) */
+        @keyframes fadeInOut {
+            0% { opacity: 0; transform: translateY(20px); }
+            15% { opacity: 1; transform: translateY(0); }
+            85% { opacity: 1; transform: translateY(0); }
+            100% { opacity: 0; transform: translateY(20px); }
+        }
+        .toast-alert {
+            animation: fadeInOut 2.5s ease forwards;
+        }
     </style>
 </head>
 <body class="bg-darkBg text-slate-100 min-h-screen flex flex-col justify-between">
+
+    <!-- Toast flutuante para avisos rápidos -->
+    <div id="toast-container" class="fixed bottom-6 right-6 z-50 flex flex-col space-y-2 pointer-events-none"></div>
 
     <!-- Header -->
     <header class="sticky top-0 z-50 bg-slate-900/90 backdrop-blur-md border-b border-slate-800">
@@ -473,29 +487,53 @@
                 return;
             }
 
-            grid.innerHTML = currentFilteredProducts.map((item, index) => `
-                <div class="bg-slate-800/60 border border-slate-700/60 rounded-xl overflow-hidden shadow-lg flex flex-col justify-between group">
-                    <div class="relative h-32 sm:h-40 overflow-hidden bg-slate-900 cursor-pointer" onclick="openImageZoom(${index})" title="Clique para ampliar a foto">
-                        <img src="${item.image || 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=600&q=80'}" alt="${item.name}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
-                        <span class="absolute bottom-2 left-2 bg-slate-900/80 backdrop-blur-sm text-amber-400 text-[10px] font-bold px-2 py-0.5 rounded-md flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                            <i class="fa-solid fa-magnifying-glass-plus"></i> <span>Ampliar</span>
-                        </span>
-                        <span class="absolute top-2 right-2 bg-slate-900/90 text-white font-bold px-2.5 py-0.5 rounded-full text-xs border border-slate-700">R$ ${Number(item.price || 0).toFixed(2).replace('.', ',')}</span>
-                    </div>
-                    <div class="p-3 sm:p-4 flex flex-col flex-grow justify-between">
-                        <div>
-                            <h3 class="text-sm sm:text-base font-bold text-white mb-1 leading-tight">${item.name}</h3>
-                            <p class="text-slate-400 text-xs mb-3 line-clamp-2">${item.desc || ''}</p>
+            grid.innerHTML = currentFilteredProducts.map((item, index) => {
+                const esgotado = item.esgotado === true || item.esgotado === 'true' || item.esgotado === 'TRUE' || item.esgotado === 't' || item.esgotado === 1 || String(item.esgotado).toLowerCase() === 'true' || Boolean(item.esgotado) === true;
+                
+                return `
+                    <div class="bg-slate-800/60 border ${esgotado ? 'border-red-500/40 opacity-75' : 'border-slate-700/60'} rounded-xl overflow-hidden shadow-lg flex flex-col justify-between group relative">
+                        ${esgotado ? '<div class="absolute inset-0 bg-slate-950/40 z-10 pointer-events-none flex items-center justify-center"><span class="bg-red-600 text-white font-black text-xs uppercase tracking-wider px-3 py-1 rounded-full shadow-lg transform -rotate-6">Esgotado</span></div>' : ''}
+                        
+                        <div class="relative h-32 sm:h-40 overflow-hidden bg-slate-950 cursor-pointer" onclick="openImageZoom(${index})" title="Clique para ampliar a foto">
+                            <img src="${item.image || 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=600&q=80'}" alt="${item.name}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                            <span class="absolute bottom-2 left-2 bg-slate-900/80 backdrop-blur-sm text-amber-400 text-[10px] font-bold px-2 py-0.5 rounded-md flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <i class="fa-solid fa-magnifying-glass-plus"></i> <span>Ampliar</span>
+                            </span>
+                            <span class="absolute top-2 right-2 bg-slate-900/90 text-white font-bold px-2.5 py-0.5 rounded-full text-xs border border-slate-700">R$ ${Number(item.price || 0).toFixed(2).replace('.', ',')}</span>
                         </div>
-                        <button onclick="addToCartByIndex(${index})" class="w-full bg-slate-700 hover:bg-red-600 text-white font-semibold py-2 rounded-lg transition-colors flex items-center justify-center space-x-1.5 text-xs sm:text-sm">
-                            <i class="fa-solid fa-plus text-[10px]"></i>
-                            <span>Adicionar</span>
-                        </button>
+                        <div class="p-3 sm:p-4 flex flex-col flex-grow justify-between">
+                            <div>
+                                <h3 class="text-sm sm:text-base font-bold text-white mb-1 leading-tight">${item.name}</h3>
+                                <p class="text-slate-400 text-xs mb-3 line-clamp-2">${item.desc || ''}</p>
+                            </div>
+                            ${esgotado ? `
+                                <button onclick="mostrarAvisoEsgotado()" class="w-full bg-slate-700/60 text-slate-400 font-semibold py-2 rounded-lg cursor-not-allowed flex items-center justify-center space-x-1.5 text-xs sm:text-sm">
+                                    <i class="fa-solid fa-ban text-[10px]"></i>
+                                    <span>Esgotado</span>
+                                </button>
+                            ` : `
+                                <button onclick="addToCartByIndex(${index})" class="w-full bg-slate-700 hover:bg-red-600 text-white font-semibold py-2 rounded-lg transition-colors flex items-center justify-center space-x-1.5 text-xs sm:text-sm">
+                                    <i class="fa-solid fa-plus text-[10px]"></i>
+                                    <span>Adicionar</span>
+                                </button>
+                            `}
+                        </div>
                     </div>
-                </div>
-            `).join('');
+                `;
+            }).join('');
             
             window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        window.mostrarAvisoEsgotado = function() {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = 'toast-alert bg-red-600 text-white text-xs font-bold px-4 py-3 rounded-xl shadow-2xl flex items-center space-x-2 border border-red-500 pointer-events-auto';
+            toast.innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i><span>Produto esgotado no momento!</span>`;
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.remove();
+            }, 2500);
         }
 
         window.openImageZoom = function(index) {
@@ -529,21 +567,24 @@
             const item = currentFilteredProducts[index];
             if(!item) return;
 
+            const isEsgotado = item.esgotado === true || item.esgotado === 'true' || item.esgotado === 'TRUE' || item.esgotado === 't' || item.esgotado === 1 || String(item.esgotado).toLowerCase() === 'true' || Boolean(item.esgotado) === true;
+
+            if (isEsgotado) {
+                mostrarAvisoEsgotado();
+                return;
+            }
+
             produtoSelecionadoParaAdicionais = item;
             await loadAdicionaisGlobais();
 
-            // Filtragem inteligente: Verifica se o adicional pertence à categoria do produto 
-            // e se restringe a itens específicos (caso tenha produtos_especificos configurados)
             const adicionaisFiltrados = listaAdicionaisGlobais.filter(ad => {
                 const mesmoCategoria = ad.categoria && item.category && ad.categoria.toLowerCase() === item.category.toLowerCase();
                 if (!mesmoCategoria) return false;
 
-                // Se houver produtos específicos vinculados, garante que o produto atual está na lista
                 if (Array.isArray(ad.produtos_especificos) && ad.produtos_especificos.length > 0) {
                     return ad.produtos_especificos.includes(String(item.id));
                 }
 
-                // Se nenhum produto específico foi marcado no admin, ele vale para toda a categoria
                 return true;
             });
 

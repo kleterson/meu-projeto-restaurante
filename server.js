@@ -68,14 +68,25 @@ app.post('/api/pedidos', async (req, res) => {
     }
 });
 
-// Rota para salvar produtos diretamente na tabela 'products' do Supabase (com suporte a ordem)
+// Rota para salvar produtos diretamente na tabela 'products' do Supabase (com suporte a ordem e esgotado)
 app.post('/api/produtos', async (req, res) => {
     try {
-        const { store_id, name, ordem, category, price, image, desc } = req.body;
+        const { store_id, name, ordem, category, price, image, desc, esgotado } = req.body;
         
+        const isEsgotado = esgotado === true || esgotado === 'true' || esgotado === 'TRUE' || esgotado === 't' || esgotado === 1 || String(esgotado).toLowerCase() === 'true';
+
         const { data, error } = await supabase
             .from('products')
-            .insert([{ store_id, name, ordem: ordem !== undefined ? ordem : 0, category, price, image, desc }]);
+            .insert([{ 
+                store_id, 
+                name, 
+                ordem: ordem !== undefined ? ordem : 0, 
+                category, 
+                price, 
+                image, 
+                desc, 
+                esgotado: isEsgotado 
+            }]);
 
         if (error) {
             console.error('Erro ao salvar produto no Supabase:', error.message);
@@ -88,15 +99,25 @@ app.post('/api/produtos', async (req, res) => {
     }
 });
 
-// Rota para atualizar produtos existentes (com suporte a ordem)
+// Rota para atualizar produtos existentes (com suporte a ordem e esgotado)
 app.put('/api/produtos/:id', async (req, res) => {
     try {
         const { id } = req.params;
-        const { name, ordem, category, price, image, desc } = req.body;
+        const { name, ordem, category, price, image, desc, esgotado } = req.body;
+
+        const isEsgotado = esgotado === true || esgotado === 'true' || esgotado === 'TRUE' || esgotado === 't' || esgotado === 1 || String(esgotado).toLowerCase() === 'true';
 
         const { data, error } = await supabase
             .from('products')
-            .update({ name, ordem: ordem !== undefined ? ordem : 0, category, price, image, desc })
+            .update({ 
+                name, 
+                ordem: ordem !== undefined ? ordem : 0, 
+                category, 
+                price, 
+                image, 
+                desc, 
+                esgotado: isEsgotado 
+            })
             .eq('id', id);
 
         if (error) {

@@ -185,7 +185,7 @@
                 </div>
                 <div>
                     <select id="filter-category" onchange="renderAdminProducts()" class="w-full bg-slate-900 border border-slate-800 rounded-2xl px-4 py-3.5 text-sm text-white focus:outline-none focus:border-red-500 shadow-lg capitalize">
-                        <option value="">Todas as Categorias</option>
+                        <option value="">Todas As Categorias</option>
                     </select>
                 </div>
             </div>
@@ -199,6 +199,7 @@
                                 <th class="p-4">Produto</th>
                                 <th class="p-4">Categoria</th>
                                 <th class="p-4">Preço</th>
+                                <th class="p-4">Status</th>
                                 <th class="p-4">Descrição</th>
                                 <th class="p-4 text-right">Ações</th>
                             </tr>
@@ -239,6 +240,16 @@
                     <label class="block text-xs font-semibold text-slate-400 mb-1 uppercase tracking-wider">Preço (R$)</label>
                     <input type="number" step="0.01" id="prod-price" required class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-red-500">
                 </div>
+                
+                <!-- OPÇÃO DE MARCAR COMO ESGOTADO -->
+                <div class="flex items-center space-x-3 bg-slate-800/60 p-3.5 rounded-xl border border-slate-700">
+                    <input type="checkbox" id="prod-esgotado" class="w-5 h-5 rounded text-red-600 focus:ring-red-500 bg-slate-700 border-slate-600 cursor-pointer">
+                    <div>
+                        <label for="prod-esgotado" class="text-sm font-bold text-white cursor-pointer block">Produto Esgotado</label>
+                        <span class="text-xs text-slate-400 block">Se marcado, ficará bloqueado para compra no cardápio dos clientes.</span>
+                    </div>
+                </div>
+
                 <div>
                     <label class="block text-xs font-semibold text-slate-400 mb-1 uppercase tracking-wider">Foto do Produto (Arquivo)</label>
                     <input type="file" id="prod-file" accept="image/*" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 text-sm text-white file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-red-600 file:text-white hover:file:bg-red-500 cursor-pointer" onchange="compressImage(this, 'prod-image-base64', 600)">
@@ -269,7 +280,7 @@
         </div>
     </div>
 
-    <!-- MODAL DE GERENCIAR CATEGORIAS (ADICIONAR/EDITAR/EXCLUIR) -->
+    <!-- MODAL DE GERENCIAR CATEGORIAS -->
     <div id="category-modal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center p-4 overflow-y-auto">
         <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-lg p-6 shadow-2xl my-8 max-h-[90vh] overflow-y-auto">
             <div class="flex justify-between items-center pb-4 border-b border-slate-800 mb-4">
@@ -303,7 +314,7 @@
         </div>
     </div>
 
-    <!-- MODAL DE GERENCIAR BAIRROS E TAXAS DE ENTREGA (SUPABASE) -->
+    <!-- MODAL DE GERENCIAR BAIRROS -->
     <div id="bairros-modal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center p-4 overflow-y-auto">
         <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-lg p-6 shadow-2xl my-8 max-h-[90vh] overflow-y-auto">
             <div class="flex justify-between items-center pb-4 border-b border-slate-800 mb-4">
@@ -337,7 +348,7 @@
         </div>
     </div>
 
-    <!-- MODAL DE GERENCIAR ADICIONAIS POR CATEGORIA (SUPABASE) -->
+    <!-- MODAL DE GERENCIAR ADICIONAIS -->
     <div id="adicionais-modal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center p-4 overflow-y-auto">
         <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-lg p-6 shadow-2xl my-8 max-h-[90vh] overflow-y-auto">
             <div class="flex justify-between items-center pb-4 border-b border-slate-800 mb-4">
@@ -359,15 +370,12 @@
                 <div>
                     <label class="block text-xs font-semibold text-slate-400 mb-1">Categoria Alvo</label>
                     <select id="adicional-categoria" required onchange="carregarItensDaCategoria(this.value)" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white capitalize">
-                        <!-- Preenchido dinamicamente via JS -->
                     </select>
                 </div>
                 
-                <!-- NOVO: Container para escolher itens específicos da categoria selecionada -->
                 <div class="form-group" id="containerItensEspecificos" style="display: none; margin-top: 10px;">
                     <label class="block text-xs font-semibold text-slate-400 mb-1">Vincular a Itens Específicos (Opcional)</label>
                     <div style="max-height: 150px; overflow-y: auto; border: 1px solid #334155; padding: 8px; border-radius: 8px; background-color: #0f172a;" id="listaCheckboxesItens">
-                        <!-- Os produtos da categoria selecionada aparecerão aqui como checkboxes -->
                     </div>
                     <small style="color: #94a3b8; font-size: 11px; display: block; margin-top: 4px;">Se deixar nenhum marcado, o adicional valerá para toda a categoria.</small>
                 </div>
@@ -416,7 +424,7 @@
         </div>
     </div>
 
-    <!-- MODAL DE ALTERAR CREDENCIAIS (USUÁRIO E SENHA) -->
+    <!-- MODAL DE ALTERAR CREDENCIAIS -->
     <div id="password-modal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
         <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-md p-6 shadow-2xl">
             <div class="flex justify-between items-center pb-4 border-b border-slate-800 mb-4">
@@ -444,7 +452,7 @@
         </div>
     </div>
     
-    <!-- MODAL DE GERENCIAR BANNERS -->
+    <!-- MODAL DE BANNERS -->
     <div id="banner-modal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center p-4 overflow-y-auto">
         <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-2xl p-6 shadow-2xl my-8 max-h-[90vh] overflow-y-auto">
             <div class="flex justify-between items-center pb-4 border-b border-slate-800 mb-4">
@@ -615,7 +623,6 @@
                 const res = await fetch(window.location.origin + '/api/categorias');
                 const categorias = await res.json();
                 
-                // Preenche o select do modal de produtos
                 const selectProd = document.getElementById('prod-category');
                 if(selectProd && Array.isArray(categorias)) {
                     selectProd.innerHTML = categorias.map(cat => `
@@ -623,11 +630,10 @@
                     `).join('');
                 }
 
-                // Preenche o select de filtro no topo da tabela
                 const selectFilter = document.getElementById('filter-category');
                 if(selectFilter && Array.isArray(categorias)) {
                     const currentFilterVal = selectFilter.value;
-                    selectFilter.innerHTML = `<option value="">Todas as Categorias</option>` + 
+                    selectFilter.innerHTML = `<option value="">Todas As Categorias</option>` + 
                         categorias.map(cat => `
                             <option value="${cat.nome}" ${currentFilterVal.toLowerCase() === cat.nome.toLowerCase() ? 'selected' : ''}>${cat.nome}</option>
                         `).join('');
@@ -665,26 +671,65 @@
             const tbody = document.getElementById('admin-products-list');
 
             if(products.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-slate-500">Nenhum produto encontrado.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-slate-500">Nenhum produto encontrado.</td></tr>`;
                 return;
             }
 
-            tbody.innerHTML = products.map(item => `
-                <tr class="hover:bg-slate-800/40 transition-colors">
-                    <td class="p-4 font-bold text-amber-400">#${item.ordem !== undefined && item.ordem !== null ? item.ordem : 0}</td>
-                    <td class="p-4 flex items-center space-x-3">
-                        <img src="${item.image}" alt="" class="w-10 h-10 rounded-lg object-cover border border-slate-700">
-                        <span class="font-bold text-white">${item.name}</span>
-                    </td>
-                    <td class="p-4 capitalize text-slate-300"><span class="bg-slate-800 px-2.5 py-1 rounded-lg text-xs border border-slate-700">${item.category}</span></td>
-                    <td class="p-4 font-semibold text-emerald-400">R$ ${Number(item.price).toFixed(2).replace('.', ',')}</td>
-                    <td class="p-4 text-slate-400 max-w-xs truncate">${item.desc}</td>
-                    <td class="p-4 text-right space-x-2">
-                        <button onclick="openProductModal(${item.id})" class="bg-slate-800 hover:bg-slate-700 text-amber-400 p-2 rounded-xl border border-slate-700"><i class="fa-solid fa-pen text-xs"></i></button>
-                        <button onclick="deleteProduct(${item.id})" class="bg-slate-800 hover:bg-slate-700 text-red-400 p-2 rounded-xl border border-slate-700"><i class="fa-solid fa-trash text-xs"></i></button>
-                    </td>
-                </tr>
-            `).join('');
+            tbody.innerHTML = products.map(item => {
+                const esgotado = item.esgotado === true || item.esgotado === 'true' || item.esgotado === 'TRUE' || item.esgotado === 't' || item.esgotado === 1;
+                
+                return `
+                    <tr class="hover:bg-slate-800/40 transition-colors">
+                        <td class="p-4 font-bold text-amber-400">#${item.ordem !== undefined && item.ordem !== null ? item.ordem : 0}</td>
+                        <td class="p-4 flex items-center space-x-3">
+                            <img src="${item.image}" alt="" class="w-10 h-10 rounded-lg object-cover border border-slate-700">
+                            <span class="font-bold text-white">${item.name}</span>
+                        </td>
+                        <td class="p-4 capitalize text-slate-300"><span class="bg-slate-800 px-2.5 py-1 rounded-lg text-xs border border-slate-700">${item.category}</span></td>
+                        <td class="p-4 font-semibold text-emerald-400">R$ ${Number(item.price).toFixed(2).replace('.', ',')}</td>
+                        <td class="p-4">
+                            <button onclick="toggleEsgotadoStatus(${item.id}, ${!esgotado})" class="px-2.5 py-1 rounded-lg text-xs font-bold border transition-colors ${esgotado ? 'bg-red-500/15 text-red-400 border-red-500/30 hover:bg-red-500/30' : 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/30'}">
+                                ${esgotado ? '🔴 Esgotado' : '🟢 Disponível'}
+                            </button>
+                        </td>
+                        <td class="p-4 text-slate-400 max-w-xs truncate">${item.desc}</td>
+                        <td class="p-4 text-right space-x-2">
+                            <button onclick="openProductModal(${item.id})" class="bg-slate-800 hover:bg-slate-700 text-amber-400 p-2 rounded-xl border border-slate-700"><i class="fa-solid fa-pen text-xs"></i></button>
+                            <button onclick="deleteProduct(${item.id})" class="bg-slate-800 hover:bg-slate-700 text-red-400 p-2 rounded-xl border border-slate-700"><i class="fa-solid fa-trash text-xs"></i></button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        async function toggleEsgotadoStatus(id, novoStatus) {
+            try {
+                const products = await getMenuItems();
+                const p = products.find(i => i.id === id);
+                if(!p) return;
+
+                const productData = {
+                    name: p.name,
+                    ordem: p.ordem !== undefined && p.ordem !== null ? p.ordem : 0,
+                    category: p.category,
+                    price: p.price,
+                    image: p.image,
+                    desc: p.desc,
+                    esgotado: Boolean(novoStatus)
+                };
+
+                const response = await fetch(window.location.origin + `/api/produtos/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(productData)
+                });
+
+                if(!response.ok) throw new Error('Erro ao atualizar status');
+                renderAdminProducts();
+            } catch (err) {
+                console.error(err);
+                alert('Erro ao alterar status de esgotado.');
+            }
         }
 
         async function openProductModal(id = null) {
@@ -702,12 +747,14 @@
                     document.getElementById('prod-price').value = p.price;
                     document.getElementById('prod-image-base64').value = p.image;
                     document.getElementById('prod-desc').value = p.desc;
+                    document.getElementById('prod-esgotado').checked = (p.esgotado === true || p.esgotado === 'true' || p.esgotado === 'TRUE' || p.esgotado === 't' || p.esgotado === 1);
                 }
             } else {
                 document.getElementById('modal-title').textContent = 'Novo Produto';
                 document.getElementById('prod-id').value = '';
                 document.getElementById('prod-ordem').value = '0';
                 document.getElementById('prod-image-base64').value = '';
+                document.getElementById('prod-esgotado').checked = false;
                 document.querySelector('#product-modal form').reset();
             }
         }
@@ -725,10 +772,11 @@
             const price = parseFloat(document.getElementById('prod-price').value);
             const image = document.getElementById('prod-image-base64').value;
             const desc = document.getElementById('prod-desc').value;
+            const esgotado = document.getElementById('prod-esgotado').checked;
             
             if(!image) return alert('Por favor, selecione uma foto para o produto.');
 
-            const productData = { name, ordem, category, price, image, desc };
+            const productData = { name, ordem, category, price, image, desc, esgotado };
 
             try {
                 let response;
@@ -772,7 +820,6 @@
             }
         }
 
-        // FUNÇÃO APENAS PARA VISUALIZAR AS CATEGORIAS (BOTÃO DO TOPO)
         async function openViewCategoriesModal() {
             document.getElementById('view-categories-modal').classList.remove('hidden');
             try {
@@ -802,7 +849,6 @@
             document.getElementById('view-categories-modal').classList.add('hidden');
         }
 
-        // FUNÇÕES PARA GERENCIAR CATEGORIAS (ADICIONAR/EDITAR/EXCLUIR)
         function openCategoryModal() {
             document.getElementById('category-modal').classList.remove('hidden');
             resetCategoryForm();
@@ -937,9 +983,6 @@
             }
         }
 
-        // ==========================================
-        // GERENCIAMENTO DE BAIRROS E TAXAS (SUPABASE)
-        // ==========================================
         function openBairrosModal() {
             document.getElementById('bairros-modal').classList.remove('hidden');
             resetBairroForm();
@@ -1042,11 +1085,7 @@
                 }
             }
         }
-        // ==========================================
 
-        // ==========================================
-        // GERENCIAMENTO DE ADICIONAIS POR CATEGORIA (SUPABASE)
-        // ==========================================
         async function openAdicionaisModal() {
             document.getElementById('adicionais-modal').classList.remove('hidden');
             resetAdicionalForm();
@@ -1196,7 +1235,6 @@
                 }
             }
         }
-        // ==========================================
 
         async function openConfigModal() {
             document.getElementById('config-modal').classList.remove('hidden');
