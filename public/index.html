@@ -3,8 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cardápio | gonçalves (Lanches & Refeições)</title>
+    <title>Cardápio | Gonçalves (Lanches & Refeições)</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Importação do Cliente Oficial do Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
         tailwind.config = {
             darkMode: 'class',
@@ -23,54 +25,15 @@
         .hero-slide.active { opacity: 1; pointer-events: auto; z-index: 20; }
         @keyframes pulse-slow { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.02); } }
         .promo-highlight { animation: pulse-slow 2.5s infinite; }
-        
-        /* Estilo para notificação flutuante de alerta (Toast) */
-        @keyframes fadeInOut {
-            0% { opacity: 0; transform: translateY(20px); }
-            15% { opacity: 1; transform: translateY(0); }
-            85% { opacity: 1; transform: translateY(0); }
-            100% { opacity: 0; transform: translateY(20px); }
-        }
-        .toast-alert {
-            animation: fadeInOut 2.5s ease forwards;
-        }
     </style>
 </head>
 <body class="bg-darkBg text-slate-100 min-h-screen flex flex-col justify-between">
 
-    <!-- AVISO / BOTÃO DISCRETO NO TOPO PARA BAIXAR O APP -->
-    <div id="top-app-banner" class="hidden bg-gradient-to-r from-red-600 to-amber-500 text-white text-xs py-1.5 px-4 text-center font-bold flex items-center justify-center space-x-2 cursor-pointer shadow-md z-50" onclick="abrirModalInstalacao()">
-        <i class="fa-solid fa-mobile-screen-button"></i>
-        <span>📱 Baixe o app oficial aqui para pedidos mais rápidos!</span>
+    <!-- BARRA SUPERIOR LARANJA PARA APLICATIVO -->
+    <div onclick="openAppModal()" class="bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 text-slate-950 font-extrabold text-xs py-2 px-4 text-center cursor-pointer hover:opacity-95 transition-all shadow-md flex items-center justify-center space-x-2 border-b border-amber-400/30">
+        <i class="fa-solid fa-mobile-screen-button text-sm animate-bounce"></i>
+        <span>Baixe o app oficial aqui para pedidos mais rápidos!</span>
     </div>
-
-    <!-- MODAL FLUTUANTE DE INSTALAÇÃO (POP-UP DE ENTRADA) -->
-    <div id="pwa-install-modal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
-        <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-sm p-6 shadow-2xl relative text-center">
-            <button onclick="fecharModalInstalacao(true)" class="absolute top-4 right-4 text-slate-400 hover:text-white text-xl w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center transition-colors">&times;</button>
-            
-            <div class="w-16 h-16 rounded-2xl overflow-hidden mx-auto flex items-center justify-center bg-gradient-to-tr from-red-600 to-amber-500 shadow-lg mb-4 p-3">
-                <img id="pwa-modal-logo" src="" alt="Logo" class="w-full h-full object-cover rounded-xl hidden">
-                <i id="pwa-modal-icon" class="fa-solid fa-burger text-3xl text-white"></i>
-            </div>
-
-            <h3 class="text-lg font-black text-white mb-1">Baixe Nosso Aplicativo!</h3>
-            <p class="text-slate-400 text-xs mb-6">Baixe o aplicativo oficial do Gonçalves Lanches no seu celular para pedir com muito mais facilidade.</p>
-
-            <div class="space-y-2">
-                <button onclick="instalarAppPWA()" class="w-full bg-gradient-to-r from-red-600 to-amber-500 text-white font-bold py-3 rounded-xl shadow-lg transition-all text-sm flex items-center justify-center space-x-2">
-                    <i class="fa-solid fa-download"></i>
-                    <span>Baixar Aplicativo APK</span>
-                </button>
-                <button onclick="fecharModalInstalacao(true)" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold py-2.5 rounded-xl text-xs transition-colors">
-                    Agora Não
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Toast flutuante para avisos rápidos -->
-    <div id="toast-container" class="fixed bottom-6 right-6 z-50 flex flex-col space-y-2 pointer-events-none"></div>
 
     <!-- Header -->
     <header class="sticky top-0 z-40 bg-slate-900/90 backdrop-blur-md border-b border-slate-800">
@@ -81,7 +44,7 @@
                     <img id="header-logo-img" src="" alt="" class="w-full h-full object-cover hidden">
                 </div>
                 <div>
-                    <span id="header-brand-name" class="text-2xl font-extrabold text-white">gonçalves (Lanches & Refeições)</span>
+                    <span id="header-brand-name" class="text-2xl font-extrabold text-white">Gonçalves Lanches</span>
                     <span class="block text-xs text-slate-400">Cardápio Digital</span>
                 </div>
             </a>
@@ -94,22 +57,17 @@
         </div>
     </header>
 
-    <!-- Banner Cinematográfico com Slideshow Dinâmico -->
+    <!-- Banner Cinematográfico -->
     <section id="hero-banner" class="relative h-[320px] sm:h-[400px] overflow-hidden bg-slate-950 border-b border-slate-800">
-        <div id="hero-slides-container" class="relative w-full h-full">
-            <!-- Preenchido dinamicamente via API -->
-        </div>
-        <!-- Indicadores -->
+        <div id="hero-slides-container" class="relative w-full h-full"></div>
         <div id="hero-dots-container" class="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-30 flex space-x-2"></div>
     </section>
 
     <!-- Conteúdo Principal -->
     <main class="py-10 flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
 
-        <!-- TELA 1: Escolha de Categorias Dinâmicas -->
+        <!-- TELA 1: Categorias -->
         <div id="view-categories">
-            
-            <!-- Botão de Destaque para Promoções (Compacto com Efeitos Visuais) -->
             <div id="promo-banner-btn" class="hidden mb-8 max-w-xl mx-auto">
                 <div onclick="selectCategory('Promoções')" class="promo-highlight cursor-pointer group bg-gradient-to-r from-red-600 via-rose-600 to-amber-500 p-1 rounded-2xl shadow-xl shadow-red-600/30 hover:shadow-red-500/50 transition-all duration-300">
                     <div class="bg-slate-900 rounded-[14px] px-4 py-2.5 flex items-center justify-between border border-red-500/30 group-hover:border-amber-400/60 transition-colors">
@@ -136,11 +94,10 @@
                 <p class="text-slate-400 mt-2 text-sm sm:text-base">Escolha uma das categorias abaixo para ver os itens disponíveis.</p>
             </div>
 
-            <!-- Grade de Categorias Carregadas do Servidor -->
             <div id="categories-grid" class="grid grid-cols-1 md:grid-cols-3 gap-8"></div>
         </div>
 
-        <!-- TELA 2: Produtos da Categoria Selecionada (Oculta Inicialmente) -->
+        <!-- TELA 2: Produtos -->
         <div id="view-products" class="hidden">
             <div class="flex items-center justify-between mb-8 pb-4 border-b border-slate-800">
                 <div>
@@ -152,18 +109,17 @@
                 </div>
             </div>
 
-            <!-- Grade de Produtos Compacta -->
-            <div id="products-grid" class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6"></div>
+            <div id="products-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
         </div>
     </main>
 
-    <!-- Rodapé Profissional com Suporte -->
+    <!-- Rodapé -->
     <footer class="bg-slate-900 border-t border-slate-800 text-slate-400 py-10 mt-16">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-3 gap-8 items-center text-center md:text-left">
             <div>
                 <h3 class="text-white font-extrabold text-lg mb-2 flex items-center justify-center md:justify-start space-x-2">
                     <i class="fa-solid fa-utensils text-red-500"></i>
-                    <span id="footer-brand-name">gonçalves (Lanches & Refeições)</span>
+                    <span id="footer-brand-name">Gonçalves Lanches</span>
                 </h3>
                 <p class="text-xs text-slate-400 max-w-sm mx-auto md:mx-0">Oferecendo o melhor sabor, qualidade e agilidade direto na sua casa. Faça já o seu pedido pelo WhatsApp!</p>
             </div>
@@ -180,11 +136,37 @@
             </div>
         </div>
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 mt-6 border-t border-slate-800/60 text-center text-xs text-slate-500">
-            &copy; 2026 Gonçalves (Lanches & Refeições). Todos os direitos reservados.
+            &copy; 2026 Gonçalves Lanches. Todos os direitos reservados.
         </div>
     </footer>
 
-    <!-- MODAL DE ZOOM DA FOTO DO PRODUTO -->
+    <!-- MODAL DE DOWNLOAD DO APLICATIVO APK -->
+    <div id="app-download-modal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md hidden flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-sm w-full p-6 text-center shadow-2xl relative">
+            <button onclick="closeAppModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white text-lg">&times;</button>
+            
+            <div class="w-16 h-16 rounded-2xl mx-auto mb-4 overflow-hidden bg-gradient-to-tr from-red-600 to-amber-500 flex items-center justify-center p-3 shadow-lg">
+                <img id="app-modal-logo-img" src="" class="w-full h-full object-cover hidden">
+                <i id="app-modal-logo-icon" class="fa-solid fa-burger text-3xl text-white"></i>
+            </div>
+
+            <h3 class="text-xl font-black text-white mb-1">Baixe Nosso Aplicativo!</h3>
+            <p class="text-slate-400 text-xs mb-6">Baixe o aplicativo oficial do <span id="app-modal-store-name">Gonçalves Lanches</span> no seu celular para pedir com muito mais facilidade.</p>
+
+            <div class="space-y-3">
+                <!-- Se o ficheiro APK estiver na sua pasta public, coloque o caminho dele em href ex: "app.apk" -->
+                <a href="goncalves.apk" download class="block w-full bg-gradient-to-r from-red-600 to-amber-500 hover:from-red-500 hover:to-amber-400 text-white font-extrabold py-3 rounded-2xl shadow-lg text-sm transition-all flex items-center justify-center space-x-2">
+                    <i class="fa-solid fa-download"></i>
+                    <span>Baixar Aplicativo APK</span>
+                </a>
+                <button onclick="closeAppModal()" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-3 rounded-2xl text-xs transition-colors">
+                    Agora Não
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL ZOOM IMAGEM -->
     <div id="image-zoom-modal" class="fixed inset-0 z-50 bg-slate-950/90 backdrop-blur-md hidden flex items-center justify-center p-4 cursor-pointer" onclick="closeImageZoom()">
         <div class="relative max-w-3xl w-full max-h-[90vh] flex flex-col items-center justify-center" onclick="event.stopPropagation()">
             <button onclick="closeImageZoom()" class="absolute -top-12 right-0 text-white text-3xl font-bold bg-slate-800 hover:bg-slate-700 w-10 h-10 rounded-full flex items-center justify-center border border-slate-700 shadow-lg">&times;</button>
@@ -194,7 +176,7 @@
         </div>
     </div>
 
-    <!-- MODAL DE ESCOLHA DE ADICIONAIS -->
+    <!-- MODAL ADICIONAIS -->
     <div id="adicionais-modal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center p-4 overflow-y-auto">
         <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-md p-6 shadow-2xl my-8">
             <div class="flex justify-between items-center pb-4 border-b border-slate-800 mb-4">
@@ -205,9 +187,7 @@
                 <button onclick="closeAdicionaisModal()" class="text-slate-400 hover:text-white text-xl">&times;</button>
             </div>
             
-            <div id="lista-adicionais-opcoes" class="space-y-3 max-h-60 overflow-y-auto my-4 pr-1">
-                <!-- Carregado via JavaScript -->
-            </div>
+            <div id="lista-adicionais-opcoes" class="space-y-3 max-h-60 overflow-y-auto my-4 pr-1"></div>
 
             <div class="flex space-x-3 pt-2">
                 <button type="button" onclick="closeAdicionaisModal()" class="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-300 py-2.5 rounded-xl text-sm font-semibold">Cancelar</button>
@@ -216,7 +196,7 @@
         </div>
     </div>
 
-    <!-- Carrinho Lateral -->
+    <!-- CARRINHO LATERAL -->
     <div id="cart-modal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden flex justify-end">
         <div class="bg-slate-900 w-full max-w-md h-full flex flex-col justify-between p-6 border-l border-slate-800 shadow-2xl">
             <div>
@@ -236,12 +216,10 @@
                 <input type="text" id="clienteNome" placeholder="Seu Nome Completo" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus:border-red-500">
                 <input type="text" id="clienteEndereco" placeholder="Endereço de Entrega (Rua, Número)" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus:border-red-500">
                 
-                <!-- Bairro dinâmico carregado do Supabase via Servidor -->
                 <select id="clienteBairro" onchange="updateCartUI()" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus:border-red-500">
                     <option value="" disabled selected>Selecione o Bairro</option>
                 </select>
 
-                <!-- Forma de Pagamento -->
                 <select id="formaPagamento" onchange="verificarPagamento()" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus:border-red-500">
                     <option value="" disabled selected>Forma de Pagamento</option>
                     <option value="Pix">Pix</option>
@@ -249,7 +227,6 @@
                     <option value="Dinheiro">Dinheiro</option>
                 </select>
 
-                <!-- Campo de Troco Dinâmico -->
                 <div id="div-troco" class="hidden space-y-1">
                     <input type="number" id="valor-troco" placeholder="Troco para quanto? (Ex: 50)" oninput="calcularTroco()" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus:border-red-500">
                     <span id="texto-troco" class="text-xs text-amber-400 font-semibold block"></span>
@@ -266,7 +243,12 @@
         </div>
     </div>
 
+    <!-- Script Principal Integrado -->
     <script>
+        const SUPABASE_URL = 'https://vfxaiknoawzoenodwqjf.supabase.co';
+        const SUPABASE_KEY = 'sb_publishable_aDGXBwvkdk5t-9KxgJYQ9Q_VnyMst8a';
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
         let storeWhatsApp = "5599999999999"; 
         let currentSlideIndex = 0;
         let slideInterval;
@@ -274,67 +256,6 @@
         let currentFilteredProducts = [];
         let produtoSelecionadoParaAdicionais = null;
         let listaAdicionaisGlobais = [];
-
-        // Função para verificar se a página está sendo aberta DENTRO do aplicativo instalado
-        function estaNoAplicativo() {
-            const isCapacitor = window.Capacitor !== undefined;
-            const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
-            const isAppUserAgent = navigator.userAgent.includes('wv') || navigator.userAgent.includes('Capacitor');
-
-            return isCapacitor || isStandalone || isAppUserAgent;
-        }
-
-        // Exibir banner do topo e modal flutuante apenas se NÃO estiver rodando dentro do app
-        window.addEventListener('DOMContentLoaded', () => {
-            if (estaNoAplicativo()) {
-                console.log('Acesso via aplicativo APK detectado. Avisos de download ocultados.');
-                return; // Encerra aqui e não exibe os avisos de download
-            }
-
-            // Exibe o banner no topo apenas em navegadores comuns
-            document.getElementById('top-app-banner').classList.remove('hidden');
-            
-            const jaRecusou = localStorage.getItem('pwa_recusado');
-            if (!jaRecusou) {
-                setTimeout(() => {
-                    abrirModalInstalacao();
-                }, 1500);
-            }
-        });
-
-        function abrirModalInstalacao() {
-            const modal = document.getElementById('pwa-install-modal');
-            const modalLogo = document.getElementById('pwa-modal-logo');
-            const modalIcon = document.getElementById('pwa-modal-icon');
-
-            const headerImg = document.getElementById('header-logo-img');
-            if (headerImg && headerImg.src && !headerImg.classList.contains('hidden')) {
-                modalLogo.src = headerImg.src;
-                modalLogo.classList.remove('hidden');
-                modalIcon.classList.add('hidden');
-            }
-
-            modal.classList.remove('hidden');
-        }
-
-        function fecharModalInstalacao(salvarRecusa = false) {
-            document.getElementById('pwa-install-modal').classList.add('hidden');
-            if (salvarRecusa) {
-                localStorage.setItem('pwa_recusado', 'true');
-            }
-        }
-
-        // Função que realiza o download direto do APK real do aplicativo
-        function instalarAppPWA() {
-            const linkDownload = document.createElement('a');
-            linkDownload.href = '/goncalves.apk';
-            linkDownload.download = 'GoncalvesLanches.apk';
-            document.body.appendChild(linkDownload);
-            linkDownload.click();
-            document.body.removeChild(linkDownload);
-            
-            fecharModalInstalacao(true);
-        }
         
         let cart = [];
         try {
@@ -355,25 +276,34 @@
         
         window.addEventListener('DOMContentLoaded', async () => {
             try {
-                const res = await fetch(window.location.origin + '/api/configuracoes');
-                const config = await res.json();
-                if(config) {
+                const { data: config, error } = await supabaseClient.from('configuracoes').select('*').limit(1).maybeSingle();
+                if(config && !error) {
                     if(config.nome_loja) {
                         const brandEl = document.getElementById('header-brand-name');
                         const footerBrandEl = document.getElementById('footer-brand-name');
+                        const appStoreNameEl = document.getElementById('app-modal-store-name');
                         if(brandEl) brandEl.textContent = config.nome_loja;
                         if(footerBrandEl) footerBrandEl.textContent = config.nome_loja;
+                        if(appStoreNameEl) appStoreNameEl.textContent = config.nome_loja;
                     }
                     if(config.logo_url && config.logo_url.trim() !== '') {
                         const imgEl = document.getElementById('header-logo-img');
                         const iconEl = document.getElementById('header-logo-icon');
                         const containerEl = document.getElementById('header-logo-container');
+                        
+                        const appImgEl = document.getElementById('app-modal-logo-img');
+                        const appIconEl = document.getElementById('app-modal-logo-icon');
 
                         if(imgEl) {
                             imgEl.src = config.logo_url;
                             imgEl.classList.remove('hidden');
                         }
+                        if(appImgEl) {
+                            appImgEl.src = config.logo_url;
+                            appImgEl.classList.remove('hidden');
+                        }
                         if(iconEl) iconEl.classList.add('hidden');
+                        if(appIconEl) appIconEl.classList.add('hidden');
                         if(containerEl) containerEl.classList.remove('bg-gradient-to-tr', 'from-red-600', 'to-amber-500');
                     }
                     if(config.whatsapp) {
@@ -392,11 +322,18 @@
             updateCartUI();
         });
 
+        window.openAppModal = function() {
+            document.getElementById('app-download-modal').classList.remove('hidden');
+        }
+
+        window.closeAppModal = function() {
+            document.getElementById('app-download-modal').classList.add('hidden');
+        }
+
         async function loadAdicionaisGlobais() {
             try {
-                const res = await fetch(window.location.origin + '/api/adicionais');
-                const data = await res.json();
-                if(Array.isArray(data)) {
+                const { data, error } = await supabaseClient.from('adicionais').select('*').order('id', { ascending: true });
+                if(!error && Array.isArray(data)) {
                     listaAdicionaisGlobais = data;
                 }
             } catch(e) {
@@ -409,16 +346,15 @@
             if(!selectBairro) return;
 
             try {
-                const res = await fetch(window.location.origin + '/api/bairros');
-                const bairros = await res.json();
+                const { data: bairros, error } = await supabaseClient.from('bairros').select('*').order('id', { ascending: true });
 
-                if(Array.isArray(bairros) && bairros.length > 0) {
+                if(!error && Array.isArray(bairros) && bairros.length > 0) {
                     selectBairro.innerHTML = `<option value="" disabled selected>Selecione o Bairro</option>` + 
                         bairros.map(b => `<option value="${b.nome}" data-taxa="${b.taxa}">${b.nome} (Taxa: R$ ${Number(b.taxa).toFixed(2).replace('.', ',')})</option>`).join('');
                     return;
                 }
             } catch(e) {
-                console.error('Erro ao carregar bairros do servidor:', e);
+                console.error('Erro ao carregar bairros:', e);
             }
 
             selectBairro.innerHTML = `<option value="" disabled selected>Nenhum bairro cadastrado</option>`;
@@ -426,13 +362,12 @@
 
         async function loadDynamicBanners() {
             try {
-                const res = await fetch(window.location.origin + '/api/banners');
-                const banners = await res.json();
+                const { data: banners, error } = await supabaseClient.from('banners').select('*').order('id', { ascending: false });
                 
                 const container = document.getElementById('hero-slides-container');
                 const dotsContainer = document.getElementById('hero-dots-container');
 
-                if(!Array.isArray(banners) || banners.length === 0) {
+                if(error || !Array.isArray(banners) || banners.length === 0) {
                     container.innerHTML = `
                         <div class="hero-slide active">
                             <div class="absolute inset-0 bg-gradient-to-r from-slate-950 via-slate-950/70 to-transparent z-10"></div>
@@ -473,7 +408,7 @@
                 }
 
             } catch (err) {
-                console.error('Erro ao carregar banners dinâmicos:', err);
+                console.error('Erro ao carregar banners:', err);
             }
         }
 
@@ -496,12 +431,11 @@
 
         async function loadCategories() {
             try {
-                const response = await fetch(window.location.origin + '/api/categorias');
-                const categorias = await response.json();
+                const { data: categorias, error } = await supabaseClient.from('categorias').select('*');
                 
                 const grid = document.getElementById('categories-grid');
                 const promoBanner = document.getElementById('promo-banner-btn');
-                if(!grid || !Array.isArray(categorias)) return;
+                if(error || !grid || !Array.isArray(categorias)) return;
 
                 const hasPromo = categorias.some(c => c.nome.toLowerCase().includes('promoç') || c.nome.toLowerCase().includes('promocao'));
                 if(hasPromo) {
@@ -536,23 +470,23 @@
                     `;
                 }).join('');
             } catch (err) {
-                console.error('Erro ao carregar categorias no site:', err);
+                console.error('Erro ao carregar categorias:', err);
             }
         }
 
         async function loadProducts() {
             try {
-                const response = await fetch(window.location.origin + '/api/produtos');
-                const data = await response.json();
-                if(Array.isArray(data)) {
-                    menuItems = data.sort((a, b) => {
-                        let ordemA = a.ordem !== undefined && a.ordem !== null ? Number(a.ordem) : 0;
-                        let ordemB = b.ordem !== undefined && b.ordem !== null ? Number(b.ordem) : 0;
-                        return ordemA - ordemB;
-                    });
+                const { data, error } = await supabaseClient
+                    .from('products')
+                    .select('*')
+                    .order('ordem', { ascending: true })
+                    .order('id', { ascending: false });
+
+                if(!error && Array.isArray(data)) {
+                    menuItems = data;
                 }
             } catch (err) {
-                console.error('Erro ao carregar produtos do servidor:', err);
+                console.error('Erro ao carregar produtos:', err);
             }
         }
 
@@ -580,31 +514,38 @@
             }
 
             grid.innerHTML = currentFilteredProducts.map((item, index) => {
-                const esgotado = item.esgotado === true || item.esgotado === 'true' || item.esgotado === 'TRUE' || item.esgotado === 't' || item.esgotado === 1 || String(item.esgotado).toLowerCase() === 'true' || Boolean(item.esgotado) === true;
-                
+                const isEsgotado = item.esgotado === true || item.esgotado === 'true' || item.disponivel === false || item.disponivel === 'false' || item.active === false || item.active === 'false';
+
                 return `
-                    <div class="bg-slate-800/60 border ${esgotado ? 'border-red-500/40 opacity-75' : 'border-slate-700/60'} rounded-xl overflow-hidden shadow-lg flex flex-col justify-between group relative">
-                        ${esgotado ? '<div class="absolute inset-0 bg-slate-950/40 z-10 pointer-events-none flex items-center justify-center"><span class="bg-red-600 text-white font-black text-xs uppercase tracking-wider px-3 py-1 rounded-full shadow-lg transform -rotate-6">Esgotado</span></div>' : ''}
-                        
-                        <div class="relative h-32 sm:h-40 overflow-hidden bg-slate-950 cursor-pointer" onclick="openImageZoom(${index})" title="Clique para ampliar a foto">
-                            <img src="${item.image || 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=600&q=80'}" alt="${item.name}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
-                            <span class="absolute bottom-2 left-2 bg-slate-900/80 backdrop-blur-sm text-amber-400 text-[10px] font-bold px-2 py-0.5 rounded-md flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                <i class="fa-solid fa-magnifying-glass-plus"></i> <span>Ampliar</span>
-                            </span>
+                    <div class="bg-slate-800/60 border border-slate-700/60 rounded-xl overflow-hidden shadow-lg flex flex-col justify-between group relative">
+                        <div class="relative h-44 overflow-hidden bg-slate-900 ${isEsgotado ? 'cursor-not-allowed' : 'cursor-pointer'}" onclick="${isEsgotado ? '' : `openImageZoom(${index})`}">
+                            <img src="${item.image || 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=600&q=80'}" alt="${item.name}" class="w-full h-full object-cover ${isEsgotado ? 'opacity-40 grayscale' : 'group-hover:scale-105 transition-transform duration-500'}">
+                            
+                            ${isEsgotado ? `
+                                <div class="absolute inset-0 flex items-center justify-center">
+                                    <span class="bg-red-600 text-white font-extrabold px-4 py-1.5 rounded-full text-xs uppercase tracking-wider shadow-lg border border-red-400 animate-pulse">ESGOTADO</span>
+                                </div>
+                            ` : `
+                                <span class="absolute bottom-2 left-2 bg-slate-900/80 backdrop-blur-sm text-amber-400 text-[10px] font-bold px-2 py-0.5 rounded-md flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <i class="fa-solid fa-magnifying-glass-plus"></i> <span>Ampliar</span>
+                                </span>
+                            `}
+                            
                             <span class="absolute top-2 right-2 bg-slate-900/90 text-white font-bold px-2.5 py-0.5 rounded-full text-xs border border-slate-700">R$ ${Number(item.price || 0).toFixed(2).replace('.', ',')}</span>
                         </div>
-                        <div class="p-3 sm:p-4 flex flex-col flex-grow justify-between">
+                        <div class="p-4 flex flex-col flex-grow justify-between">
                             <div>
-                                <h3 class="text-sm sm:text-base font-bold text-white mb-1 leading-tight">${item.name}</h3>
-                                <p class="text-slate-400 text-xs mb-3 line-clamp-2">${item.desc || ''}</p>
+                                <h3 class="text-base font-bold text-white mb-1 leading-tight">${item.name}</h3>
+                                <p class="text-slate-400 text-xs mb-4 line-clamp-2">${item.desc || ''}</p>
                             </div>
-                            ${esgotado ? `
-                                <button onclick="mostrarAvisoEsgotado()" class="w-full bg-slate-700/60 text-slate-400 font-semibold py-2 rounded-lg cursor-not-allowed flex items-center justify-center space-x-1.5 text-xs sm:text-sm">
-                                    <i class="fa-solid fa-ban text-[10px]"></i>
+                            
+                            ${isEsgotado ? `
+                                <button disabled class="w-full bg-slate-800 text-slate-500 font-semibold py-2.5 rounded-xl border border-slate-700/50 cursor-not-allowed text-xs sm:text-sm flex items-center justify-center space-x-2">
+                                    <i class="fa-solid fa-ban"></i>
                                     <span>Esgotado</span>
                                 </button>
                             ` : `
-                                <button onclick="addToCartByIndex(${index})" class="w-full bg-slate-700 hover:bg-red-600 text-white font-semibold py-2 rounded-lg transition-colors flex items-center justify-center space-x-1.5 text-xs sm:text-sm">
+                                <button onclick="addToCartByIndex(${index})" class="w-full bg-slate-700 hover:bg-red-600 text-white font-semibold py-2.5 rounded-xl transition-colors flex items-center justify-center space-x-2 text-xs sm:text-sm shadow-md">
                                     <i class="fa-solid fa-plus text-[10px]"></i>
                                     <span>Adicionar</span>
                                 </button>
@@ -615,17 +556,6 @@
             }).join('');
             
             window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-
-        window.mostrarAvisoEsgotado = function() {
-            const container = document.getElementById('toast-container');
-            const toast = document.createElement('div');
-            toast.className = 'toast-alert bg-red-600 text-white text-xs font-bold px-4 py-3 rounded-xl shadow-2xl flex items-center space-x-2 border border-red-500 pointer-events-auto';
-            toast.innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i><span>Produto esgotado no momento!</span>`;
-            container.appendChild(toast);
-            setTimeout(() => {
-                toast.remove();
-            }, 2500);
         }
 
         window.openImageZoom = function(index) {
@@ -658,13 +588,6 @@
         window.addToCartByIndex = async function(index) {
             const item = currentFilteredProducts[index];
             if(!item) return;
-
-            const isEsgotado = item.esgotado === true || item.esgotado === 'true' || item.esgotado === 'TRUE' || item.esgotado === 't' || item.esgotado === 1 || String(item.esgotado).toLowerCase() === 'true' || Boolean(item.esgotado) === true;
-
-            if (isEsgotado) {
-                mostrarAvisoEsgotado();
-                return;
-            }
 
             produtoSelecionadoParaAdicionais = item;
             await loadAdicionaisGlobais();
@@ -896,7 +819,7 @@
 
         window.closeCart = () => document.getElementById('cart-modal').classList.add('hidden');
 
-        window.checkout = function() {
+        window.checkout = async function() {
             if(cart.length === 0) return alert('Seu carrinho está vazio!');
             let nome = document.getElementById('clienteNome').value.trim();
             let endereco = document.getElementById('clienteEndereco').value.trim();
@@ -912,6 +835,17 @@
             let subtotal = cart.reduce((sum, i) => sum + (Number(i.price) * Number(i.qty)), 0);
             let taxaEntrega = parseFloat(selectBairro.options[selectBairro.selectedIndex].getAttribute('data-taxa')) || 0;
             let totalGeral = subtotal + taxaEntrega;
+
+            try {
+                await supabaseClient.from('pedidos').insert([{ 
+                    cliente: { nome, endereco, bairro, formaPagamento }, 
+                    itens: cart, 
+                    total: totalGeral, 
+                    status: 'pendente' 
+                }]);
+            } catch(e) {
+                console.error('Erro ao registrar pedido no Supabase:', e);
+            }
 
             let message = `*Novo Pedido - Gonçalves Lanches* 🍔%0A%0A`;
             message += `*Cliente:* ${nome}%0A`;
